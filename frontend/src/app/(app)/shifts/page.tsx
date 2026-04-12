@@ -23,6 +23,7 @@ import { useOrganization } from "@/providers/organization-provider";
 import type { OrgTeamMember } from "@/types/user";
 import type { ShiftPlannerShift } from "@/types/shift";
 import { toast } from "sonner";
+import { SHIFT_PLANNER_END_HOUR } from "@/components/calendar/calendar-constants";
 
 function teamToEmployees(team: OrgTeamMember[]) {
   return team.map((m) => ({
@@ -226,7 +227,7 @@ export default function ShiftsPage() {
           shifts={shifts}
           onShiftsChange={onShiftsChange}
           hourStart={8}
-          hourEnd={20}
+          hourEnd={SHIFT_PLANNER_END_HOUR}
         />
       )}
     </div>

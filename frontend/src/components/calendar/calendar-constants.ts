@@ -35,6 +35,8 @@ export function statusAccentBorder(status: AppointmentStatus) {
 
 export const GRID_START_HOUR = 7;
 export const GRID_END_HOUR = 22;
+/** Raspored smena: ekskluzivni kraj mreže (kolone 08:00 … 20:00 kada je početak 8). */
+export const SHIFT_PLANNER_END_HOUR = 21;
 export const PX_PER_HOUR = 48;
 /** Veći slotovi na telefonu (čitljivost + drag). */
 export const PX_PER_HOUR_COMPACT = 58;

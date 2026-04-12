@@ -21,6 +21,7 @@ import {
   snapToQuarterHours,
 } from "@/lib/shift-planner";
 import type { ShiftPlannerShift } from "@/types/shift";
+import { SHIFT_PLANNER_END_HOUR } from "@/components/calendar/calendar-constants";
 
 export type ShiftPlannerEmployee = {
   id: number;
@@ -252,7 +253,7 @@ export default function ShiftPlanner({
   shifts,
   onShiftsChange,
   hourStart = 8,
-  hourEnd = 20,
+  hourEnd = SHIFT_PLANNER_END_HOUR,
   className,
 }: ShiftPlannerProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
