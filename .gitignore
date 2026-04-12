@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+
+# Tajne i lokalna podešavanja — *.example fajlovi ostaju u repou
+.env*
+!.env.example
+
+# Next.js
+frontend/.next/
+frontend/out/
+frontend/.turbo/
+
+# Build / Electron
+desktop/dist/
+*.tsbuildinfo
+
+# Logovi
+*.log
+.salon-launcher.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime uploadi (UPLOAD_ROOT u backendu)
+backend/uploads/
+uploads/
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE
+.idea/
+.vscode/
+
+# Test / coverage
+coverage/
+.nyc_output/
+
+# Hosting / alati
+.vercel
+.turbo

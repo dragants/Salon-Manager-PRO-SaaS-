@@ -1,0 +1,19 @@
+# Lokalni PostgreSQL za razvoj (Docker Desktop na Windowsu).
+# Pokretanje iz korena repozitorijuma: docker compose up -d
+# Prvi start automatski izvršava backend/sql/schema.sql
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: salon
+      POSTGRES_PASSWORD: salon_dev
+      POSTGRES_DB: salon_manager
+    ports:
+      - "5432:5432"
+    volumes:
+      - salon_manager_pg:/var/lib/postgresql/data
+      - ./backend/sql/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+
+volumes:
+  salon_manager_pg:

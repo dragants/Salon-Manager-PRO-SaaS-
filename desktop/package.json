@@ -1,0 +1,25 @@
+{
+  "name": "salon-manager-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Electron launcher: podiže Docker DB (opciono), backend i Next, otvara localhost u prozoru.",
+  "main": "main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --win portable"
+  },
+  "devDependencies": {
+    "electron": "^34.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.salonmanagerpro.local",
+    "productName": "Salon Manager PRO",
+    "directories": { "output": "dist" },
+    "files": ["main.cjs"],
+    "win": {
+      "target": ["portable"],
+      "signAndEditExecutable": false
+    }
+  }
+}

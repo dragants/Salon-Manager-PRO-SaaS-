@@ -1,0 +1,33 @@
+{
+  "name": "salon-manager-backend",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "cross-env NODE_ENV=development nodemon src/server.js",
+    "migrate:sql": "node scripts/run-sql-migration.cjs"
+  },
+  "dependencies": {
+    "axios": "^1.15.0",
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "express-rate-limit": "^8.3.2",
+    "helmet": "^8.1.0",
+    "joi": "^18.1.2",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.1",
+    "node-cron": "^4.2.1",
+    "nodemailer": "^6.10.1",
+    "pg": "^8.13.0",
+    "php-serialize": "^5.1.3",
+    "twilio": "^5.13.1",
+    "web-push": "^3.6.7"
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0",
+    "nodemon": "^3.1.7"
+  }
+}
