@@ -1,5 +1,13 @@
 const pool = require("../../config/db");
-const { minutesSinceMidnightInZone } = require("../../utils/instantInTimeZone");
+const {
+  minutesSinceMidnightInZone,
+  weekdayDayIdFromYmd,
+} = require("../../utils/instantInTimeZone");
+const {
+  intervalsForDay,
+  maxOrgCloseMinutes,
+  rangeInsideOrgIntervals,
+} = require("../../utils/workingHoursIntervals");
 
 function pgTimeToMinutes(t) {
   const parts = String(t ?? "00:00:00").split(":");
@@ -139,10 +147,38 @@ async function assertUserShiftCovers(
   }
   const startMin = minutesSinceMidnightInZone(startIso, timeZone);
   const endMin = startMin + Math.max(1, Number(durationMinutes) || 60);
+
+  let orgIntervals = [];
+  try {
+    const ow = await pool.query(
+      `SELECT working_hours FROM organizations WHERE id = $1`,
+      [orgId]
+    );
+    const dayId = weekdayDayIdFromYmd(ymd, timeZone);
+    if (dayId && ow.rows[0]?.working_hours) {
+      orgIntervals = intervalsForDay(ow.rows[0].working_hours, dayId);
+    }
+  } catch {
+    orgIntervals = [];
+  }
+  if (!rangeInsideOrgIntervals(startMin, endMin, orgIntervals)) {
+    const err = new Error("Izabrano vreme nije u radnom vremenu salona.");
+    err.statusCode = 400;
+    throw err;
+  }
+  const orgLast = maxOrgCloseMinutes(orgIntervals);
   for (const row of r.rows) {
     const a = pgTimeToMinutes(row.start_time);
     const b = pgTimeToMinutes(row.end_time);
-    if (startMin >= a && endMin <= b) {
+    let endCap = b;
+    if (orgLast != null) {
+      if (orgLast < endCap) {
+        endCap = orgLast;
+      } else if (orgLast > endCap) {
+        endCap = orgLast;
+      }
+    }
+    if (startMin >= a && endMin <= endCap) {
       return;
     }
   }

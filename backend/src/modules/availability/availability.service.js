@@ -2,7 +2,13 @@ const pool = require("../../config/db");
 const {
   minutesSinceMidnightInZone,
   isoFromYmdAndMinutesInZone,
+  weekdayDayIdFromYmd,
 } = require("../../utils/instantInTimeZone");
+const {
+  intervalsForDay,
+  maxOrgCloseMinutes,
+  rangeInsideOrgIntervals,
+} = require("../../utils/workingHoursIntervals");
 
 function orgTzFromRow(settings) {
   const z = settings?.timezone;
@@ -84,6 +90,7 @@ function computeSoon(startIso) {
  * @param {string} params.ymd
  * @param {string} params.timeZone
  * @param {number|undefined} params.staffFilterUserId
+ * @param {[number, number][]|undefined} params.orgIntervals — radno vreme salona; ako je kraće od smene, širimo slotove do zatvaranja (bez preklapanja van intervala).
  */
 function generateSlotsFromShiftsAndAppointments(params) {
   const {
@@ -93,6 +100,7 @@ function generateSlotsFromShiftsAndAppointments(params) {
     ymd,
     timeZone,
     staffFilterUserId,
+    orgIntervals = [],
   } = params;
 
   const duration = Math.max(5, Math.min(24 * 60, Number(serviceDurationMinutes) || 60));
@@ -106,6 +114,7 @@ function generateSlotsFromShiftsAndAppointments(params) {
   }));
 
   const slots = [];
+  const orgLast = maxOrgCloseMinutes(orgIntervals);
 
   for (const sh of shiftRows) {
     if (
@@ -119,8 +128,23 @@ function generateSlotsFromShiftsAndAppointments(params) {
       String(sh.email || "").trim() ||
       `Korisnik #${sh.user_id}`;
 
+    let endCap = sh.endMin;
+    if (orgLast != null) {
+      if (orgLast < endCap) {
+        endCap = orgLast;
+      } else if (orgLast > endCap) {
+        endCap = orgLast;
+      }
+    }
+
     let cur = sh.startMin;
-    while (cur + duration <= sh.endMin) {
+    while (cur + duration <= endCap) {
+      if (
+        !rangeInsideOrgIntervals(cur, cur + duration, orgIntervals)
+      ) {
+        cur += duration;
+        continue;
+      }
       if (
         !slotBlockedForEmployee(sh.user_id, cur, cur + duration, blocks)
       ) {
@@ -151,7 +175,7 @@ async function getSlots(orgId, query) {
   const { day, service_id, staff_user_id } = query;
 
   const orgR = await pool.query(
-    `SELECT settings FROM organizations WHERE id = $1`,
+    `SELECT settings, working_hours FROM organizations WHERE id = $1`,
     [orgId]
   );
   if (orgR.rows.length === 0) {
@@ -159,7 +183,8 @@ async function getSlots(orgId, query) {
     err.statusCode = 404;
     throw err;
   }
-  const timeZone = orgTzFromRow(orgR.rows[0].settings);
+  const orgRow = orgR.rows[0];
+  const timeZone = orgTzFromRow(orgRow.settings);
   assertValidTimeZone(timeZone);
 
   const svcR = await pool.query(
@@ -210,6 +235,12 @@ async function getSlots(orgId, query) {
 
   const appointmentRows = apR.rows;
 
+  const dayId = weekdayDayIdFromYmd(day, timeZone);
+  const orgIntervals =
+    dayId && typeof dayId === "string"
+      ? intervalsForDay(orgRow.working_hours || {}, dayId)
+      : [];
+
   const slots = generateSlotsFromShiftsAndAppointments({
     shiftRows,
     appointmentRows,
@@ -217,6 +248,7 @@ async function getSlots(orgId, query) {
     ymd: day,
     timeZone,
     staffFilterUserId: staff_user_id,
+    orgIntervals,
   });
 
   return {

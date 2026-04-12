@@ -11,6 +11,7 @@ const {
   assertNoStaffScheduleOverlap,
 } = require("../appointments/appointmentOverlap.service");
 const { sendBookingNotifications } = require("../appointments/appointments.notify");
+const { intervalsForDay } = require("../../utils/workingHoursIntervals");
 
 const DAY_IDS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 
@@ -18,41 +19,6 @@ function normalizeBookingSlug(slug) {
   return String(slug || "")
     .trim()
     .toLowerCase();
-}
-
-function parseHm(s) {
-  if (typeof s !== "string") return null;
-  const [h, m] = s.split(":").map((x) => Number.parseInt(x, 10));
-  if (!Number.isFinite(h) || !Number.isFinite(m)) return null;
-  return h * 60 + m;
-}
-
-function intervalsForDay(workingHours, dayId) {
-  const raw = workingHours?.[dayId];
-  if (!raw || typeof raw !== "object" || raw.enabled === false) {
-    return [];
-  }
-  const openMin = parseHm(raw.open);
-  const closeMin = parseHm(raw.close);
-  if (openMin == null || closeMin == null || closeMin <= openMin) {
-    return [];
-  }
-  let intervals = [[openMin, closeMin]];
-  const bs = parseHm(raw.break_start);
-  const be = parseHm(raw.break_end);
-  if (bs != null && be != null && be > bs) {
-    const next = [];
-    for (const [a, b] of intervals) {
-      if (be <= a || bs >= b) {
-        next.push([a, b]);
-      } else {
-        if (bs > a) next.push([a, Math.min(bs, b)]);
-        if (be < b) next.push([Math.max(be, a), b]);
-      }
-    }
-    intervals = next.filter(([a, b]) => b > a);
-  }
-  return intervals;
 }
 
 function calendarRulesFromOrg(org) {
