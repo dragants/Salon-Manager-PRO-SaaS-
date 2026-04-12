@@ -1,4 +1,6 @@
 /**
+ * Autor / nosilac prava na Salon Manager PRO: Dragan Saric
+ *
  * Lokalni desktop launcher (Electron): pokreće stack iz roditeljskog repozitorijuma.
  *
  * Preduslov na drugom PC-u: Node.js LTS, Docker Desktop (za PostgreSQL iz docker-compose),

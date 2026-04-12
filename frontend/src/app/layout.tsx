@@ -21,6 +21,8 @@ export const metadata: Metadata = {
   description:
     "SaaS za salone: kalendar, klijenti, finansije, online rezervacije i podsetnici.",
   applicationName: "Salon Manager PRO",
+  authors: [{ name: "Dragan Saric" }],
+  creator: "Dragan Saric",
   icons: {
     icon: [{ url: "/icons/pwa-icon.svg", type: "image/svg+xml" }],
     apple: [{ url: "/icons/pwa-icon.svg", type: "image/svg+xml" }],
