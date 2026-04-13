@@ -111,7 +111,8 @@ export default function ShiftsPage() {
             date,
             tzEffective,
             8,
-            SHIFT_PLANNER_END_HOUR
+            SHIFT_PLANNER_END_HOUR,
+            settings?.working_hours ?? null
           );
           setShifts(suggested);
           setFromWeeklySuggestion(suggested.length > 0);
@@ -125,7 +126,7 @@ export default function ShiftsPage() {
     return () => {
       c = true;
     };
-  }, [authLoading, user?.role, date, orgTz]);
+  }, [authLoading, user?.role, date, orgTz, settings?.working_hours]);
 
   const reapplyWeeklySuggestion = useCallback(() => {
     const tzEffective = orgTz?.trim() || browserTimeZone();
@@ -134,14 +135,15 @@ export default function ShiftsPage() {
       date,
       tzEffective,
       8,
-      SHIFT_PLANNER_END_HOUR
+      SHIFT_PLANNER_END_HOUR,
+      settings?.working_hours ?? null
     );
     setShifts(suggested);
     setFromWeeklySuggestion(suggested.length > 0);
     if (suggested.length === 0) {
       toast.message("Nema podataka u nedeljnom rasporedu za ovaj dan.");
     }
-  }, [date, orgTz, team]);
+  }, [date, orgTz, team, settings?.working_hours]);
 
   const employees = useMemo(() => teamToEmployees(team), [team]);
 
@@ -263,8 +265,9 @@ export default function ShiftsPage() {
       {fromWeeklySuggestion ? (
         <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-100">
           Za ovaj datum još nema sačuvanih smena u bazi. Prikaz je{" "}
-          <strong>automatski predlog</strong> iz Podešavanja → Raspored
-          (otvaranje, zatvaranje i pauza po radniku). Proveri blokove pa klikni{" "}
+          <strong>automatski predlog</strong> iz Podešavanja → Raspored (po
+          radniku) i pauze iz Podešavanja → Radno vreme salona. Proveri blokove
+          pa klikni{" "}
           <strong>Sačuvaj smene</strong> da bi online rezervacije i „Novi termin“
           koristili ove smene.
         </p>

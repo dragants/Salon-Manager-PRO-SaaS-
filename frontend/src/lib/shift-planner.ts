@@ -79,22 +79,66 @@ function newDraftShiftId(memberId: number, partIndex: number): string {
   return `draft-${memberId}-${partIndex}-${u}`;
 }
 
+/** Intervali u minutima od ponoći; segment [s,e) bez preklapanja sa pauzom [p,q). */
+function splitSegmentsExcludingPause(
+  segments: { start: number; end: number }[],
+  pauseStart: number,
+  pauseEnd: number
+): { start: number; end: number }[] {
+  if (!(pauseEnd > pauseStart)) {
+    return segments;
+  }
+  const out: { start: number; end: number }[] = [];
+  for (const { start: s, end: e } of segments) {
+    if (e <= s) {
+      continue;
+    }
+    const lo = Math.max(s, pauseStart);
+    const hi = Math.min(e, pauseEnd);
+    if (hi > lo) {
+      if (lo > s) {
+        out.push({ start: s, end: lo });
+      }
+      if (e > hi) {
+        out.push({ start: hi, end: e });
+      }
+    } else {
+      out.push({ start: s, end: e });
+    }
+  }
+  return out;
+}
+
 /**
  * Predlog dnevnih smena iz Podešavanja → Raspored (worker_profile.working_hours),
  * kada u bazi još nema redova u work_shifts za taj datum.
- * Pauza se razbija na dva bloka (pre i posle pauze), usklađeno sa kalendarom.
+ * Pauza iz profila radnika i pauza iz Podešavanja → Radno vreme salona razbijaju blokove.
  */
 export function suggestShiftsFromTeamWeeklyHours(
   team: OrgTeamMember[],
   dateYmd: string,
   timeZone: string,
   hourStart: number,
-  hourEnd: number
+  hourEnd: number,
+  orgWorkingHours?: Record<string, unknown> | null
 ): ShiftPlannerShift[] {
   const dayId = weekdayDayIdFromYmd(dateYmd, timeZone);
   if (!dayId) {
     return [];
   }
+  const orgRows = parseWorkingHoursFromApi(
+    (orgWorkingHours ?? {}) as Record<string, unknown>
+  );
+  const orgDay = orgRows.find((r) => r.id === dayId);
+  const orgPause =
+    orgDay?.enabled &&
+    orgDay.breakStart?.trim() &&
+    orgDay.breakEnd?.trim()
+      ? {
+          p: hmToMin(orgDay.breakStart.trim()),
+          q: hmToMin(orgDay.breakEnd.trim()),
+        }
+      : null;
   const out: ShiftPlannerShift[] = [];
   for (const m of team) {
     const rows = parseWorkingHoursFromApi(
@@ -139,8 +183,13 @@ export function suggestShiftsFromTeamWeeklyHours(
       segments.push({ start: openMin, end: closeMin });
     }
 
+    let resolved =
+      orgPause && orgPause.q > orgPause.p
+        ? splitSegmentsExcludingPause(segments, orgPause.p, orgPause.q)
+        : segments;
+
     let partIndex = 0;
-    for (const seg of segments) {
+    for (const seg of resolved) {
       const startHour = seg.start / 60;
       const durationHours = (seg.end - seg.start) / 60;
       if (durationHours < 0.25) {
