@@ -33,6 +33,30 @@ export function shiftTimeLabels(
   };
 }
 
+function parseHmToMinutes(s: string): number {
+  const [h, m] = s.split(":").map((x) => Number.parseInt(x, 10));
+  if (!Number.isFinite(h) || !Number.isFinite(m)) {
+    return 0;
+  }
+  return h * 60 + m;
+}
+
+/** Pozicija na vremenskoj traci (isti HH:MM kao shiftTimeLabels). */
+export function shiftLayoutPct(
+  startHour: number,
+  durationHours: number,
+  hourStart: number,
+  hourEnd: number
+): { leftPct: number; widthPct: number } {
+  const { start, end } = shiftTimeLabels(startHour, durationHours);
+  const startMin = parseHmToMinutes(start);
+  const endMin = parseHmToMinutes(end);
+  const range = hourEnd - hourStart;
+  const leftPct = ((startMin / 60 - hourStart) / range) * 100;
+  const widthPct = ((endMin - startMin) / 60 / range) * 100;
+  return { leftPct, widthPct };
+}
+
 export function shiftsToApiPayload(
   shifts: ShiftPlannerShift[]
 ): ShiftPlannerApiRow[] {

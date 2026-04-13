@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import {
   clampShiftToTimeline,
   DEFAULT_NEW_SHIFT_HOURS,
+  shiftLayoutPct,
   shiftTimeLabels,
   snapToQuarterHours,
 } from "@/lib/shift-planner";
@@ -117,8 +118,12 @@ function ShiftBlock({
   onRemove,
 }: ShiftBlockProps) {
   const range = hourEnd - hourStart;
-  const leftPct = ((shift.startHour - hourStart) / range) * 100;
-  const widthPct = (shift.durationHours / range) * 100;
+  const { leftPct, widthPct } = shiftLayoutPct(
+    shift.startHour,
+    shift.durationHours,
+    hourStart,
+    hourEnd
+  );
   const pal = EMPLOYEE_PALETTE[employeeColorIndex(employees, shift.employee_id)];
   const name =
     employees.find((e) => e.id === shift.employee_id)?.name ?? `#${shift.employee_id}`;
@@ -172,7 +177,7 @@ function ShiftBlock({
     <div
       ref={setNodeRef}
       className={cn(
-        "absolute top-1 z-10 flex min-h-[2.75rem] min-w-[3rem] cursor-grab overflow-hidden rounded-lg border px-0 text-left shadow-md select-none touch-none active:cursor-grabbing",
+        "absolute top-1 z-10 min-h-[2.75rem] min-w-[3rem] cursor-grab overflow-hidden rounded-lg border px-0 text-left shadow-md select-none touch-none active:cursor-grabbing",
         pal.bar,
         pal.text,
         isDragging && "z-20 opacity-50 ring-2 ring-white/90"
@@ -183,7 +188,7 @@ function ShiftBlock({
       }}
     >
       <div
-        className="flex min-w-0 flex-1 flex-col justify-center px-2 py-1"
+        className="flex h-full min-h-[inherit] min-w-0 flex-col justify-center px-2 py-1 pr-2.5"
         {...listeners}
         {...attributes}
         onDoubleClick={(e) => {
@@ -200,7 +205,7 @@ function ShiftBlock({
       <div
         role="separator"
         aria-orientation="vertical"
-        className="w-2 shrink-0 cursor-ew-resize border-l border-white/30 bg-black/10 hover:bg-black/20"
+        className="pointer-events-auto absolute inset-y-0 right-0 z-20 w-2 cursor-ew-resize border-l border-white/30 bg-black/10 hover:bg-black/20"
         onPointerDown={onResizePointerDown}
         title="Povuci za duže/kraće trajanje"
       />
@@ -440,10 +445,11 @@ export default function ShiftPlanner({
         </div>
 
         <p className="border-t border-sky-100 bg-sky-50/30 px-4 py-2 text-[11px] text-sky-700/90">
-          Prevuci blok da pomeriš početak i radnika · desni rub menja trajanje ·
-          prazan sat dodaje smenu ({DEFAULT_NEW_SHIFT_HOURS}h) · dvoklik na bloku
-          briše. Desna ivica bloka na granici pre kolone „N:00“ = kraj smene u
-          N:00 (npr. 09:00–13:00). Posle pauze 10–11 drugi blok počinje u 11:00.
+          Prevuci blok da pomeriš početak i radnika · uska traka skroz desno
+          menja trajanje · prazan sat dodaje smenu ({DEFAULT_NEW_SHIFT_HOURS}h) ·
+          dvoklik briše. Obojena širina odgovara tekstu (npr. 09:00–13:00 ide do
+          vertikale ispod „13:00“). Posle pauze 10–11 sledeći blok počinje u
+          11:00.
         </p>
       </div>
 
