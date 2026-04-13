@@ -12,10 +12,12 @@ import {
   replaceWorkShifts,
 } from "@/lib/api";
 import { getApiErrorMessage } from "@/lib/api/errors";
+import { browserTimeZone } from "@/components/calendar/calendar-utils";
 import { formatYyyyMmDd, todayLocal } from "@/lib/dateLocal";
 import {
   decimalHourToHHMM,
   shiftsToApiPayload,
+  suggestShiftsFromTeamWeeklyHours,
   workShiftToPlanner,
 } from "@/lib/shift-planner";
 import { useAuth } from "@/providers/auth-provider";
@@ -41,6 +43,7 @@ export default function ShiftsPage() {
   const [loadingTeam, setLoadingTeam] = useState(true);
   const [loadingShifts, setLoadingShifts] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [fromWeeklySuggestion, setFromWeeklySuggestion] = useState(false);
 
   const [date, setDate] = useState(() => formatYyyyMmDd(todayLocal()));
   const [shifts, setShifts] = useState<ShiftPlannerShift[]>([]);
@@ -48,53 +51,40 @@ export default function ShiftsPage() {
   useEffect(() => {
     if (authLoading || user?.role === "worker") {
       setLoadingTeam(false);
+      setLoadingShifts(false);
       return;
     }
     let c = false;
     setLoadingTeam(true);
-    getOrgTeam()
-      .then((res) => {
-        if (!c) {
-          setTeam(Array.isArray(res.data) ? res.data : []);
-          setLoadError(null);
-        }
-      })
-      .catch((e) => {
-        if (!c) {
-          setLoadError(getApiErrorMessage(e, "Tim nije učitan."));
-          setTeam([]);
-        }
-      })
-      .finally(() => {
-        if (!c) setLoadingTeam(false);
-      });
-    return () => {
-      c = true;
-    };
-  }, [authLoading, user?.role]);
-
-  useEffect(() => {
-    if (authLoading || user?.role === "worker") {
-      return;
-    }
-    let c = false;
     setLoadingShifts(true);
-    getWorkShifts(date, orgTz)
-      .then((res) => {
-        if (!c) {
-          const rows = Array.isArray(res.data?.shifts) ? res.data.shifts : [];
-          setShifts(rows.map((r) => workShiftToPlanner(r, date)));
-          setLoadError(null);
+    setFromWeeklySuggestion(false);
+
+    const tzEffective = orgTz?.trim() || browserTimeZone();
+
+    void Promise.allSettled([getOrgTeam(), getWorkShifts(date, orgTz)]).then(
+      (results) => {
+        if (c) {
+          return;
         }
-      })
-      .catch((e) => {
-        if (!c) {
-          const msg = getApiErrorMessage(e, "Smene nisu učitane.");
+        const teamRes = results[0];
+        const shiftsRes = results[1];
+
+        let teamData: OrgTeamMember[] = [];
+        let teamErr: string | null = null;
+        if (teamRes.status === "fulfilled") {
+          teamData = Array.isArray(teamRes.value.data) ? teamRes.value.data : [];
+        } else {
+          teamErr = getApiErrorMessage(teamRes.reason, "Tim nije učitan.");
+        }
+
+        if (shiftsRes.status === "rejected") {
+          const msg = getApiErrorMessage(shiftsRes.reason, "Smene nisu učitane.");
+          setTeam(teamData);
           setShifts([]);
+          setFromWeeklySuggestion(false);
           if (
             typeof msg === "string" &&
-            (msg.toLowerCase().includes("work_shifts") ||
-              msg.includes("42P01"))
+            (msg.toLowerCase().includes("work_shifts") || msg.includes("42P01"))
           ) {
             setLoadError(
               `${msg} Pokreni migraciju backend/sql/migrations/011_work_shifts.sql.`
@@ -102,15 +92,56 @@ export default function ShiftsPage() {
           } else {
             setLoadError(msg);
           }
+          setLoadingTeam(false);
+          setLoadingShifts(false);
+          return;
         }
-      })
-      .finally(() => {
-        if (!c) setLoadingShifts(false);
-      });
+
+        const rows = Array.isArray(shiftsRes.value.data?.shifts)
+          ? shiftsRes.value.data.shifts
+          : [];
+        setTeam(teamData);
+        if (rows.length > 0) {
+          setShifts(rows.map((r) => workShiftToPlanner(r, date)));
+          setFromWeeklySuggestion(false);
+          setLoadError(teamErr);
+        } else {
+          const suggested = suggestShiftsFromTeamWeeklyHours(
+            teamData,
+            date,
+            tzEffective,
+            8,
+            SHIFT_PLANNER_END_HOUR
+          );
+          setShifts(suggested);
+          setFromWeeklySuggestion(suggested.length > 0);
+          setLoadError(teamErr);
+        }
+        setLoadingTeam(false);
+        setLoadingShifts(false);
+      }
+    );
+
     return () => {
       c = true;
     };
   }, [authLoading, user?.role, date, orgTz]);
+
+  const reapplyWeeklySuggestion = useCallback(() => {
+    const tzEffective = orgTz?.trim() || browserTimeZone();
+    const suggested = suggestShiftsFromTeamWeeklyHours(
+      team,
+      date,
+      tzEffective,
+      8,
+      SHIFT_PLANNER_END_HOUR
+    );
+    setShifts(suggested);
+    setFromWeeklySuggestion(suggested.length > 0);
+    if (suggested.length === 0) {
+      toast.message("Nema podataka u nedeljnom rasporedu za ovaj dan.");
+    }
+  }, [date, orgTz, team]);
 
   const employees = useMemo(() => teamToEmployees(team), [team]);
 
@@ -143,6 +174,7 @@ export default function ShiftsPage() {
       const { data } = await replaceWorkShifts(date, body, orgTz);
       const rows = Array.isArray(data?.shifts) ? data.shifts : [];
       setShifts(rows.map((r) => workShiftToPlanner(r, date)));
+      setFromWeeklySuggestion(false);
       toast.success("Smene sačuvane — kalendar sada može koristiti dostupnost.");
     } catch (e) {
       toast.error(getApiErrorMessage(e, "Čuvanje smena nije uspelo."));
@@ -210,11 +242,31 @@ export default function ShiftsPage() {
           <ClipboardCopy className="size-4" aria-hidden />
           Kopiraj JSON
         </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="gap-2 border-sky-200"
+          onClick={reapplyWeeklySuggestion}
+          disabled={loadingTeam || team.length === 0}
+        >
+          Predloži iz rasporeda
+        </Button>
       </div>
 
       {loadError ? (
         <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
           {loadError}
+        </p>
+      ) : null}
+
+      {fromWeeklySuggestion ? (
+        <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-100">
+          Za ovaj datum još nema sačuvanih smena u bazi. Prikaz je{" "}
+          <strong>automatski predlog</strong> iz Podešavanja → Raspored
+          (otvaranje, zatvaranje i pauza po radniku). Proveri blokove pa klikni{" "}
+          <strong>Sačuvaj smene</strong> da bi online rezervacije i „Novi termin“
+          koristili ove smene.
         </p>
       ) : null}
 

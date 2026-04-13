@@ -1,8 +1,11 @@
+import { weekdayDayIdFromYmd } from "@/components/calendar/calendar-utils";
+import { parseWorkingHoursFromApi } from "@/components/settings/working-hours-editor";
 import type {
   ShiftPlannerApiRow,
   ShiftPlannerShift,
   WorkShiftRow,
 } from "@/types/shift";
+import type { OrgTeamMember } from "@/types/user";
 
 export const DEFAULT_NEW_SHIFT_HOURS = 2;
 
@@ -57,4 +60,110 @@ export function clampShiftToTimeline(
   s = Math.max(hourStart, Math.min(hourEnd - 0.25, s));
   d = Math.max(0.25, Math.min(hourEnd - s, d));
   return { startHour: s, durationHours: d };
+}
+
+function hmToMin(s: string): number {
+  const [h, m] = s.split(":").map((x) => Number.parseInt(x, 10));
+  if (!Number.isFinite(h) || !Number.isFinite(m)) {
+    return 0;
+  }
+  return h * 60 + m;
+}
+
+function newDraftShiftId(memberId: number, partIndex: number): string {
+  const u =
+    typeof globalThis.crypto !== "undefined" &&
+    typeof globalThis.crypto.randomUUID === "function"
+      ? globalThis.crypto.randomUUID()
+      : `${Date.now()}-${memberId}-${partIndex}`;
+  return `draft-${memberId}-${partIndex}-${u}`;
+}
+
+/**
+ * Predlog dnevnih smena iz Podešavanja → Raspored (worker_profile.working_hours),
+ * kada u bazi još nema redova u work_shifts za taj datum.
+ * Pauza se razbija na dva bloka (pre i posle pauze), usklađeno sa kalendarom.
+ */
+export function suggestShiftsFromTeamWeeklyHours(
+  team: OrgTeamMember[],
+  dateYmd: string,
+  timeZone: string,
+  hourStart: number,
+  hourEnd: number
+): ShiftPlannerShift[] {
+  const dayId = weekdayDayIdFromYmd(dateYmd, timeZone);
+  if (!dayId) {
+    return [];
+  }
+  const out: ShiftPlannerShift[] = [];
+  for (const m of team) {
+    const rows = parseWorkingHoursFromApi(
+      (m.worker_profile?.working_hours ?? {}) as Record<string, unknown>
+    );
+    const row = rows.find((r) => r.id === dayId);
+    if (!row || !row.enabled) {
+      continue;
+    }
+    const openMin = hmToMin(row.open);
+    const closeMin = hmToMin(row.close);
+    if (closeMin <= openMin) {
+      continue;
+    }
+
+    const segments: { start: number; end: number }[] = [];
+    const bs = row.breakStart?.trim();
+    const be = row.breakEnd?.trim();
+    if (bs && be) {
+      const b1 = hmToMin(bs);
+      const b2 = hmToMin(be);
+      if (b2 > b1 && b1 < closeMin && b2 > openMin) {
+        const bb1 = Math.max(openMin, b1);
+        const bb2 = Math.min(closeMin, b2);
+        if (bb2 > bb1) {
+          if (bb1 > openMin) {
+            segments.push({ start: openMin, end: bb1 });
+          }
+          if (closeMin > bb2) {
+            segments.push({ start: bb2, end: closeMin });
+          }
+          if (segments.length === 0) {
+            segments.push({ start: openMin, end: closeMin });
+          }
+        } else {
+          segments.push({ start: openMin, end: closeMin });
+        }
+      } else {
+        segments.push({ start: openMin, end: closeMin });
+      }
+    } else {
+      segments.push({ start: openMin, end: closeMin });
+    }
+
+    let partIndex = 0;
+    for (const seg of segments) {
+      const startHour = seg.start / 60;
+      const durationHours = (seg.end - seg.start) / 60;
+      if (durationHours < 0.25) {
+        continue;
+      }
+      const clamped = clampShiftToTimeline(
+        startHour,
+        durationHours,
+        hourStart,
+        hourEnd
+      );
+      if (clamped.durationHours < 0.25) {
+        continue;
+      }
+      out.push({
+        id: newDraftShiftId(m.id, partIndex),
+        employee_id: m.id,
+        date: dateYmd,
+        startHour: clamped.startHour,
+        durationHours: clamped.durationHours,
+      });
+      partIndex += 1;
+    }
+  }
+  return out;
 }

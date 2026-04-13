@@ -290,9 +290,13 @@ export function TeamScheduleTab({
               </div>
 
               <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
-                Napredna podešavanja (pauza u smeni) možeš uskladiti kasnije —
-                osnovni slotovi se čuvaju kao otvaranje / zatvaranje salona po
-                danu.
+                Ovo je nedeljni raspored radnika (ko radi koji dan). Konkretne
+                dnevne smene za kalendar i rezervacije čuvaju se na stranici{" "}
+                <strong className="font-medium text-slate-600 dark:text-slate-300">
+                  Smena
+                </strong>{" "}
+                — tamo klikni „Sačuvaj smene“ (možeš početi od predloga iz ovog
+                rasporeda).
               </p>
             </SurfaceCard>
           );
