@@ -9,22 +9,42 @@ import type { OrgTeamMember } from "@/types/user";
 
 export const DEFAULT_NEW_SHIFT_HOURS = 2;
 
-export function decimalHourToHHMM(h: number): string {
-  const totalMin = Math.round(Math.max(0, h) * 60);
-  const hh = Math.floor(totalMin / 60) % 24;
-  const mm = totalMin % 60;
+function minutesToHHMM(totalMin: number): string {
+  const m = ((totalMin % (24 * 60)) + 24 * 60) % (24 * 60);
+  const hh = Math.floor(m / 60);
+  const mm = m % 60;
   return `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
+}
+
+export function decimalHourToHHMM(h: number): string {
+  return minutesToHHMM(Math.round(Math.max(0, h) * 60));
+}
+
+/** Prikaz i API: kraj = start + trajanje u jednom zaokruživanju (izbegava 12:59 umesto 13:00). */
+export function shiftTimeLabels(
+  startHour: number,
+  durationHours: number
+): { start: string; end: string } {
+  const startMin = Math.round(startHour * 60);
+  const endMin = Math.round(startHour * 60 + durationHours * 60);
+  return {
+    start: minutesToHHMM(startMin),
+    end: minutesToHHMM(endMin),
+  };
 }
 
 export function shiftsToApiPayload(
   shifts: ShiftPlannerShift[]
 ): ShiftPlannerApiRow[] {
-  return shifts.map((s) => ({
-    employee_id: s.employee_id,
-    date: s.date,
-    start: decimalHourToHHMM(s.startHour),
-    end: decimalHourToHHMM(s.startHour + s.durationHours),
-  }));
+  return shifts.map((s) => {
+    const { start, end } = shiftTimeLabels(s.startHour, s.durationHours);
+    return {
+      employee_id: s.employee_id,
+      date: s.date,
+      start,
+      end,
+    };
+  });
 }
 
 export function snapToQuarterHours(h: number): number {
@@ -38,14 +58,15 @@ export function workShiftToPlanner(
 ): ShiftPlannerShift {
   const [sh, sm] = row.start.split(":").map((x) => Number.parseInt(x, 10));
   const [eh, em] = row.end.split(":").map((x) => Number.parseInt(x, 10));
-  const startHour = sh + (Number.isFinite(sm) ? sm : 0) / 60;
-  const endHour = eh + (Number.isFinite(em) ? em : 0) / 60;
+  const startMin = sh * 60 + (Number.isFinite(sm) ? sm : 0);
+  const endMin = eh * 60 + (Number.isFinite(em) ? em : 0);
+  const durMin = Math.max(15, endMin - startMin);
   return {
     id: String(row.id),
     employee_id: row.user_id,
     date: dateYmd,
-    startHour,
-    durationHours: Math.max(0.25, endHour - startHour),
+    startHour: startMin / 60,
+    durationHours: durMin / 60,
   };
 }
 
@@ -59,7 +80,10 @@ export function clampShiftToTimeline(
   let d = Math.max(0.25, snapToQuarterHours(durationHours));
   s = Math.max(hourStart, Math.min(hourEnd - 0.25, s));
   d = Math.max(0.25, Math.min(hourEnd - s, d));
-  return { startHour: s, durationHours: d };
+  const startMin = Math.round(s * 60);
+  const endMin = Math.round(s * 60 + d * 60);
+  const durMin = Math.max(15, endMin - startMin);
+  return { startHour: startMin / 60, durationHours: durMin / 60 };
 }
 
 function hmToMin(s: string): number {

@@ -15,8 +15,8 @@ import { getApiErrorMessage } from "@/lib/api/errors";
 import { browserTimeZone } from "@/components/calendar/calendar-utils";
 import { formatYyyyMmDd, todayLocal } from "@/lib/dateLocal";
 import {
-  decimalHourToHHMM,
   shiftsToApiPayload,
+  shiftTimeLabels,
   suggestShiftsFromTeamWeeklyHours,
   workShiftToPlanner,
 } from "@/lib/shift-planner";
@@ -167,11 +167,14 @@ export default function ShiftsPage() {
       const body = {
         shifts: shifts
           .filter((s) => s.date === date)
-          .map((s) => ({
-            user_id: s.employee_id,
-            start: decimalHourToHHMM(s.startHour),
-            end: decimalHourToHHMM(s.startHour + s.durationHours),
-          })),
+          .map((s) => {
+            const { start, end } = shiftTimeLabels(s.startHour, s.durationHours);
+            return {
+              user_id: s.employee_id,
+              start,
+              end,
+            };
+          }),
       };
       const { data } = await replaceWorkShifts(date, body, orgTz);
       const rows = Array.isArray(data?.shifts) ? data.shifts : [];

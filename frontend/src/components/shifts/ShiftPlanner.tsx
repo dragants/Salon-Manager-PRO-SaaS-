@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 import {
   clampShiftToTimeline,
   DEFAULT_NEW_SHIFT_HOURS,
-  decimalHourToHHMM,
+  shiftTimeLabels,
   snapToQuarterHours,
 } from "@/lib/shift-planner";
 import type { ShiftPlannerShift } from "@/types/shift";
@@ -162,8 +162,10 @@ function ShiftBlock({
     [hourEnd, onResizeDuration, range, shift.durationHours, shift.id, shift.startHour]
   );
 
-  const startLabel = decimalHourToHHMM(shift.startHour);
-  const endLabel = decimalHourToHHMM(shift.startHour + shift.durationHours);
+  const { start: startLabel, end: endLabel } = shiftTimeLabels(
+    shift.startHour,
+    shift.durationHours
+  );
   const tooltip = `${name}\n${startLabel} – ${endLabel}`;
 
   return (
@@ -216,8 +218,10 @@ function ShiftDragPreview({
   const pal = EMPLOYEE_PALETTE[employeeColorIndex(employees, shift.employee_id)];
   const name =
     employees.find((e) => e.id === shift.employee_id)?.name ?? `#${shift.employee_id}`;
-  const startLabel = decimalHourToHHMM(shift.startHour);
-  const endLabel = decimalHourToHHMM(shift.startHour + shift.durationHours);
+  const { start: startLabel, end: endLabel } = shiftTimeLabels(
+    shift.startHour,
+    shift.durationHours
+  );
 
   return (
     <div
@@ -438,7 +442,8 @@ export default function ShiftPlanner({
         <p className="border-t border-sky-100 bg-sky-50/30 px-4 py-2 text-[11px] text-sky-700/90">
           Prevuci blok da pomeriš početak i radnika · desni rub menja trajanje ·
           prazan sat dodaje smenu ({DEFAULT_NEW_SHIFT_HOURS}h) · dvoklik na bloku
-          briše.
+          briše. Desna ivica bloka na granici pre kolone „N:00“ = kraj smene u
+          N:00 (npr. 09:00–13:00). Posle pauze 10–11 drugi blok počinje u 11:00.
         </p>
       </div>
 
