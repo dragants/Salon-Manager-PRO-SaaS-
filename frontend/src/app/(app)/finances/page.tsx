@@ -984,7 +984,7 @@ export default function FinancesPage() {
             </div>
           ) : null}
 
-          <SurfaceCard padding="lg" className="overflow-hidden">
+          <SurfaceCard padding="lg" className="min-w-0 overflow-hidden">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-50">
                 Prihod po danima
@@ -997,7 +997,9 @@ export default function FinancesPage() {
                     : "Poslednjih 30 dana"}
               </p>
             </div>
-            <AnalyticsSeriesChart data={chartSeries} showRevenue={showRevenue} />
+            <div className="min-w-0">
+              <AnalyticsSeriesChart data={chartSeries} showRevenue={showRevenue} />
+            </div>
           </SurfaceCard>
 
           <SurfaceCard padding="none" className="overflow-hidden">

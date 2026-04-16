@@ -36,6 +36,7 @@ export function AnalyticsSeriesChart({
   className,
 }: Props) {
   const lux = variant === "luxury";
+  const chartHeight = lux ? 260 : 320;
   const gradId = lux ? "revenueAreaLuxury" : "revenueAreaGradient";
   const rows = Array.isArray(data) ? data : [];
   if (rows.length === 0) {
@@ -65,12 +66,23 @@ export function AnalyticsSeriesChart({
   return (
     <div
       className={cn(
-        "w-full min-w-0",
+        "w-full min-w-0 shrink-0",
         lux ? "h-[260px]" : "h-[320px]",
         className
       )}
     >
-      <ResponsiveContainer width="100%" height="100%">
+      {/*
+        Recharts 3: bez initialDimension prvi render šalje width/height -1 → konzolno upozorenje.
+        minWidth/minHeight + initialDimension stabilizuju prvi paint u flex/grid layoutima.
+      */}
+      <ResponsiveContainer
+        width="100%"
+        height="100%"
+        minWidth={0}
+        minHeight={chartHeight}
+        initialDimension={{ width: 360, height: chartHeight }}
+        debounce={50}
+      >
         <ComposedChart
           data={chartData}
           margin={{ top: 12, right: 14, left: 0, bottom: 4 }}

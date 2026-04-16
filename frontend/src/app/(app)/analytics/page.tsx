@@ -106,7 +106,7 @@ export default function AnalyticsPage() {
         </SurfaceCard>
       ) : data ? (
         <>
-          <SurfaceCard padding="md">
+          <SurfaceCard padding="md" className="min-w-0">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-50">
                 Termini i prihod po danu
@@ -138,10 +138,12 @@ export default function AnalyticsPage() {
                 </button>
               </div>
             </div>
-            <AnalyticsSeriesChart
-              data={series}
-              showRevenue={showFinancials}
-            />
+            <div className="min-w-0">
+              <AnalyticsSeriesChart
+                data={series}
+                showRevenue={showFinancials}
+              />
+            </div>
           </SurfaceCard>
 
           <div className="grid gap-6 lg:grid-cols-2">

@@ -10,6 +10,7 @@ import {
 import { applicationServerKeyFromVapidBase64 } from "@/lib/web-push";
 import { Button } from "@/components/ui/button";
 import { SurfaceCard } from "@/components/ui/surface-card";
+import { useAuth } from "@/providers/auth-provider";
 import { toast } from "sonner";
 
 function swReady(): Promise<ServiceWorkerRegistration> {
@@ -20,6 +21,8 @@ function swReady(): Promise<ServiceWorkerRegistration> {
 }
 
 export function PushNotificationsCard() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
   const [vapidKey, setVapidKey] = useState<string | null | undefined>(undefined);
   const [subscribed, setSubscribed] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -48,7 +51,11 @@ export function PushNotificationsCard() {
 
   async function onEnable() {
     if (!vapidKey) {
-      toast.error("VAPID ključevi nisu podešeni na serveru.");
+      toast.error(
+        isAdmin
+          ? "VAPID ključevi nisu podešeni na serveru (pogledaj backend .env)."
+          : "Push obaveštenja trenutno nisu omogućena. Obratite se administratoru salona."
+      );
       return;
     }
     setBusy(true);
@@ -116,7 +123,9 @@ export function PushNotificationsCard() {
       } else {
         toast.message(
           data.skipped === "vapid"
-            ? "Server nema VAPID ključeve."
+            ? isAdmin
+              ? "Server nema VAPID ključeve (backend .env)."
+              : "Push još nije podešen na sistemu. Kontaktiraj administratora salona."
             : "Nema aktivne pretplate na ovom nalogu — prvo uključi obaveštenja."
         );
       }
@@ -140,8 +149,8 @@ export function PushNotificationsCard() {
       <p className="text-xs text-slate-600 dark:text-slate-400">
         Na telefonu dodaj aplikaciju na početni ekran, zatim uključi obaveštenja.
         Radi u Chrome / Edge / Firefoxu; na iPhone-u potreban iOS 16.4+ i
-        instalirana PWA. Poruke o novoj online rezervaciji idu dodeljenom radniku
-        (ako postoji), inače administratorima salona — podešava se na backendu.
+        instalirana PWA. Obaveštenje o novoj online rezervaciji šalje se dodeljenom
+        terapeutu (ako je na terminu izabran), inače administratorima salona.
       </p>
       {!supported ? (
         <p className="text-xs text-amber-800 dark:text-amber-200">
@@ -151,11 +160,21 @@ export function PushNotificationsCard() {
         <p className="text-xs text-slate-500">Učitavanje…</p>
       ) : vapidKey === null ? (
         <p className="text-xs text-amber-800 dark:text-amber-200">
-          Administrator mora generisati VAPID ključeve na backendu (vidi{" "}
-          <code className="rounded bg-slate-100 px-1 dark:bg-slate-800">
-            .env.example
-          </code>
-          ).
+          {isAdmin ? (
+            <>
+              Push zahteva VAPID ključeve na serveru. Generiši ih na mašini gde
+              radi API (vidi{" "}
+              <code className="rounded bg-slate-100 px-1 dark:bg-slate-800">
+                backend/.env.example
+              </code>
+              ), zatim restartuj backend.
+            </>
+          ) : (
+            <>
+              Push obaveštenja na ovom sistemu još nisu uključena. Za pomoć se
+              obratite vlasniku salona ili administratoru aplikacije.
+            </>
+          )}
         </p>
       ) : (
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">

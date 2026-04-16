@@ -652,7 +652,7 @@ export default function DashboardPage() {
                 </div>
               </div>
             </div>
-            <div className="min-h-[220px] flex-1 rounded-xl border border-border bg-muted/40 p-2">
+            <div className="min-h-[240px] min-w-0 flex-1 rounded-xl border border-border bg-muted/40 p-2">
               {analyticsLoading ? (
                 <div className="flex h-[220px] items-center justify-center text-sm text-muted-foreground">
                   <Moon className="mr-2 size-4 animate-pulse opacity-40" />
