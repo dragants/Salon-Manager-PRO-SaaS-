@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { createAppointment, getAvailability, getOrgTeam } from "@/lib/api";
 import { api } from "@/lib/api/client";
-import { getApiErrorMessage } from "@/lib/api/errors";
+import { getApiErrorCode, getApiErrorMessage } from "@/lib/api/errors";
 import { computeSuggestedSlots } from "@/lib/admin-slot-suggestions";
 import { useAppointmentsSse } from "@/hooks/useAppointmentsSse";
 import {
@@ -57,6 +58,7 @@ export default function AddAppointmentModal({
   defaultStartLocal,
   onCreated,
 }: Props) {
+  const router = useRouter();
   const { settings } = useOrganization();
   const [clients, setClients] = useState<ClientOpt[]>([]);
   const [services, setServices] = useState<ServiceOpt[]>([]);
@@ -383,7 +385,20 @@ export default function AddAppointmentModal({
       await onCreated();
       toast.success("Termin dodat");
     } catch (err) {
-      setFormError(getApiErrorMessage(err, "Termin nije kreiran."));
+      if (getApiErrorCode(err) === "PLAN_APPOINTMENT_MONTH_LIMIT") {
+        setFormError(null);
+        toast.error(
+          getApiErrorMessage(err, "Dostignut je mesečni limit termina."),
+          {
+            action: {
+              label: "Pretplata",
+              onClick: () => router.push("/subscribe"),
+            },
+          }
+        );
+      } else {
+        setFormError(getApiErrorMessage(err, "Termin nije kreiran."));
+      }
     } finally {
       setSaving(false);
     }

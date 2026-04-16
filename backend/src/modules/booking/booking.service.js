@@ -12,7 +12,10 @@ const {
 } = require("../appointments/appointmentOverlap.service");
 const { sendBookingNotifications } = require("../appointments/appointments.notify");
 const { intervalsForDay } = require("../../utils/workingHoursIntervals");
-const { assertCanAddClient } = require("../../services/plan-limits.service");
+const {
+  assertCanAddClient,
+  assertCanCreateAppointment,
+} = require("../../services/plan-limits.service");
 
 const DAY_IDS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 
@@ -507,6 +510,8 @@ async function bookAppointment({
   }
 
   const clientId = await findOrCreateClient(orgId, name, phone, email);
+
+  await assertCanCreateAppointment(orgId);
 
   const staffParam =
     shiftDay && staffUserId != null && staffUserId !== ""

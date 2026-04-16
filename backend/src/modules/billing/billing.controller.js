@@ -12,10 +12,18 @@ async function status(req, res) {
   );
   const row = r.rows[0] || {};
   let client_limits = null;
+  let appointment_limits = null;
   try {
     client_limits = await planLimits.getClientLimitState(req.user.orgId);
   } catch {
     client_limits = null;
+  }
+  try {
+    appointment_limits = await planLimits.getAppointmentLimitState(
+      req.user.orgId
+    );
+  } catch {
+    appointment_limits = null;
   }
   res.json({
     subscription_status: row.subscription_status ?? null,
@@ -24,6 +32,7 @@ async function status(req, res) {
     subscription_enforced: process.env.SUBSCRIPTION_ENFORCED === "true",
     plan_limits_enforced: env.PLAN_LIMITS_ENFORCED,
     client_limits,
+    appointment_limits,
   });
 }
 

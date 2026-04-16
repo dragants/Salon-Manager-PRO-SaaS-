@@ -75,7 +75,90 @@ async function assertCanAddClient(orgId) {
   }
 }
 
+async function getOrganizationTimeZone(orgId) {
+  const r = await pool.query(
+    `SELECT settings FROM organizations WHERE id = $1`,
+    [orgId]
+  );
+  const s = r.rows[0]?.settings || {};
+  const tz =
+    typeof s.timezone === "string" && s.timezone.trim()
+      ? s.timezone.trim()
+      : env.APP_TIMEZONE;
+  return tz;
+}
+
+async function countAppointmentsCurrentMonthInZone(orgId, timeZone) {
+  const r = await pool.query(
+    `SELECT COUNT(*)::int AS n
+     FROM appointments a
+     WHERE a.organization_id = $1
+       AND (timezone($2::text, a.date))::date >= date_trunc('month', timezone($2::text, now()))::date
+       AND (timezone($2::text, a.date))::date < (date_trunc('month', timezone($2::text, now())) + interval '1 month')::date`,
+    [orgId, timeZone]
+  );
+  return r.rows[0]?.n ?? 0;
+}
+
+/**
+ * @param {number} orgId
+ */
+async function getAppointmentLimitState(orgId) {
+  const tz = await getOrganizationTimeZone(orgId);
+  const current = await countAppointmentsCurrentMonthInZone(orgId, tz);
+
+  if (!env.PLAN_LIMITS_ENFORCED) {
+    return {
+      enforced: false,
+      tier: "free",
+      timezone: tz,
+      max_appointments_month: null,
+      current_appointments_month: current,
+      at_limit: false,
+    };
+  }
+
+  const tier = await getOrganizationSubscriptionTier(orgId);
+  const max =
+    tier === "paid"
+      ? env.PAID_TIER_MAX_APPOINTMENTS_PER_MONTH
+      : env.FREE_TIER_MAX_APPOINTMENTS_PER_MONTH;
+
+  return {
+    enforced: true,
+    tier,
+    timezone: tz,
+    max_appointments_month: max,
+    current_appointments_month: current,
+    at_limit: current >= max,
+  };
+}
+
+async function assertCanCreateAppointment(orgId) {
+  const s = await getAppointmentLimitState(orgId);
+  if (!s.enforced) {
+    return;
+  }
+  if (s.current_appointments_month >= s.max_appointments_month) {
+    const err = new Error(
+      s.tier === "paid"
+        ? "Dostignut je mesečni limit termina na tvom planu. Kontaktiraj podršku."
+        : "Dostignut je besplatni mesečni limit termina. Aktiviraj pretplatu za više rezervacija."
+    );
+    err.statusCode = 403;
+    err.apiCode = "PLAN_APPOINTMENT_MONTH_LIMIT";
+    err.details = {
+      tier: s.tier,
+      max_appointments_month: s.max_appointments_month,
+      current_appointments_month: s.current_appointments_month,
+    };
+    throw err;
+  }
+}
+
 module.exports = {
   getClientLimitState,
   assertCanAddClient,
+  getAppointmentLimitState,
+  assertCanCreateAppointment,
 };

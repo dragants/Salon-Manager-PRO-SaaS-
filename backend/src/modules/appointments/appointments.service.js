@@ -1,4 +1,5 @@
 const pool = require("../../config/db");
+const { assertCanCreateAppointment } = require("../../services/plan-limits.service");
 const {
   assertNoStaffScheduleOverlap,
 } = require("./appointmentOverlap.service");
@@ -191,6 +192,8 @@ async function getById(id, orgId) {
 
 async function create(data, orgId) {
   const { client_id, service_id, date, status, staff_user_id } = data;
+
+  await assertCanCreateAppointment(orgId);
 
   await assertClientInOrg(client_id, orgId);
   await assertServiceInOrg(service_id, orgId);

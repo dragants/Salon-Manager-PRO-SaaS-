@@ -112,6 +112,24 @@ export default function SubscribePage() {
               : " na tvom planu."}
           </p>
         ) : null}
+        {status?.appointment_limits?.enforced &&
+        status.appointment_limits.max_appointments_month != null ? (
+          <p
+            className={cn(
+              "mb-4 rounded-xl border px-3 py-2 text-left text-sm",
+              status.appointment_limits.at_limit
+                ? "border-amber-200 bg-amber-50 text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/35 dark:text-amber-100"
+                : "border-slate-200 bg-slate-50 text-slate-800 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-200"
+            )}
+          >
+            <span className="font-semibold">Termini (ovaj mesec):</span>{" "}
+            {status.appointment_limits.current_appointments_month} /{" "}
+            {status.appointment_limits.max_appointments_month}
+            {status.appointment_limits.tier === "free"
+              ? ` · mesec se računa u zoni ${status.appointment_limits.timezone}.`
+              : " na tvom planu."}
+          </p>
+        ) : null}
         <Button
           type="button"
           variant="brand"

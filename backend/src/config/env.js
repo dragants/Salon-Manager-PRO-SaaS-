@@ -40,4 +40,14 @@ module.exports = {
     1,
     Number(process.env.PAID_TIER_MAX_CLIENTS) || 10_000
   ),
+  /** Maks. novih termina u tekućem kalendarskom mesecu (timezone salona), free tier. */
+  FREE_TIER_MAX_APPOINTMENTS_PER_MONTH: Math.max(
+    1,
+    Number(process.env.FREE_TIER_MAX_APPOINTMENTS_PER_MONTH) || 200
+  ),
+  PAID_TIER_MAX_APPOINTMENTS_PER_MONTH: Math.max(
+    1,
+    Number(process.env.PAID_TIER_MAX_APPOINTMENTS_PER_MONTH) || 100_000
+  ),
+  APP_TIMEZONE: process.env.APP_TIMEZONE || "Europe/Belgrade",
 };
