@@ -19,6 +19,24 @@ function mapRow(r) {
   };
 }
 
+async function monthlyTotals(orgId, months) {
+  const m = Math.min(24, Math.max(1, months));
+  const r = await pool.query(
+    `SELECT to_char(spent_at, 'YYYY-MM') AS ym,
+            COALESCE(SUM(amount_rsd), 0)::bigint AS total_rsd
+     FROM expenses
+     WHERE organization_id = $1
+       AND spent_at >= (date_trunc('month', CURRENT_DATE) - (($2::int - 1) * interval '1 month'))::date
+     GROUP BY to_char(spent_at, 'YYYY-MM')
+     ORDER BY ym DESC`,
+    [orgId, m]
+  );
+  return r.rows.map((row) => ({
+    month: row.ym,
+    total_rsd: Number(row.total_rsd),
+  }));
+}
+
 async function list(orgId, from, to) {
   const r = await pool.query(
     `SELECT id, organization_id, amount_rsd, title, category, notes,
@@ -114,4 +132,4 @@ async function remove(id, orgId) {
   return r.rowCount > 0;
 }
 
-module.exports = { list, create, getOne, update, remove };
+module.exports = { monthlyTotals, list, create, getOne, update, remove };

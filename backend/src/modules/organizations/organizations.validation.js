@@ -60,6 +60,26 @@ const patchOrganizationSettingsSchema = Joi.object({
         message: "reminders must include at least one field",
       });
     }
+    if (value.settings && typeof value.settings.finance === "object") {
+      const f = value.settings.finance;
+      if (f.monthly_overhead_rsd != null) {
+        const n = Number(f.monthly_overhead_rsd);
+        if (!Number.isFinite(n) || n < 0 || n > 999_999_999) {
+          return helpers.error("any.custom", {
+            message:
+              "finance.monthly_overhead_rsd mora biti između 0 i 999.999.999",
+          });
+        }
+      }
+      if (f.currency != null) {
+        const c = String(f.currency).trim().toUpperCase();
+        if (c.length < 3 || c.length > 8 || !/^[A-Z0-9]+$/.test(c)) {
+          return helpers.error("any.custom", {
+            message: "Neispravan kod valute (npr. RSD, EUR).",
+          });
+        }
+      }
+    }
     return value;
   });
 

@@ -7,7 +7,9 @@ import {
   useEffect,
   useState,
 } from "react";
-import { getSettings } from "@/lib/api";
+import { getSettings, patchSettings } from "@/lib/api";
+import type { PatchOrgSettingsBody } from "@/lib/api";
+import { mergeOrgSettingsPreview } from "@/lib/merge-org-settings-preview";
 import type { OrganizationSettings } from "@/types/organization";
 import { useAuth } from "./auth-provider";
 
@@ -15,6 +17,8 @@ type OrganizationContextValue = {
   settings: OrganizationSettings | null;
   loading: boolean;
   refreshSettings: () => Promise<void>;
+  /** Optimistički merge u UI, rollback pri grešci; posle uspeha pun refresh sa servera. */
+  patchSettingsWithOptimism: (body: PatchOrgSettingsBody) => Promise<void>;
 };
 
 const OrganizationContext = createContext<OrganizationContextValue | null>(
@@ -46,6 +50,27 @@ export function OrganizationProvider({
     }
   }, [user]);
 
+  const patchSettingsWithOptimism = useCallback(
+    async (body: PatchOrgSettingsBody) => {
+      if (!user) {
+        throw new Error("Niste prijavljeni.");
+      }
+      const prev = settings;
+      if (prev) {
+        setSettings(mergeOrgSettingsPreview(prev, body));
+      }
+      try {
+        await patchSettings(body);
+        const { data } = await getSettings();
+        setSettings(data);
+      } catch (err) {
+        setSettings(prev);
+        throw err;
+      }
+    },
+    [user, settings]
+  );
+
   useEffect(() => {
     if (authLoading) {
       return;
@@ -60,7 +85,12 @@ export function OrganizationProvider({
 
   return (
     <OrganizationContext.Provider
-      value={{ settings, loading, refreshSettings }}
+      value={{
+        settings,
+        loading,
+        refreshSettings,
+        patchSettingsWithOptimism,
+      }}
     >
       {children}
     </OrganizationContext.Provider>

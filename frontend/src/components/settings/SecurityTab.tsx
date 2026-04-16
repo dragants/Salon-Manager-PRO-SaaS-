@@ -7,6 +7,8 @@ type SecurityTabProps = {
   onWorkerCanDeleteChange: (value: boolean) => void;
   saving: boolean;
   onSaveWorkerPermissions: () => void;
+  /** Lokalno stanje se razlikuje od servera (pre čuvanja). */
+  permissionsDirty?: boolean;
 };
 
 export function SecurityTab({
@@ -14,6 +16,7 @@ export function SecurityTab({
   onWorkerCanDeleteChange,
   saving,
   onSaveWorkerPermissions,
+  permissionsDirty = false,
 }: SecurityTabProps) {
   return (
     <div className="space-y-6">
@@ -21,6 +24,12 @@ export function SecurityTab({
         title="Dozvole radnika"
         description="Podrazumevano radnik ne može da briše zapise. Uključi samo ako poveravaš članu tima."
       >
+        {permissionsDirty ? (
+          <p className="mb-4 rounded-lg border border-amber-200/90 bg-amber-50/90 px-3 py-2 text-sm text-amber-950 dark:border-amber-900/50 dark:bg-amber-950/35 dark:text-amber-100">
+            <strong>Nesačuvane izmene</strong> u dozvolama — sačuvaj pre
+            napuštanja taba.
+          </p>
+        ) : null}
         <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-zinc-200/90 bg-white p-4">
           <input
             type="checkbox"

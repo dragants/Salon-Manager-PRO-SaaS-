@@ -5,10 +5,11 @@ import {
   useCallback,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useState,
 } from "react";
 import { useSearchParams } from "next/navigation";
-import { getOrgTeam, getServices, patchSettings } from "@/lib/api";
+import { getOrgTeam, getServices } from "@/lib/api";
 import { getApiErrorMessage } from "@/lib/api/errors";
 import { CalendarTab } from "@/components/settings/CalendarTab";
 import { FinanceTab } from "@/components/settings/FinanceTab";
@@ -43,7 +44,7 @@ function SettingsPageContent() {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
   const settingsTabs = isAdmin ? SETTINGS_TABS : WORKER_SETTINGS_TABS;
-  const { settings, loading, refreshSettings } = useOrganization();
+  const { settings, loading, patchSettingsWithOptimism } = useOrganization();
   const [tab, setTab] = useState<SettingsTabId>("salon");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -329,13 +330,195 @@ function SettingsPageContent() {
     try {
       await fn();
       setMessage("Sačuvano.");
-      await refreshSettings();
     } catch (err) {
       setError(getApiErrorMessage(err, "Čuvanje nije uspelo."));
     } finally {
       setSaving(false);
     }
   }
+
+  const settingsDirty = useMemo(() => {
+    if (!settings) {
+      return false;
+    }
+    const whSame =
+      JSON.stringify(workingHoursToPayload(dayRows)) ===
+      JSON.stringify(settings.working_hours ?? {});
+    const cr = settings.calendar_rules ?? {};
+    const calSame =
+      minGap === (typeof cr.min_gap_minutes === "number" ? cr.min_gap_minutes : 30) &&
+      maxClients ===
+        (typeof cr.max_clients_per_hour === "number"
+          ? cr.max_clients_per_hour
+          : 4) &&
+      allowOverlap === Boolean(cr.allow_overlap) &&
+      bufferBetween ===
+        (typeof cr.buffer_between_minutes === "number"
+          ? cr.buffer_between_minutes
+          : 0);
+    const fin = settings.finance ?? {};
+    const finSame =
+      currency === (typeof fin.currency === "string" ? fin.currency : "RSD") &&
+      vatEnabled === Boolean(fin.vat_enabled) &&
+      acceptCash === (fin.accept_cash !== false) &&
+      acceptCard === (fin.accept_card !== false);
+
+    const r = settings.reminders ?? {};
+    const srvDayBefore = Boolean(r.dayBefore ?? true);
+    const srvTwoHours = Boolean(r.twoHoursBefore ?? true);
+    const dh = r.dayBeforeHour;
+    const srvDayBeforeHour =
+      typeof dh === "number" && dh >= 0 && dh <= 23 ? dh : 17;
+    const crh = r.customReminderHours;
+    const srvCustomReminder =
+      typeof crh === "number" && crh > 0 ? crh : 0;
+    const remindersSame =
+      dayBefore === srvDayBefore &&
+      twoHoursBefore === srvTwoHours &&
+      dayBeforeHour === srvDayBeforeHour &&
+      customReminderHours === srvCustomReminder &&
+      channelSms === (r.channelSms !== false) &&
+      channelWhatsApp === (r.channelWhatsApp !== false) &&
+      channelEmail === (r.channelEmail === true) &&
+      noShowFollowup === Boolean(r.noShowFollowup);
+
+    const au = settings.automation ?? {};
+    const srvReminderTemplate =
+      typeof au.reminder_template === "string" ? au.reminder_template : "";
+    const automationSame =
+      autoConfirm === Boolean(au.auto_confirm_booking) &&
+      reminderTemplate.trim() === srvReminderTemplate.trim() &&
+      noShowOffer === Boolean(au.no_show_offer_new_slot);
+
+    const bn = settings.booking_notifications;
+    let srvPbSms = true;
+    let srvPbEmail = false;
+    let srvPbWa = false;
+    let srvSmtpHost = "";
+    let srvSmtpPort = 587;
+    let srvSmtpSecure = false;
+    let srvSmtpUser = "";
+    let srvSmtpFromEmail = "";
+    let srvSmtpFromName = "";
+    let srvTwilioSid = "";
+    let srvTwilioFrom = "";
+    if (bn && typeof bn === "object") {
+      srvPbSms = bn.public_booking_sms !== false;
+      srvPbEmail = bn.public_booking_email === true;
+      srvPbWa = bn.public_booking_whatsapp === true;
+      const sm = bn.smtp;
+      if (sm && typeof sm === "object") {
+        srvSmtpHost = typeof sm.host === "string" ? sm.host : "";
+        srvSmtpPort =
+          typeof sm.port === "number" && sm.port > 0 ? sm.port : 587;
+        srvSmtpSecure = Boolean(sm.secure);
+        srvSmtpUser = typeof sm.user === "string" ? sm.user : "";
+        srvSmtpFromEmail =
+          typeof sm.from_email === "string" ? sm.from_email : "";
+        srvSmtpFromName =
+          typeof sm.from_name === "string" ? sm.from_name : "";
+      }
+      srvTwilioSid =
+        typeof bn.twilio_account_sid === "string"
+          ? bn.twilio_account_sid
+          : "";
+      srvTwilioFrom =
+        typeof bn.twilio_from === "string" ? bn.twilio_from : "";
+    }
+    const notificationsSame =
+      publicBookingSms === srvPbSms &&
+      publicBookingEmail === srvPbEmail &&
+      publicBookingWhatsApp === srvPbWa &&
+      smtpHost.trim() === srvSmtpHost.trim() &&
+      smtpPort === srvSmtpPort &&
+      smtpSecure === srvSmtpSecure &&
+      smtpUser.trim() === srvSmtpUser.trim() &&
+      smtpFromEmail.trim() === srvSmtpFromEmail.trim() &&
+      smtpFromName.trim() === srvSmtpFromName.trim() &&
+      twilioSid.trim() === srvTwilioSid.trim() &&
+      twilioFrom.trim() === srvTwilioFrom.trim() &&
+      smtpPassword.trim() === "" &&
+      twilioToken.trim() === "";
+
+    return (
+      orgName.trim() !== (settings.name ?? "").trim() ||
+      displayName.trim() !==
+        (typeof settings.branding?.display_name === "string"
+          ? settings.branding.display_name
+          : ""
+        ).trim() ||
+      phone.trim() !== (settings.phone ?? "").trim() ||
+      address.trim() !== (settings.address ?? "").trim() ||
+      logoUrl.trim() !== (settings.logo ?? "").trim() ||
+      instagram.trim() !==
+        (typeof settings.branding?.instagram === "string"
+          ? settings.branding.instagram
+          : ""
+        ).trim() ||
+      themeColor.trim() !== (settings.theme_color ?? "#3B82F6").trim() ||
+      timezone.trim() !== (settings.timezone ?? "Europe/Belgrade").trim() ||
+      bookingSlug.trim() !==
+        (typeof settings.booking_slug === "string" ? settings.booking_slug : "") ||
+      publicSiteUrl.trim() !==
+        (typeof settings.public_site_url === "string"
+          ? settings.public_site_url
+          : ""
+        ).trim() ||
+      !whSame ||
+      !calSame ||
+      !finSame ||
+      !remindersSame ||
+      !automationSame ||
+      !notificationsSame ||
+      workerCanDelete !== Boolean(settings.worker_permissions?.can_delete)
+    );
+  }, [
+    settings,
+    orgName,
+    displayName,
+    phone,
+    address,
+    logoUrl,
+    instagram,
+    themeColor,
+    timezone,
+    bookingSlug,
+    publicSiteUrl,
+    dayRows,
+    minGap,
+    maxClients,
+    allowOverlap,
+    bufferBetween,
+    currency,
+    vatEnabled,
+    acceptCash,
+    acceptCard,
+    workerCanDelete,
+    dayBefore,
+    twoHoursBefore,
+    dayBeforeHour,
+    customReminderHours,
+    channelSms,
+    channelWhatsApp,
+    channelEmail,
+    noShowFollowup,
+    autoConfirm,
+    reminderTemplate,
+    noShowOffer,
+    publicBookingSms,
+    publicBookingEmail,
+    publicBookingWhatsApp,
+    smtpHost,
+    smtpPort,
+    smtpSecure,
+    smtpUser,
+    smtpPassword,
+    smtpFromEmail,
+    smtpFromName,
+    twilioSid,
+    twilioToken,
+    twilioFrom,
+  ]);
 
   if (loading || !settings) {
     return (
@@ -376,6 +559,13 @@ function SettingsPageContent() {
         </div>
         <SettingsTabBar tabs={settingsTabs} active={tab} onChange={setTab} />
       </div>
+
+      {isAdmin && settingsDirty ? (
+        <div className="rounded-xl border border-amber-200/90 bg-amber-50/90 px-4 py-2.5 text-sm text-amber-950 dark:border-amber-900/50 dark:bg-amber-950/35 dark:text-amber-100">
+          Imaš <strong>nesačuvane izmene</strong> u podešavanjima — sačuvaj tab na
+          kom si radio.
+        </div>
+      ) : null}
 
       {error ? (
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-100">
@@ -418,7 +608,7 @@ function SettingsPageContent() {
             onSave={() =>
               flashSave(async () => {
                 const trimmedPublic = publicSiteUrl.trim().replace(/\/$/, "");
-                await patchSettings({
+                await patchSettingsWithOptimism({
                   name: orgName.trim(),
                   phone: phone.trim() || null,
                   address: address.trim() || null,
@@ -470,7 +660,7 @@ function SettingsPageContent() {
             setDayRows={setDayRows}
             onSave={() =>
               flashSave(async () => {
-                await patchSettings({
+                await patchSettingsWithOptimism({
                   working_hours: workingHoursToPayload(dayRows),
                 });
               })
@@ -491,7 +681,7 @@ function SettingsPageContent() {
             setAllowOverlap={setAllowOverlap}
             onSave={() =>
               flashSave(async () => {
-                await patchSettings({
+                await patchSettingsWithOptimism({
                   settings: {
                     calendar_rules: {
                       min_gap_minutes: minGap,
@@ -561,7 +751,7 @@ function SettingsPageContent() {
             twilioConfigured={twilioConfigured}
             onSave={() =>
               flashSave(async () => {
-                await patchSettings({
+                await patchSettingsWithOptimism({
                   reminders: {
                     dayBefore,
                     twoHoursBefore,
@@ -618,7 +808,7 @@ function SettingsPageContent() {
             setAcceptCard={setAcceptCard}
             onSave={() =>
               flashSave(async () => {
-                await patchSettings({
+                await patchSettingsWithOptimism({
                   settings: {
                     finance: {
                       currency,
@@ -638,9 +828,13 @@ function SettingsPageContent() {
             workerCanDelete={workerCanDelete}
             onWorkerCanDeleteChange={setWorkerCanDelete}
             saving={saving}
+            permissionsDirty={
+              workerCanDelete !==
+              Boolean(settings.worker_permissions?.can_delete)
+            }
             onSaveWorkerPermissions={() =>
               flashSave(async () => {
-                await patchSettings({
+                await patchSettingsWithOptimism({
                   settings: {
                     worker_permissions: { can_delete: workerCanDelete },
                   },

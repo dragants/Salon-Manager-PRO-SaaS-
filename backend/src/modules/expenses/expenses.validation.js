@@ -9,6 +9,10 @@ const listQuerySchema = Joi.object({
   to: ymd,
 });
 
+const monthlyTotalsQuerySchema = Joi.object({
+  months: Joi.number().integer().min(1).max(24).default(6),
+});
+
 const createExpenseSchema = Joi.object({
   title: Joi.string().min(1).max(200).required(),
   amount_rsd: Joi.number().integer().min(0).max(2_000_000_000).required(),
@@ -35,6 +39,7 @@ const idParamSchema = Joi.object({
 
 module.exports = {
   listQuerySchema,
+  monthlyTotalsQuerySchema,
   createExpenseSchema,
   updateExpenseSchema,
   idParamSchema,

@@ -25,6 +25,8 @@ export type AnalyticsTopClient = {
 
 export type AnalyticsResponse = {
   revenue_month: number | null;
+  /** Prihod u prethodnom kalendarskom mesecu (zona salona). */
+  revenue_previous_month: number | null;
   revenue_today: number | null;
   appointments_today: number;
   appointments_total: number;

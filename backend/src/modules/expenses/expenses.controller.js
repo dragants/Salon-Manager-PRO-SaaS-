@@ -1,5 +1,11 @@
 const service = require("./expenses.service");
 
+async function monthlyTotals(req, res) {
+  const { months } = req.validatedQuery;
+  const data = await service.monthlyTotals(req.user.orgId, months);
+  res.json(data);
+}
+
 async function list(req, res) {
   const { from, to } = req.validatedQuery;
   const data = await service.list(req.user.orgId, from, to);
@@ -43,4 +49,4 @@ async function remove(req, res) {
   res.status(204).send();
 }
 
-module.exports = { list, create, getOne, update, remove };
+module.exports = { monthlyTotals, list, create, getOne, update, remove };

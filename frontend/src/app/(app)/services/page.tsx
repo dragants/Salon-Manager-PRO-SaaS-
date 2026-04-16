@@ -1,6 +1,13 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useState } from "react";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Check, Pencil, X } from "lucide-react";
 import { toast } from "sonner";
@@ -22,7 +29,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatRsd } from "@/lib/formatMoney";
+import { appTableHeadClass, appTableRowClass } from "@/lib/app-ui";
 import { cn } from "@/lib/utils";
+import { useTableHeadShadow } from "@/hooks/useTableHeadShadow";
+import { useTableViewportWindow } from "@/hooks/useTableViewportWindow";
 import type { Service } from "@/types/service";
 
 function ServicesPageContent() {
@@ -50,6 +60,28 @@ function ServicesPageContent() {
   });
   const [editSaving, setEditSaving] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
+
+  const servicesScrollRef = useRef<HTMLDivElement>(null);
+  const servicesHeadShadow = useTableHeadShadow(servicesScrollRef);
+  const editingRowIndex = useMemo(() => {
+    if (editingId == null) {
+      return null;
+    }
+    const ix = rows.findIndex((r) => r.id === editingId);
+    return ix >= 0 ? ix : null;
+  }, [editingId, rows]);
+  const servicesTv = useTableViewportWindow(
+    servicesScrollRef,
+    rows.length,
+    52,
+    {
+      minItems: editingId != null ? 100_000 : 45,
+      pinIndex: editingRowIndex,
+    }
+  );
+  const visibleServices = servicesTv.enabled
+    ? rows.slice(servicesTv.from, servicesTv.to)
+    : rows;
 
   const load = useCallback(async (opts?: { silent?: boolean }) => {
     if (!opts?.silent) {
@@ -222,153 +254,224 @@ function ServicesPageContent() {
             : "Nema usluga. Administrator treba da doda usluge u salonu."}
         </SurfaceCard>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {rows.map((s) => (
-            <SurfaceCard
-              key={s.id}
-              padding="md"
-              className={cn(
-                "group flex flex-col justify-between",
-                editingId === s.id &&
-                  "ring-2 ring-sky-300/70 dark:ring-sky-700/60"
-              )}
-            >
-              {editingId === s.id && canManage ? (
-                <div className="flex flex-col gap-3">
-                  {editError ? (
-                    <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-100">
-                      {editError}
-                    </p>
+        <SurfaceCard padding="none" className="overflow-hidden">
+          <div className="flex flex-col gap-2 border-b border-zinc-200/90 bg-zinc-50/50 px-4 py-3 dark:border-zinc-800 dark:bg-zinc-900/40 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+            <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+              {rows.length}{" "}
+              {rows.length === 1 ? "usluga" : "usluga"}
+              {servicesTv.enabled && rows.length > 0
+                ? ` · prikaz ${servicesTv.from + 1}–${servicesTv.to}`
+                : null}
+            </p>
+          </div>
+          <div
+            ref={servicesScrollRef}
+            className={cn(
+              "overflow-x-auto",
+              rows.length >= 45 &&
+                editingId == null &&
+                "max-h-[min(70vh,560px)] overflow-y-auto"
+            )}
+          >
+            <table className="w-full min-w-[640px] text-left text-sm">
+              <thead
+                className={cn(
+                  appTableHeadClass,
+                  "sticky top-0 z-20 bg-zinc-50/95 backdrop-blur-sm dark:bg-zinc-900/95",
+                  servicesHeadShadow &&
+                    "shadow-[0_6px_12px_-4px_rgba(0,0,0,0.12)] dark:shadow-[0_6px_12px_-4px_rgba(0,0,0,0.45)]"
+                )}
+              >
+                <tr className="border-b border-zinc-200/90 dark:border-zinc-800">
+                  <th className="px-4 py-3.5 sm:px-5">Naziv</th>
+                  <th className="px-4 py-3.5 sm:px-5 text-right">Cena</th>
+                  <th className="px-4 py-3.5 sm:px-5 text-right">Trajanje</th>
+                  <th className="px-4 py-3.5 sm:px-5 text-right">Buffer</th>
+                  {canManage ? (
+                    <th className="w-28 px-4 py-3.5 text-right sm:px-5">
+                      Akcije
+                    </th>
                   ) : null}
-                  <div className="space-y-1.5">
-                    <Label htmlFor={`e-name-${s.id}`}>Naziv</Label>
-                    <Input
-                      id={`e-name-${s.id}`}
-                      value={draft.name}
-                      onChange={(e) =>
-                        setDraft((d) => ({ ...d, name: e.target.value }))
-                      }
-                      className="rounded-xl"
+                </tr>
+              </thead>
+              <tbody>
+                {servicesTv.topSpacer > 0 ? (
+                  <tr aria-hidden>
+                    <td
+                      colSpan={canManage ? 5 : 4}
+                      style={{
+                        height: servicesTv.topSpacer,
+                        padding: 0,
+                        border: 0,
+                      }}
                     />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor={`e-price-${s.id}`}>Cena (RSD)</Label>
-                    <Input
-                      id={`e-price-${s.id}`}
-                      type="number"
-                      inputMode="decimal"
-                      min={0}
-                      step={1}
-                      value={draft.price}
-                      onChange={(e) =>
-                        setDraft((d) => ({ ...d, price: e.target.value }))
-                      }
-                      className="rounded-xl"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <Label htmlFor={`e-dur-${s.id}`}>Trajanje</Label>
-                      <Input
-                        id={`e-dur-${s.id}`}
-                        type="number"
-                        min={1}
-                        step={1}
-                        value={draft.duration}
-                        onChange={(e) =>
-                          setDraft((d) => ({ ...d, duration: e.target.value }))
-                        }
-                        className="rounded-xl"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label htmlFor={`e-buf-${s.id}`}>Buffer</Label>
-                      <Input
-                        id={`e-buf-${s.id}`}
-                        type="number"
-                        min={0}
-                        max={240}
-                        step={1}
-                        value={draft.buffer}
-                        onChange={(e) =>
-                          setDraft((d) => ({ ...d, buffer: e.target.value }))
-                        }
-                        className="rounded-xl"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex justify-end gap-1 pt-1">
-                    <Button
-                      type="button"
-                      size="icon-sm"
-                      variant="ghost"
-                      className="rounded-xl text-emerald-700 hover:bg-emerald-100 dark:text-emerald-400 dark:hover:bg-emerald-950/50"
-                      disabled={editSaving}
-                      onClick={() => void saveEdit()}
-                      aria-label="Sačuvaj uslugu"
+                  </tr>
+                ) : null}
+                {visibleServices.map((s) =>
+                  editingId === s.id && canManage ? (
+                    <tr
+                      key={s.id}
+                      className={cn(
+                        appTableRowClass,
+                        "bg-sky-50/60 dark:bg-sky-950/25"
+                      )}
                     >
-                      <Check className="size-4" />
-                    </Button>
-                    <Button
-                      type="button"
-                      size="icon-sm"
-                      variant="ghost"
-                      className="rounded-xl"
-                      disabled={editSaving}
-                      onClick={cancelEdit}
-                      aria-label="Otkaži"
+                      <td className="px-4 py-3 align-top sm:px-5">
+                        <div className="space-y-1.5">
+                          {editError ? (
+                            <p className="rounded-md border border-red-200 bg-red-50 px-2 py-1.5 text-xs text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-100">
+                              {editError}
+                            </p>
+                          ) : null}
+                          <Label
+                            htmlFor={`e-name-${s.id}`}
+                            className="sr-only"
+                          >
+                            Naziv
+                          </Label>
+                          <Input
+                            id={`e-name-${s.id}`}
+                            value={draft.name}
+                            onChange={(e) =>
+                              setDraft((d) => ({ ...d, name: e.target.value }))
+                            }
+                            className="h-9 rounded-lg text-sm"
+                          />
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 align-top sm:px-5">
+                        <Label
+                          htmlFor={`e-price-${s.id}`}
+                          className="sr-only"
+                        >
+                          Cena
+                        </Label>
+                        <Input
+                          id={`e-price-${s.id}`}
+                          type="number"
+                          inputMode="decimal"
+                          min={0}
+                          step={1}
+                          value={draft.price}
+                          onChange={(e) =>
+                            setDraft((d) => ({ ...d, price: e.target.value }))
+                          }
+                          className="h-9 rounded-lg text-sm tabular-nums"
+                        />
+                      </td>
+                      <td className="px-4 py-3 align-top sm:px-5">
+                        <Label htmlFor={`e-dur-${s.id}`} className="sr-only">
+                          Trajanje
+                        </Label>
+                        <Input
+                          id={`e-dur-${s.id}`}
+                          type="number"
+                          min={1}
+                          step={1}
+                          value={draft.duration}
+                          onChange={(e) =>
+                            setDraft((d) => ({
+                              ...d,
+                              duration: e.target.value,
+                            }))
+                          }
+                          className="h-9 rounded-lg text-sm tabular-nums"
+                        />
+                      </td>
+                      <td className="px-4 py-3 align-top sm:px-5">
+                        <Label htmlFor={`e-buf-${s.id}`} className="sr-only">
+                          Buffer
+                        </Label>
+                        <Input
+                          id={`e-buf-${s.id}`}
+                          type="number"
+                          min={0}
+                          max={240}
+                          step={1}
+                          value={draft.buffer}
+                          onChange={(e) =>
+                            setDraft((d) => ({ ...d, buffer: e.target.value }))
+                          }
+                          className="h-9 rounded-lg text-sm tabular-nums"
+                        />
+                      </td>
+                      <td className="px-4 py-3 align-top text-right sm:px-5">
+                        <div className="flex justify-end gap-1">
+                          <Button
+                            type="button"
+                            size="icon-sm"
+                            variant="ghost"
+                            className="rounded-xl text-emerald-700 hover:bg-emerald-100 dark:text-emerald-400 dark:hover:bg-emerald-950/50"
+                            disabled={editSaving}
+                            onClick={() => void saveEdit()}
+                            aria-label="Sačuvaj uslugu"
+                          >
+                            <Check className="size-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            size="icon-sm"
+                            variant="ghost"
+                            className="rounded-xl"
+                            disabled={editSaving}
+                            onClick={cancelEdit}
+                            aria-label="Otkaži"
+                          >
+                            <X className="size-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    <tr
+                      key={s.id}
+                      className={cn(appTableRowClass, "h-[52px]")}
                     >
-                      <X className="size-4" />
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <h3 className="font-heading text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+                      <td className="max-w-[220px] truncate px-4 py-3 font-medium text-zinc-900 dark:text-zinc-50 sm:px-5">
                         {s.name}
-                      </h3>
-                      <p className="mt-3 text-2xl font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
+                      </td>
+                      <td className="px-4 py-3 text-right tabular-nums text-zinc-900 dark:text-zinc-100 sm:px-5">
                         {formatRsd(s.price)}
-                      </p>
-                    </div>
-                    {canManage ? (
-                      <Button
-                        type="button"
-                        size="icon-sm"
-                        variant="ghost"
-                        className="shrink-0 rounded-xl opacity-80 transition-opacity group-hover:opacity-100"
-                        onClick={() => startEdit(s)}
-                        aria-label="Izmeni uslugu"
-                      >
-                        <Pencil className="size-4" />
-                      </Button>
-                    ) : null}
-                  </div>
-                  <dl className="mt-6 grid grid-cols-2 gap-3 border-t border-zinc-100 pt-4 text-sm dark:border-zinc-800">
-                    <div>
-                      <dt className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                        Trajanje
-                      </dt>
-                      <dd className="mt-0.5 font-medium tabular-nums text-zinc-800 dark:text-zinc-200">
+                      </td>
+                      <td className="px-4 py-3 text-right tabular-nums text-zinc-700 dark:text-zinc-300 sm:px-5">
                         {s.duration} min
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                        Buffer
-                      </dt>
-                      <dd className="mt-0.5 font-medium tabular-nums text-zinc-800 dark:text-zinc-200">
+                      </td>
+                      <td className="px-4 py-3 text-right tabular-nums text-zinc-700 dark:text-zinc-300 sm:px-5">
                         {s.buffer_minutes ?? 0} min
-                      </dd>
-                    </div>
-                  </dl>
-                </>
-              )}
-            </SurfaceCard>
-          ))}
-        </div>
+                      </td>
+                      {canManage ? (
+                        <td className="px-4 py-3 text-right sm:px-5">
+                          <Button
+                            type="button"
+                            size="icon-sm"
+                            variant="ghost"
+                            className="rounded-xl"
+                            onClick={() => startEdit(s)}
+                            aria-label="Izmeni uslugu"
+                          >
+                            <Pencil className="size-4" />
+                          </Button>
+                        </td>
+                      ) : null}
+                    </tr>
+                  )
+                )}
+                {servicesTv.bottomSpacer > 0 ? (
+                  <tr aria-hidden>
+                    <td
+                      colSpan={canManage ? 5 : 4}
+                      style={{
+                        height: servicesTv.bottomSpacer,
+                        padding: 0,
+                        border: 0,
+                      }}
+                    />
+                  </tr>
+                ) : null}
+              </tbody>
+            </table>
+          </div>
+        </SurfaceCard>
       )}
 
       {canManage ? (

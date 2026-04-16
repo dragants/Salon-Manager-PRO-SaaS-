@@ -22,10 +22,16 @@ export function useTableViewportWindow(
   scrollRef: RefObject<HTMLElement | null>,
   itemCount: number,
   rowHeightPx: number,
-  opts?: { overscan?: number; minItems?: number }
+  opts?: {
+    overscan?: number;
+    minItems?: number;
+    /** Uvek uključi ovaj indeks (npr. red u inline editu) da ostane u DOM-u. */
+    pinIndex?: number | null;
+  }
 ): TableViewportWindow {
   const overscan = opts?.overscan ?? 7;
   const minItems = opts?.minItems ?? 48;
+  const pinIndex = opts?.pinIndex ?? null;
   const enabled = itemCount >= minItems;
   const [top, setTop] = useState(0);
   const [vh, setVh] = useState(DEFAULT_VH);
@@ -52,7 +58,7 @@ export function useTableViewportWindow(
       ro.disconnect();
       el.removeEventListener("scroll", measure);
     };
-  }, [scrollRef, measure, itemCount]);
+  }, [scrollRef, measure, itemCount, pinIndex]);
 
   if (!enabled || itemCount === 0) {
     return {
@@ -64,11 +70,23 @@ export function useTableViewportWindow(
     };
   }
 
-  const from = Math.max(0, Math.floor(top / rowHeightPx) - overscan);
-  const to = Math.min(
+  let from = Math.max(0, Math.floor(top / rowHeightPx) - overscan);
+  let to = Math.min(
     itemCount,
     Math.ceil((top + vh) / rowHeightPx) + overscan
   );
+  if (
+    pinIndex != null &&
+    pinIndex >= 0 &&
+    pinIndex < itemCount
+  ) {
+    if (pinIndex < from) {
+      from = Math.max(0, pinIndex - overscan);
+    }
+    if (pinIndex >= to) {
+      to = Math.min(itemCount, pinIndex + overscan + 1);
+    }
+  }
   const topSpacer = from * rowHeightPx;
   const bottomSpacer = (itemCount - to) * rowHeightPx;
 

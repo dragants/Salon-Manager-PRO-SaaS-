@@ -41,6 +41,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { canDeleteRecords } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
+import { useTableHeadShadow } from "@/hooks/useTableHeadShadow";
 import { useTableViewportWindow } from "@/hooks/useTableViewportWindow";
 import { useAuth } from "@/providers/auth-provider";
 import { useOrganization } from "@/providers/organization-provider";
@@ -218,14 +219,23 @@ function ClientsPageContent() {
     });
   }, [rows, search]);
 
+  const editRowIndex = useMemo(() => {
+    if (tableEditId == null) {
+      return null;
+    }
+    const i = filteredRows.findIndex((c) => c.id === tableEditId);
+    return i >= 0 ? i : null;
+  }, [tableEditId, filteredRows]);
+
   const clientsTableScrollRef = useRef<HTMLDivElement>(null);
+  const clientsHeadShadow = useTableHeadShadow(clientsTableScrollRef);
   const clientsTv = useTableViewportWindow(
     clientsTableScrollRef,
     filteredRows.length,
     52,
-    { minItems: 45 }
+    { minItems: 45, pinIndex: editRowIndex }
   );
-  const showClientsVirtual = clientsTv.enabled && tableEditId === null;
+  const showClientsVirtual = clientsTv.enabled;
   const visibleClients = showClientsVirtual
     ? filteredRows.slice(clientsTv.from, clientsTv.to)
     : filteredRows;
@@ -576,6 +586,9 @@ function ClientsPageContent() {
             />
             <p className="shrink-0 text-xs font-medium text-zinc-500 dark:text-zinc-400">
               {filteredRows.length} od {rows.length}
+              {clientsTv.enabled && filteredRows.length > 0
+                ? ` · prikaz ${clientsTv.from + 1}–${clientsTv.to}`
+                : null}
             </p>
           </div>
           <div
@@ -586,8 +599,15 @@ function ClientsPageContent() {
             )}
           >
             <table className="w-full min-w-[760px] text-left text-sm">
-              <thead>
-                <tr className={appTableHeadClass}>
+              <thead
+                className={cn(
+                  appTableHeadClass,
+                  "sticky top-0 z-20 bg-zinc-50/95 backdrop-blur-sm dark:bg-zinc-900/95",
+                  clientsHeadShadow &&
+                    "shadow-[0_6px_12px_-4px_rgba(0,0,0,0.12)] dark:shadow-[0_6px_12px_-4px_rgba(0,0,0,0.45)]"
+                )}
+              >
+                <tr className="border-b border-zinc-200/90 dark:border-zinc-800">
                   <th className="px-5 py-3.5">Ime</th>
                   <th className="px-5 py-3.5">Telefon</th>
                   <th className="hidden px-5 py-3.5 lg:table-cell">E-mail</th>
@@ -628,13 +648,14 @@ function ClientsPageContent() {
                       key={c.id}
                       className={cn(
                         appTableRowClass,
+                        "box-border h-[52px] max-h-[52px]",
                         isNewClient(c) &&
                           "bg-amber-50/55 dark:bg-amber-950/25",
                         tableEditId === c.id &&
                           "bg-sky-50/50 ring-1 ring-sky-200/60 dark:bg-sky-950/20 dark:ring-sky-800/50"
                       )}
                     >
-                      <td className="px-5 py-3.5 font-medium text-zinc-900 dark:text-zinc-100">
+                      <td className="h-[52px] max-h-[52px] overflow-hidden px-5 py-1 align-middle font-medium text-zinc-900 dark:text-zinc-100">
                         {tableEditId === c.id ? (
                           <Input
                             value={tableDraft.name}
@@ -644,7 +665,7 @@ function ClientsPageContent() {
                                 name: e.target.value,
                               }))
                             }
-                            className="h-9 rounded-lg"
+                            className="h-8 rounded-lg text-sm"
                             aria-label="Ime klijenta"
                           />
                         ) : (
@@ -661,7 +682,7 @@ function ClientsPageContent() {
                           </span>
                         )}
                       </td>
-                      <td className="px-5 py-3.5 tabular-nums text-zinc-700 dark:text-zinc-300">
+                      <td className="h-[52px] max-h-[52px] overflow-hidden px-5 py-1 align-middle tabular-nums text-zinc-700 dark:text-zinc-300">
                         {tableEditId === c.id ? (
                           <Input
                             value={tableDraft.phone}
@@ -671,7 +692,7 @@ function ClientsPageContent() {
                                 phone: e.target.value,
                               }))
                             }
-                            className="h-9 rounded-lg"
+                            className="h-8 rounded-lg text-sm"
                             inputMode="tel"
                             aria-label="Telefon"
                           />
@@ -679,7 +700,7 @@ function ClientsPageContent() {
                           (c.phone ?? "—")
                         )}
                       </td>
-                      <td className="hidden max-w-[14rem] px-5 py-3.5 lg:table-cell">
+                      <td className="hidden h-[52px] max-h-[52px] overflow-hidden px-5 py-1 align-middle lg:table-cell lg:max-w-[14rem]">
                         {tableEditId === c.id ? (
                           <Input
                             value={tableDraft.email}
@@ -689,7 +710,7 @@ function ClientsPageContent() {
                                 email: e.target.value,
                               }))
                             }
-                            className="h-9 rounded-lg"
+                            className="h-8 rounded-lg text-sm"
                             type="email"
                             placeholder="E-mail (opciono)"
                             aria-label="E-mail"
@@ -700,13 +721,13 @@ function ClientsPageContent() {
                           </span>
                         )}
                       </td>
-                      <td className="hidden max-w-xs truncate px-5 py-3.5 text-zinc-600 md:table-cell dark:text-zinc-400">
+                      <td className="hidden h-[52px] max-h-[52px] truncate px-5 py-1 align-middle text-zinc-600 md:table-cell md:max-w-xs dark:text-zinc-400">
                         {c.notes ?? "—"}
                       </td>
-                      <td className="px-5 py-3.5 text-zinc-600 dark:text-zinc-400">
+                      <td className="h-[52px] max-h-[52px] px-5 py-1 align-middle text-zinc-600 dark:text-zinc-400">
                         {formatDateShort(c.created_at)}
                       </td>
-                      <td className="px-5 py-3.5 text-right">
+                      <td className="h-[52px] max-h-[52px] px-5 py-1 align-middle text-right">
                         <div className="flex flex-wrap items-center justify-end gap-1">
                           {tableEditId === c.id ? (
                             <>

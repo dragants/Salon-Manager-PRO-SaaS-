@@ -237,6 +237,14 @@ export function getExpenses(params: { from: string; to: string }) {
   return api.get<ExpenseRow[]>("/expenses", { params });
 }
 
+export type ExpenseMonthlyTotal = { month: string; total_rsd: number };
+
+export function getExpenseMonthlyTotals(months?: number) {
+  return api.get<ExpenseMonthlyTotal[]>("/expenses/monthly-totals", {
+    params: { months: months ?? 6 },
+  });
+}
+
 export function createExpense(data: CreateExpenseBody) {
   return api.post<ExpenseRow>("/expenses", data);
 }

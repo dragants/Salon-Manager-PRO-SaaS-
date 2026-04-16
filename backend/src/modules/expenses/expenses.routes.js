@@ -5,10 +5,18 @@ const asyncHandler = require("../../utils/asyncHandler");
 const controller = require("./expenses.controller");
 const {
   listQuerySchema,
+  monthlyTotalsQuerySchema,
   createExpenseSchema,
   updateExpenseSchema,
   idParamSchema,
 } = require("./expenses.validation");
+
+router.get(
+  "/monthly-totals",
+  auth,
+  validate(monthlyTotalsQuerySchema, "query"),
+  asyncHandler(controller.monthlyTotals)
+);
 
 router.get(
   "/",

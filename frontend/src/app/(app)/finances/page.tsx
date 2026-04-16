@@ -12,6 +12,7 @@ import {
   PiggyBank,
   Plus,
   Trash2,
+  TrendingDown,
   TrendingUp,
   Users,
   Wallet,
@@ -39,8 +40,9 @@ import {
   getAnalytics,
   getAppointments,
   getDashboard,
+  getExpenseMonthlyTotals,
   getExpenses,
-  patchSettings,
+  type ExpenseMonthlyTotal,
 } from "@/lib/api";
 import { getApiErrorMessage } from "@/lib/api/errors";
 import { appTableHeadClass, appTableRowClass } from "@/lib/app-ui";
@@ -56,6 +58,7 @@ import {
 } from "@/lib/finance-overhead";
 import { formatRsd } from "@/lib/formatMoney";
 import { cn } from "@/lib/utils";
+import { useTableHeadShadow } from "@/hooks/useTableHeadShadow";
 import { useTableViewportWindow } from "@/hooks/useTableViewportWindow";
 import { useAuth } from "@/providers/auth-provider";
 import { useOrganization } from "@/providers/organization-provider";
@@ -73,6 +76,20 @@ const AnalyticsSeriesChart = dynamic(
 );
 
 const DEFAULT_TZ = "Europe/Belgrade";
+const MAX_MONTHLY_OVERHEAD_RSD = 999_999_999;
+
+function formatExpenseMonthLabel(ym: string): string {
+  const [yStr, mStr] = ym.split("-");
+  const y = Number(yStr);
+  const m = Number(mStr);
+  if (!Number.isFinite(y) || !Number.isFinite(m) || m < 1 || m > 12) {
+    return ym;
+  }
+  return new Intl.DateTimeFormat("sr-Latn-RS", {
+    month: "short",
+    year: "numeric",
+  }).format(new Date(y, m - 1, 1));
+}
 
 type PeriodFilter = "day" | "week" | "month";
 
@@ -190,7 +207,7 @@ function downloadTransactionsCsv(
 
 export default function FinancesPage() {
   const { user, loading: authLoading } = useAuth();
-  const { settings, refreshSettings } = useOrganization();
+  const { settings, patchSettingsWithOptimism } = useOrganization();
   const tz = orgTimeZone(settings?.timezone);
 
   const [dash, setDash] = useState<DashboardSummary | null>(null);
@@ -212,12 +229,28 @@ export default function FinancesPage() {
   const [expenseCategory, setExpenseCategory] = useState("");
   const [expenseSpentAt, setExpenseSpentAt] = useState("");
   const [expenseSaving, setExpenseSaving] = useState(false);
+  const [expenseMonthlyTotals, setExpenseMonthlyTotals] = useState<
+    ExpenseMonthlyTotal[]
+  >([]);
   const overheadMigratedRef = useRef(false);
   const txScrollRef = useRef<HTMLDivElement>(null);
+  const txHeadShadow = useTableHeadShadow(txScrollRef);
   const txTv = useTableViewportWindow(txScrollRef, rows.length, 49, {
     minItems: 45,
   });
   const visibleTx = txTv.enabled ? rows.slice(txTv.from, txTv.to) : rows;
+
+  const expensesScrollRef = useRef<HTMLDivElement>(null);
+  const expensesHeadShadow = useTableHeadShadow(expensesScrollRef);
+  const expensesTv = useTableViewportWindow(
+    expensesScrollRef,
+    expenseRows.length,
+    52,
+    { minItems: 45 }
+  );
+  const visibleExpenses = expensesTv.enabled
+    ? expenseRows.slice(expensesTv.from, expensesTv.to)
+    : expenseRows;
 
   useEffect(() => {
     if (!settings || overheadMigratedRef.current) return;
@@ -239,10 +272,9 @@ export default function FinancesPage() {
       });
       void (async () => {
         try {
-          await patchSettings({
+          await patchSettingsWithOptimism({
             settings: { finance: { monthly_overhead_rsd: loc } },
           });
-          await refreshSettings();
           setMonthlyOverheadRsd(0);
         } catch (err) {
           toast.error(
@@ -257,7 +289,7 @@ export default function FinancesPage() {
       setOverheadRsd(0);
       setOverheadDraft("0");
     });
-  }, [settings, refreshSettings]);
+  }, [settings, patchSettingsWithOptimism]);
 
   const todayYmd = useMemo(() => todayYmdInTz(tz), [tz]);
 
@@ -271,13 +303,20 @@ export default function FinancesPage() {
   const reloadExpenses = useCallback(async () => {
     setExpensesLoading(true);
     try {
-      const res = await getExpenses({
-        from: monthRange.from,
-        to: monthRange.to,
-      });
+      const [res, monthlyRes] = await Promise.all([
+        getExpenses({
+          from: monthRange.from,
+          to: monthRange.to,
+        }),
+        getExpenseMonthlyTotals(6),
+      ]);
       setExpenseRows(Array.isArray(res.data) ? res.data : []);
+      setExpenseMonthlyTotals(
+        Array.isArray(monthlyRes.data) ? monthlyRes.data : []
+      );
     } catch {
       setExpenseRows([]);
+      setExpenseMonthlyTotals([]);
       toast.error("Troškovi nisu učitani.");
     } finally {
       setExpensesLoading(false);
@@ -402,6 +441,34 @@ export default function FinancesPage() {
     analytics?.revenue ??
     0;
   const revenueMonth = analytics?.revenue_month ?? 0;
+  const revenuePrevMonth = analytics?.revenue_previous_month ?? 0;
+  const revenueTrendHint = useMemo(() => {
+    const cur = Math.max(0, revenueMonth);
+    const prev = Math.max(0, revenuePrevMonth);
+    if (prev <= 0 && cur <= 0) {
+      return "Tekući mesec u zoni salona · nema poređenja sa prethodnim";
+    }
+    if (prev <= 0 && cur > 0) {
+      return "Tekući mesec u zoni salona · prvi mesec sa prihodom za trend";
+    }
+    const pct = ((cur - prev) / prev) * 100;
+    const rounded = Math.round(pct * 10) / 10;
+    const sign = pct >= 0 ? "+" : "";
+    const verb = pct >= 0 ? "rast" : "pad";
+    return `Tekući mesec u zoni salona · vs prethodni: ${sign}${rounded}% (${verb})`;
+  }, [revenueMonth, revenuePrevMonth]);
+
+  const expenseMonthlySorted = useMemo(
+    () =>
+      [...expenseMonthlyTotals].sort((a, b) => a.month.localeCompare(b.month)),
+    [expenseMonthlyTotals]
+  );
+  const expenseMonthlyMax = useMemo(
+    () =>
+      Math.max(1, ...expenseMonthlyTotals.map((t) => t.total_rsd)),
+    [expenseMonthlyTotals]
+  );
+
   const clientCount = analytics?.clients ?? dash?.clients ?? 0;
   const avgValue =
     clientCount > 0 && revenueMonth > 0
@@ -554,9 +621,15 @@ export default function FinancesPage() {
             <DashboardKpiCard
               title="Mesečni prihod"
               value={formatRsd(revenueMonth)}
-              icon={<TrendingUp className="size-5" />}
+              icon={
+                revenuePrevMonth > 0 && revenueMonth < revenuePrevMonth ? (
+                  <TrendingDown className="size-5" />
+                ) : (
+                  <TrendingUp className="size-5" />
+                )
+              }
               accent="sky"
-              hint="Tekući mesec u zoni salona"
+              hint={revenueTrendHint}
             />
             <DashboardKpiCard
               title="Broj klijenata"
@@ -594,6 +667,35 @@ export default function FinancesPage() {
                   <p className="mt-1 text-lg font-bold tabular-nums text-slate-900 dark:text-slate-50">
                     {formatRsd(revenueMonth)}
                   </p>
+                  {revenuePrevMonth > 0 ? (
+                    <p
+                      className={cn(
+                        "mt-1 flex items-center gap-1 text-[11px] font-semibold tabular-nums",
+                        revenueMonth >= revenuePrevMonth
+                          ? "text-emerald-700 dark:text-emerald-400"
+                          : "text-rose-700 dark:text-rose-400"
+                      )}
+                    >
+                      {revenueMonth >= revenuePrevMonth ? (
+                        <TrendingUp className="size-3.5 shrink-0" aria-hidden />
+                      ) : (
+                        <TrendingDown className="size-3.5 shrink-0" aria-hidden />
+                      )}
+                      {(() => {
+                        const pct =
+                          ((revenueMonth - revenuePrevMonth) /
+                            revenuePrevMonth) *
+                          100;
+                        const r = Math.round(pct * 10) / 10;
+                        const sign = r >= 0 ? "+" : "";
+                        return `vs preth. mesec ${sign}${r}%`;
+                      })()}
+                    </p>
+                  ) : revenueMonth > 0 ? (
+                    <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                      Nema podataka za prethodni mesec
+                    </p>
+                  ) : null}
                 </div>
                 <button
                   type="button"
@@ -639,26 +741,51 @@ export default function FinancesPage() {
                   čuvaju u PostgreSQL-u po organizaciji.
                 </p>
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                className="gap-2 rounded-xl"
-                onClick={() => {
-                  setExpenseTitle("");
-                  setExpenseAmount("");
-                  setExpenseCategory("");
-                  setExpenseSpentAt(todayYmd);
-                  setExpenseOpen(true);
-                }}
-              >
-                <Plus className="size-4" aria-hidden />
-                Evidentiraj trošak
-              </Button>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                {!expensesLoading && expenseRows.length > 0 ? (
+                  <p className="order-last shrink-0 text-xs font-medium text-slate-500 dark:text-slate-400 sm:order-first sm:ml-auto">
+                    {expenseRows.length}{" "}
+                    {expenseRows.length === 1 ? "stavka" : "stavki"}
+                    {expensesTv.enabled
+                      ? ` · prikaz ${expensesTv.from + 1}–${expensesTv.to}`
+                      : null}
+                  </p>
+                ) : null}
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="gap-2 rounded-xl sm:shrink-0"
+                  onClick={() => {
+                    setExpenseTitle("");
+                    setExpenseAmount("");
+                    setExpenseCategory("");
+                    setExpenseSpentAt(todayYmd);
+                    setExpenseOpen(true);
+                  }}
+                >
+                  <Plus className="size-4" aria-hidden />
+                  Evidentiraj trošak
+                </Button>
+              </div>
             </div>
-            <div className="overflow-x-auto">
+            <div
+              ref={expensesScrollRef}
+              className={cn(
+                "overflow-x-auto",
+                expenseRows.length >= 45 &&
+                  "max-h-[min(60vh,420px)] overflow-y-auto"
+              )}
+            >
               <table className="w-full min-w-[560px] text-left text-sm">
-                <thead>
-                  <tr className={appTableHeadClass}>
+                <thead
+                  className={cn(
+                    appTableHeadClass,
+                    "sticky top-0 z-20 bg-white/95 backdrop-blur-sm dark:bg-zinc-950/95",
+                    expensesHeadShadow &&
+                      "shadow-[0_6px_12px_-4px_rgba(0,0,0,0.12)] dark:shadow-[0_6px_12px_-4px_rgba(0,0,0,0.45)]"
+                  )}
+                >
+                  <tr className="border-b border-slate-200/90 dark:border-slate-800">
                     <th className="px-5 py-3.5">Datum</th>
                     <th className="px-5 py-3.5">Opis</th>
                     <th className="px-5 py-3.5">Kategorija</th>
@@ -687,53 +814,129 @@ export default function FinancesPage() {
                       </td>
                     </tr>
                   ) : (
-                    expenseRows.map((ex) => (
-                      <tr key={ex.id} className={appTableRowClass}>
-                        <td className="px-5 py-3.5 tabular-nums text-slate-700 dark:text-slate-300">
-                          {ex.spent_at}
-                        </td>
-                        <td className="px-5 py-3.5 font-medium text-slate-900 dark:text-slate-50">
-                          {ex.title}
-                        </td>
-                        <td className="px-5 py-3.5 text-slate-600 dark:text-slate-400">
-                          {ex.category?.trim() ? ex.category : "—"}
-                        </td>
-                        <td className="px-5 py-3.5 text-right tabular-nums text-slate-900 dark:text-slate-50">
-                          {formatRsd(ex.amount_rsd)}
-                        </td>
-                        <td className="px-5 py-3.5 text-right">
-                          <Button
-                            type="button"
-                            size="icon-sm"
-                            variant="ghost"
-                            className="rounded-xl text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40"
-                            aria-label="Obriši trošak"
-                            onClick={() => {
-                              void (async () => {
-                                try {
-                                  await deleteExpense(ex.id);
-                                  await reloadExpenses();
-                                  toast.success("Trošak je obrisan.");
-                                } catch (err) {
-                                  toast.error(
-                                    getApiErrorMessage(
-                                      err,
-                                      "Brisanje nije uspelo."
-                                    )
-                                  );
-                                }
-                              })();
+                    <>
+                      {expensesTv.topSpacer > 0 ? (
+                        <tr aria-hidden>
+                          <td
+                            colSpan={5}
+                            style={{
+                              height: expensesTv.topSpacer,
+                              padding: 0,
+                              border: 0,
                             }}
-                          >
-                            <Trash2 className="size-4" />
-                          </Button>
-                        </td>
-                      </tr>
-                    ))
+                          />
+                        </tr>
+                      ) : null}
+                      {visibleExpenses.map((ex) => (
+                        <tr
+                          key={ex.id}
+                          className={cn(appTableRowClass, "h-[52px]")}
+                        >
+                          <td className="px-5 py-3 tabular-nums text-slate-700 dark:text-slate-300">
+                            {ex.spent_at}
+                          </td>
+                          <td className="max-w-[200px] truncate px-5 py-3 font-medium text-slate-900 dark:text-slate-50">
+                            {ex.title}
+                          </td>
+                          <td className="px-5 py-3 text-slate-600 dark:text-slate-400">
+                            {ex.category?.trim() ? ex.category : "—"}
+                          </td>
+                          <td className="px-5 py-3 text-right tabular-nums text-slate-900 dark:text-slate-50">
+                            {formatRsd(ex.amount_rsd)}
+                          </td>
+                          <td className="px-5 py-3 text-right">
+                            <Button
+                              type="button"
+                              size="icon-sm"
+                              variant="ghost"
+                              className="rounded-xl text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40"
+                              aria-label="Obriši trošak"
+                              onClick={() => {
+                                void (async () => {
+                                  try {
+                                    await deleteExpense(ex.id);
+                                    await reloadExpenses();
+                                    toast.success("Trošak je obrisan.");
+                                  } catch (err) {
+                                    toast.error(
+                                      getApiErrorMessage(
+                                        err,
+                                        "Brisanje nije uspelo."
+                                      )
+                                    );
+                                  }
+                                })();
+                              }}
+                            >
+                              <Trash2 className="size-4" />
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                      {expensesTv.bottomSpacer > 0 ? (
+                        <tr aria-hidden>
+                          <td
+                            colSpan={5}
+                            style={{
+                              height: expensesTv.bottomSpacer,
+                              padding: 0,
+                              border: 0,
+                            }}
+                          />
+                        </tr>
+                      ) : null}
+                    </>
                   )}
                 </tbody>
               </table>
             </div>
+          </SurfaceCard>
+
+          <SurfaceCard padding="lg" className="overflow-hidden">
+            <div className="mb-4">
+              <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-50">
+                Istorija troškova po mesecima
+              </h2>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                Zbir evidentiranih troškova (poslednjih šest meseci, po
+                kalendarskim mesecima).
+              </p>
+            </div>
+            {expensesLoading && expenseMonthlySorted.length === 0 ? (
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Učitavanje…
+              </p>
+            ) : expenseMonthlySorted.length === 0 ? (
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Još nema unetih troškova u ovom periodu.
+              </p>
+            ) : (
+              <ul className="space-y-3">
+                {expenseMonthlySorted.map((row) => {
+                  const w = Math.round(
+                    (row.total_rsd / expenseMonthlyMax) * 100
+                  );
+                  return (
+                    <li key={row.month} className="space-y-1">
+                      <div className="flex items-baseline justify-between gap-3 text-sm">
+                        <span className="font-medium text-slate-800 dark:text-slate-200">
+                          {formatExpenseMonthLabel(row.month)}
+                        </span>
+                        <span className="shrink-0 tabular-nums font-semibold text-slate-900 dark:text-slate-50">
+                          {formatRsd(row.total_rsd)}
+                        </span>
+                      </div>
+                      <div className="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                        <div
+                          className="h-full rounded-full bg-amber-500/90 dark:bg-amber-600/90"
+                          style={{ width: `${w}%` }}
+                        />
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </SurfaceCard>
 
           {bestDayInfo || topClient ? (
@@ -808,6 +1011,14 @@ export default function FinancesPage() {
                     : `${range.from} — ${range.to}`}
                 </p>
               </div>
+              {!rowsLoading && rows.length > 0 ? (
+                <p className="shrink-0 text-xs font-medium text-slate-500 dark:text-slate-400">
+                  {rows.length} termina
+                  {txTv.enabled
+                    ? ` · prikaz ${txTv.from + 1}–${txTv.to}`
+                    : null}
+                </p>
+              ) : null}
             </div>
             <div
               ref={txScrollRef}
@@ -817,8 +1028,15 @@ export default function FinancesPage() {
               )}
             >
               <table className="w-full min-w-[640px] text-left text-sm">
-                <thead>
-                  <tr className={appTableHeadClass}>
+                <thead
+                  className={cn(
+                    appTableHeadClass,
+                    "sticky top-0 z-20 bg-white/95 backdrop-blur-sm dark:bg-zinc-950/95",
+                    txHeadShadow &&
+                      "shadow-[0_6px_12px_-4px_rgba(0,0,0,0.12)] dark:shadow-[0_6px_12px_-4px_rgba(0,0,0,0.45)]"
+                  )}
+                >
+                  <tr className="border-b border-slate-200/90 dark:border-slate-800">
                     <th className="px-5 py-3.5">Datum</th>
                     <th className="px-5 py-3.5">Klijent</th>
                     <th className="px-5 py-3.5">Usluga</th>
@@ -942,16 +1160,27 @@ export default function FinancesPage() {
               type="button"
               variant="brand"
               onClick={() => {
-                const n = Number(String(overheadDraft).replace(",", "."));
-                const v = Number.isFinite(n) && n >= 0 ? Math.round(n) : 0;
+                const raw = String(overheadDraft)
+                  .trim()
+                  .replace(/\s/g, "")
+                  .replace(",", ".");
+                const n = Number(raw);
+                if (!Number.isFinite(n) || n < 0) {
+                  toast.error("Unesi validan nenegativan iznos.");
+                  return;
+                }
+                const v = Math.min(
+                  Math.round(n),
+                  MAX_MONTHLY_OVERHEAD_RSD
+                );
                 void (async () => {
                   try {
-                    await patchSettings({
+                    await patchSettingsWithOptimism({
                       settings: { finance: { monthly_overhead_rsd: v } },
                     });
-                    await refreshSettings();
                     setMonthlyOverheadRsd(0);
                     setOverheadRsd(v);
+                    setOverheadDraft(String(v));
                     setOverheadOpen(false);
                     toast.success("Troškovi su sačuvani na nalogu.");
                   } catch (err) {

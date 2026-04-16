@@ -56,6 +56,32 @@ async function revenueMonth(orgId, tz) {
 }
 
 /**
+ * Isti izvor kao revenueMonth, za prethodni kalendarski mesec u zoni salona.
+ * @param {number} orgId
+ * @param {string} tz
+ */
+async function revenuePreviousMonth(orgId, tz) {
+  const r = await pool.query(
+    `SELECT (
+       (SELECT COALESCE(SUM(amount), 0) FROM payments
+        WHERE organization_id = $1
+          AND to_char(timezone($2::text, date), 'YYYY-MM')
+              = to_char((timezone($2::text, now()) - interval '1 month'), 'YYYY-MM'))
+       +
+       (SELECT COALESCE(SUM(s.price), 0) FROM appointments a
+        INNER JOIN services s
+          ON s.id = a.service_id AND s.organization_id = a.organization_id
+        WHERE a.organization_id = $1
+          AND a.status = 'completed'
+          AND to_char(timezone($2::text, a.date), 'YYYY-MM')
+              = to_char((timezone($2::text, now()) - interval '1 month'), 'YYYY-MM'))
+     )::numeric AS total`,
+    [orgId, tz]
+  );
+  return num(r.rows[0]?.total);
+}
+
+/**
  * @param {number} orgId
  * @param {string} tz
  */
@@ -299,10 +325,11 @@ async function getAnalytics(req, res) {
   const series30 = mergeSeries(appt30, rev30);
   const series7 = mergeSeries(appt7, rev7);
 
-  const [nsPct, rt, rm, at, topS, topC] = await Promise.all([
+  const [nsPct, rt, rm, rpm, at, topS, topC] = await Promise.all([
     noShowPercent(orgId),
     isAdmin ? revenueToday(orgId, tz) : Promise.resolve(null),
     isAdmin ? revenueMonth(orgId, tz) : Promise.resolve(null),
+    isAdmin ? revenuePreviousMonth(orgId, tz) : Promise.resolve(null),
     appointmentsToday(orgId, tz),
     isAdmin ? topServices(orgId) : topServicesByVolume(orgId),
     isAdmin ? topClients(orgId) : topClientsByVisits(orgId),
@@ -315,6 +342,7 @@ async function getAnalytics(req, res) {
 
   res.json({
     revenue_month: rm,
+    revenue_previous_month: rpm,
     revenue_today: rt,
     appointments_today: at,
     appointments_total: apptTotal.rows[0]?.c ?? 0,
