@@ -7,6 +7,8 @@ Sistem za upravljanje terminima, klijentima, uslugama i zaposlenima u salonima �
 - Kalendar i prevlačenje termina
 - Online rezervacije za klijente (bez naloga)
 - Klijenti, usluge, finansije
+- Loyalty programi po usluzi (pečati, besplatna poseta; iskorišćenje pri završenom terminu)
+- Potrošni materijal (zalihe, nabavka, potrošnja)
 - Tim / radno vreme
 - Kontrolna tabla i analitika
 - Podsetnici (e-pošta / SMS / WhatsApp — po konfiguraciji)
