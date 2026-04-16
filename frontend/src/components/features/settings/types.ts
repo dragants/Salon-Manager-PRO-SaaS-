@@ -5,6 +5,7 @@ import {
   CalendarRange,
   Clock,
   CreditCard,
+  Gift,
   Shield,
   Users,
   Wallet,
@@ -21,6 +22,7 @@ export type SettingsTabId =
   | "calendar"
   | "notify"
   | "finance"
+  | "loyalty"
   | "billing"
   | "security";
 
@@ -45,6 +47,7 @@ export const SETTINGS_TABS: SettingsTabConfig[] = [
   { id: "calendar", label: "Kalendar", icon: Calendar },
   { id: "notify", label: "Notifikacije", icon: Bell },
   { id: "finance", label: "Finansije", icon: Wallet },
+  { id: "loyalty", label: "Loyalty", icon: Gift },
   { id: "billing", label: "Pretplata", icon: CreditCard },
   { id: "security", label: "Sigurnost", icon: Shield },
 ];

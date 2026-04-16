@@ -1,3 +1,5 @@
+import type { ClientLoyaltyBalance } from "./loyalty";
+
 export type Client = {
   id: number;
   organization_id: number;
@@ -40,4 +42,6 @@ export type ClientDetail = {
   client: Client;
   appointments: ClientAppointmentHistory[];
   chart_entries: ClientChartEntry[];
+  /** Popunjava se ako postoji loyalty modul u bazi. */
+  loyalty_balances?: ClientLoyaltyBalance[];
 };

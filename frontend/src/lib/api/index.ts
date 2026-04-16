@@ -25,6 +25,12 @@ import type {
   SupplyMovement,
   SupplyMovementResult,
 } from "@/types/supply";
+import type {
+  CreateLoyaltyProgramBody,
+  LoyaltyEligibilityRow,
+  LoyaltyProgram,
+  PatchLoyaltyProgramBody,
+} from "@/types/loyalty";
 import type { MeUser, OrgTeamMember, PatchTeamMemberBody } from "@/types/user";
 import { api } from "./client";
 import {
@@ -152,6 +158,8 @@ export function createAppointment(data: {
   service_id: number;
   date: string;
   staff_user_id?: number | null;
+  redeems_loyalty?: boolean;
+  loyalty_program_id?: number | null;
   send_sms?: boolean;
   send_whatsapp?: boolean;
   send_email?: boolean;
@@ -175,6 +183,8 @@ export function patchAppointment(
     date?: string;
     status?: AppointmentRow["status"];
     staff_user_id?: number | null;
+    redeems_loyalty?: boolean;
+    loyalty_program_id?: number | null;
   }
 ) {
   return api.patch<AppointmentRow>(`/appointments/${id}`, data).then((r) => {
@@ -290,6 +300,29 @@ export function getSupplyMovements(params?: {
 
 export function createSupplyMovement(data: CreateSupplyMovementBody) {
   return api.post<SupplyMovementResult>("/supplies/movements", data);
+}
+
+export function getLoyaltyEligibility(params: {
+  client_id: number;
+  service_id: number;
+}) {
+  return api.get<LoyaltyEligibilityRow[]>("/loyalty/eligibility", { params });
+}
+
+export function getLoyaltyPrograms() {
+  return api.get<LoyaltyProgram[]>("/loyalty");
+}
+
+export function createLoyaltyProgram(data: CreateLoyaltyProgramBody) {
+  return api.post<LoyaltyProgram>("/loyalty", data);
+}
+
+export function patchLoyaltyProgram(id: number, data: PatchLoyaltyProgramBody) {
+  return api.patch<LoyaltyProgram>(`/loyalty/${id}`, data);
+}
+
+export function deleteLoyaltyProgram(id: number) {
+  return api.delete<void>(`/loyalty/${id}`);
 }
 
 export function getServices() {

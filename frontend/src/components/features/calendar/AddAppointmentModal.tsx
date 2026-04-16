@@ -4,7 +4,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { createAppointment, getAvailability, getOrgTeam } from "@/lib/api";
+import {
+  createAppointment,
+  getAvailability,
+  getLoyaltyEligibility,
+  getOrgTeam,
+} from "@/lib/api";
 import { api } from "@/lib/api/client";
 import { getApiErrorCode, getApiErrorMessage } from "@/lib/api/errors";
 import { computeSuggestedSlots } from "@/lib/admin-slot-suggestions";
@@ -17,6 +22,7 @@ import { workerAllowsAppointmentWindow } from "@/lib/worker-schedule";
 import { cn } from "@/lib/utils";
 import { useOrganization } from "@/providers/organization-provider";
 import type { AppointmentRow } from "@/types/appointment";
+import type { LoyaltyEligibilityRow } from "@/types/loyalty";
 import type { AvailabilitySlotDto } from "@/types/shift";
 import type { OrgTeamMember } from "@/types/user";
 import { Button } from "@/components/ui/button";
@@ -78,6 +84,9 @@ export default function AddAppointmentModal({
   >([]);
   const [availabilityFromShifts, setAvailabilityFromShifts] = useState(false);
   const [sseTick, setSseTick] = useState(0);
+  const [loyaltyRows, setLoyaltyRows] = useState<LoyaltyEligibilityRow[]>([]);
+  const [loyaltyLoading, setLoyaltyLoading] = useState(false);
+  const [redeemLoyalty, setRedeemLoyalty] = useState(false);
 
   const orgTz = settings?.timezone?.trim() || browserTimeZone();
 
@@ -150,6 +159,9 @@ export default function AddAppointmentModal({
       setDayAppointments([]);
       setAvailabilitySlots([]);
       setAvailabilityFromShifts(false);
+      setLoyaltyRows([]);
+      setLoyaltyLoading(false);
+      setRedeemLoyalty(false);
     }
   }, [open, defaultStartLocal]);
 
@@ -222,6 +234,53 @@ export default function AddAppointmentModal({
       cancelled = true;
     };
   }, [open, dayYmd, selectedService?.id, formStaff, sseTick]);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+    const cid = formClient ? Number(formClient) : NaN;
+    const sid = formService ? Number(formService) : NaN;
+    if (!Number.isFinite(cid) || !Number.isFinite(sid)) {
+      setLoyaltyRows([]);
+      setLoyaltyLoading(false);
+      setRedeemLoyalty(false);
+      return;
+    }
+    let cancelled = false;
+    setRedeemLoyalty(false);
+    setLoyaltyLoading(true);
+    void (async () => {
+      try {
+        const { data } = await getLoyaltyEligibility({
+          client_id: cid,
+          service_id: sid,
+        });
+        if (!cancelled) {
+          setLoyaltyRows(Array.isArray(data) ? data : []);
+        }
+      } catch {
+        if (!cancelled) {
+          setLoyaltyRows([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoyaltyLoading(false);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [open, formClient, formService]);
+
+  const loyaltyProgram = loyaltyRows[0] ?? null;
+
+  useEffect(() => {
+    if (!loyaltyProgram || loyaltyProgram.rewards_available < 1) {
+      setRedeemLoyalty(false);
+    }
+  }, [loyaltyProgram]);
 
   const selectedClient = useMemo(() => {
     if (!formClient) return null;
@@ -372,11 +431,17 @@ export default function AddAppointmentModal({
     }
     setSaving(true);
     try {
+      const lp = loyaltyProgram;
+      const useRedeem = Boolean(
+        lp && redeemLoyalty && lp.rewards_available > 0
+      );
       await createAppointment({
         client_id: Number(formClient),
         service_id: Number(formService),
         date: iso,
         staff_user_id: formStaff ? Number(formStaff) : null,
+        redeems_loyalty: useRedeem,
+        loyalty_program_id: useRedeem && lp ? lp.program_id : null,
         send_sms: formSms,
         send_whatsapp: formWa,
         send_email: formEmail,
@@ -485,6 +550,50 @@ export default function AddAppointmentModal({
                 </p>
               ) : null}
             </div>
+
+            {loyaltyLoading ? (
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                Provera loyalty programa…
+              </p>
+            ) : null}
+
+            {!loyaltyLoading && loyaltyProgram ? (
+              <div className="space-y-2 rounded-xl border border-violet-100 bg-violet-50/50 p-3 dark:border-violet-900 dark:bg-violet-950/25">
+                <p className="text-xs font-medium text-violet-900 dark:text-violet-100">
+                  Loyalty · {loyaltyProgram.name}
+                </p>
+                <p className="text-xs text-violet-800/90 dark:text-violet-200/90">
+                  Napredak:{" "}
+                  <strong className="tabular-nums">
+                    {loyaltyProgram.stamps} / {loyaltyProgram.visits_required}
+                  </strong>{" "}
+                  pečata · dostupnih nagrada:{" "}
+                  <strong className="tabular-nums">
+                    {loyaltyProgram.rewards_available}
+                  </strong>
+                </p>
+                {loyaltyProgram.rewards_available > 0 ? (
+                  <label className="flex cursor-pointer items-start gap-2 text-sm text-violet-950 dark:text-violet-50">
+                    <input
+                      type="checkbox"
+                      checked={redeemLoyalty}
+                      onChange={(e) => setRedeemLoyalty(e.target.checked)}
+                      className="mt-0.5 rounded border-violet-300"
+                    />
+                    <span>
+                      Iskoristi besplatnu posetu (nagrada se potvrđuje kad se
+                      termin označi kao završen).
+                    </span>
+                  </label>
+                ) : (
+                  <p className="text-xs text-violet-800/80 dark:text-violet-200/80">
+                    Još nemaš nagradu — nastavi da skupljaš pečate završenim
+                    posetama.
+                  </p>
+                )}
+              </div>
+            ) : null}
+
             <div className="space-y-2">
               <Label htmlFor="cal-start">Početak</Label>
               <Input

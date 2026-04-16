@@ -26,6 +26,33 @@ async function hasAppointmentStaffUserColumn() {
   return ok;
 }
 
+/** @type {boolean | undefined} */
+let loyaltyAppointmentColumnsCache;
+
+async function hasLoyaltyAppointmentColumns() {
+  if (loyaltyAppointmentColumnsCache === true) {
+    return true;
+  }
+  const r = await pool.query(
+    `SELECT EXISTS (
+       SELECT 1 FROM information_schema.columns
+       WHERE table_schema = current_schema()
+         AND table_name = 'appointments'
+         AND column_name = 'redeems_loyalty'
+     ) AND EXISTS (
+       SELECT 1 FROM information_schema.columns
+       WHERE table_schema = current_schema()
+         AND table_name = 'appointments'
+         AND column_name = 'loyalty_program_id'
+     ) AS ok`
+  );
+  const ok = Boolean(r.rows[0]?.ok);
+  if (ok) {
+    loyaltyAppointmentColumnsCache = true;
+  }
+  return ok;
+}
+
 function assertValidTimeZone(zone) {
   try {
     Intl.DateTimeFormat(undefined, { timeZone: zone });
@@ -194,7 +221,15 @@ async function getById(id, orgId) {
 }
 
 async function create(data, orgId) {
-  const { client_id, service_id, date, status, staff_user_id } = data;
+  const {
+    client_id,
+    service_id,
+    date,
+    status,
+    staff_user_id,
+    redeems_loyalty,
+    loyalty_program_id,
+  } = data;
 
   await assertCanCreateAppointment(orgId);
 
@@ -202,6 +237,7 @@ async function create(data, orgId) {
   await assertServiceInOrg(service_id, orgId);
 
   const hasStaffCol = await hasAppointmentStaffUserColumn();
+  const hasLoyCol = await hasLoyaltyAppointmentColumns();
   if (!hasStaffCol && staff_user_id != null) {
     const err = new Error(
       "Dodela radnika zahteva migraciju baze (006_appointments_staff_user)."
@@ -210,6 +246,25 @@ async function create(data, orgId) {
     throw err;
   }
   await assertStaffUserInOrg(orgId, staff_user_id, service_id);
+
+  const redeem = hasLoyCol && redeems_loyalty === true;
+  const loyaltyPid = redeem ? loyalty_program_id : null;
+  if (redeem) {
+    if (!loyaltyPid) {
+      const err = new Error(
+        "Za iskorišćenje nagrade izaberi loyalty program (loyalty_program_id)."
+      );
+      err.statusCode = 400;
+      throw err;
+    }
+    const loyaltyService = require("../loyalty/loyalty.service");
+    await loyaltyService.assertRedeemAllowed(
+      orgId,
+      client_id,
+      loyaltyPid,
+      service_id
+    );
+  }
 
   const nextStatus = status ?? "scheduled";
   if (nextStatus === "scheduled") {
@@ -223,12 +278,49 @@ async function create(data, orgId) {
   }
 
   let res;
-  if (hasStaffCol) {
+  if (hasStaffCol && hasLoyCol) {
+    res = await pool.query(
+      `INSERT INTO appointments(
+         client_id, service_id, date, organization_id, status, staff_user_id,
+         redeems_loyalty, loyalty_program_id
+       )
+       VALUES($1, $2, $3, $4, COALESCE($5, 'scheduled'), $6, $7, $8)
+       RETURNING id`,
+      [
+        client_id,
+        service_id,
+        date,
+        orgId,
+        status ?? null,
+        staff_user_id ?? null,
+        redeem,
+        loyaltyPid,
+      ]
+    );
+  } else if (hasStaffCol) {
     res = await pool.query(
       `INSERT INTO appointments(client_id, service_id, date, organization_id, status, staff_user_id)
        VALUES($1, $2, $3, $4, COALESCE($5, 'scheduled'), $6)
        RETURNING id`,
       [client_id, service_id, date, orgId, status ?? null, staff_user_id ?? null]
+    );
+  } else if (hasLoyCol) {
+    res = await pool.query(
+      `INSERT INTO appointments(
+         client_id, service_id, date, organization_id, status,
+         redeems_loyalty, loyalty_program_id
+       )
+       VALUES($1, $2, $3, $4, COALESCE($5, 'scheduled'), $6, $7)
+       RETURNING id`,
+      [
+        client_id,
+        service_id,
+        date,
+        orgId,
+        status ?? null,
+        redeem,
+        loyaltyPid,
+      ]
     );
   } else {
     res = await pool.query(
@@ -239,19 +331,33 @@ async function create(data, orgId) {
     );
   }
 
-  return getById(res.rows[0].id, orgId);
+  const row = await getById(res.rows[0].id, orgId);
+  if (hasLoyCol && row.status === "completed") {
+    const loyaltyService = require("../loyalty/loyalty.service");
+    await loyaltyService.applyCompletedVisit(orgId, row, null);
+  }
+  return row;
 }
 
 async function update(id, data, orgId) {
   await assertAppointmentInOrg(id, orgId);
 
   const hasStaffCol = await hasAppointmentStaffUserColumn();
-  const prevRow = await pool.query(
-    hasStaffCol
-      ? `SELECT status, service_id, staff_user_id, date FROM appointments WHERE id = $1 AND organization_id = $2`
-      : `SELECT status, service_id, date FROM appointments WHERE id = $1 AND organization_id = $2`,
-    [id, orgId]
-  );
+  const hasLoyCol = await hasLoyaltyAppointmentColumns();
+  const prevSql = hasStaffCol
+    ? hasLoyCol
+      ? `SELECT status, service_id, staff_user_id, date, client_id,
+                redeems_loyalty, loyalty_program_id
+           FROM appointments WHERE id = $1 AND organization_id = $2`
+      : `SELECT status, service_id, staff_user_id, date, client_id
+           FROM appointments WHERE id = $1 AND organization_id = $2`
+    : hasLoyCol
+      ? `SELECT status, service_id, date, client_id,
+                redeems_loyalty, loyalty_program_id
+           FROM appointments WHERE id = $1 AND organization_id = $2`
+      : `SELECT status, service_id, date, client_id
+           FROM appointments WHERE id = $1 AND organization_id = $2`;
+  const prevRow = await pool.query(prevSql, [id, orgId]);
   const previousStatus = prevRow.rows[0].status;
   const cur = prevRow.rows[0];
   const nextService =
@@ -265,6 +371,26 @@ async function update(id, data, orgId) {
   const nextStatus =
     data.status !== undefined ? data.status : previousStatus;
 
+  if (hasLoyCol && data.redeems_loyalty === true) {
+    const pid =
+      data.loyalty_program_id !== undefined
+        ? data.loyalty_program_id
+        : cur.loyalty_program_id;
+    const cid =
+      data.client_id !== undefined ? data.client_id : cur.client_id;
+    const sid =
+      data.service_id !== undefined ? data.service_id : cur.service_id;
+    if (!pid) {
+      const err = new Error(
+        "Za iskorišćenje nagrade potreban je loyalty_program_id."
+      );
+      err.statusCode = 400;
+      throw err;
+    }
+    const loyaltyService = require("../loyalty/loyalty.service");
+    await loyaltyService.assertRedeemAllowed(orgId, cid, pid, sid);
+  }
+
   if (!hasStaffCol && data.staff_user_id !== undefined) {
     const err = new Error(
       "Dodela radnika zahteva migraciju baze (006_appointments_staff_user)."
@@ -274,7 +400,15 @@ async function update(id, data, orgId) {
   }
   await assertStaffUserInOrg(orgId, nextStaff, nextService);
 
-  const { client_id, service_id, date, status, staff_user_id } = data;
+  const {
+    client_id,
+    service_id,
+    date,
+    status,
+    staff_user_id,
+    redeems_loyalty,
+    loyalty_program_id,
+  } = data;
   if (client_id !== undefined) {
     await assertClientInOrg(client_id, orgId);
   }
@@ -282,13 +416,22 @@ async function update(id, data, orgId) {
     await assertServiceInOrg(service_id, orgId);
   }
 
-  const allowed = ["client_id", "service_id", "date", "status", "staff_user_id"];
+  const allowed = [
+    "client_id",
+    "service_id",
+    "date",
+    "status",
+    "staff_user_id",
+    ...(hasLoyCol ? (["redeems_loyalty", "loyalty_program_id"] ) : []),
+  ];
   let entries = Object.entries({
     client_id,
     service_id,
     date,
     status,
     staff_user_id,
+    redeems_loyalty,
+    loyalty_program_id,
   }).filter(([k, v]) => allowed.includes(k) && v !== undefined);
   if (!hasStaffCol) {
     entries = entries.filter(([k]) => k !== "staff_user_id");
@@ -335,6 +478,15 @@ async function update(id, data, orgId) {
     });
   }
 
+  if (
+    hasLoyCol &&
+    updated.status === "completed" &&
+    previousStatus !== "completed"
+  ) {
+    const loyaltyService = require("../loyalty/loyalty.service");
+    await loyaltyService.applyCompletedVisit(orgId, updated, previousStatus);
+  }
+
   return updated;
 }
 
@@ -365,6 +517,7 @@ async function remove(id, orgId, actorUserId) {
 
 module.exports = {
   hasAppointmentStaffUserColumn,
+  hasLoyaltyAppointmentColumns,
   getAll,
   getByDay,
   getByDateRange,

@@ -13,6 +13,8 @@ export type AppointmentRow = {
   staff_user_id?: number | null;
   staff_email?: string | null;
   staff_display_name?: string | null;
+  redeems_loyalty?: boolean;
+  loyalty_program_id?: number | null;
 };
 
 export type AppointmentsByDayParams = {

@@ -56,7 +56,7 @@ import type { ClientLimitState } from "@/types/billing";
 const MAX_FILES = 5;
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
 
-type CardTab = "osnovno" | "istorija" | "karton";
+type CardTab = "osnovno" | "loyalty" | "istorija" | "karton";
 
 function fileToBase64Part(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -473,6 +473,7 @@ function ClientsPageContent() {
 
   const tabs: { id: CardTab; label: string }[] = [
     { id: "osnovno", label: "Osnovno" },
+    { id: "loyalty", label: "Loyalty" },
     { id: "istorija", label: "Istorija dolazaka" },
     { id: "karton", label: "Karton / beleške" },
   ];
@@ -924,6 +925,50 @@ function ClientsPageContent() {
               </div>
 
               <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+                {cardTab === "loyalty" ? (
+                  <div className="space-y-3 py-2">
+                    {detail.loyalty_balances &&
+                    detail.loyalty_balances.length > 0 ? (
+                      <ul className="space-y-3">
+                        {detail.loyalty_balances.map((b) => (
+                          <li
+                            key={b.program_id}
+                            className="rounded-xl border border-zinc-200 bg-zinc-50/80 px-4 py-3 dark:border-zinc-700 dark:bg-zinc-900/40"
+                          >
+                            <p className="font-medium text-zinc-900 dark:text-zinc-50">
+                              {b.program_name}
+                            </p>
+                            <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                              {b.service_name} · cilj {b.visits_required}{" "}
+                              završenih poseta
+                            </p>
+                            <div className="mt-2 flex flex-wrap gap-4 text-sm">
+                              <span>
+                                Pečati:{" "}
+                                <strong className="tabular-nums">
+                                  {b.stamps} / {b.visits_required}
+                                </strong>
+                              </span>
+                              <span>
+                                Nagrade na čekanju:{" "}
+                                <strong className="tabular-nums text-emerald-700 dark:text-emerald-400">
+                                  {b.rewards_available}
+                                </strong>
+                              </span>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                        Nema aktivnog loyalty programa ili još nema stanja za
+                        ovog klijenta. Podesi program u{" "}
+                        <strong>Podešavanja → Loyalty</strong>.
+                      </p>
+                    )}
+                  </div>
+                ) : null}
+
                 {cardTab === "osnovno" ? (
                   <div className="space-y-4 py-2">
                     <div className="space-y-2">

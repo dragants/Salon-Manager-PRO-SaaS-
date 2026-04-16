@@ -13,6 +13,7 @@ import { getOrgTeam, getServices } from "@/lib/api";
 import { getApiErrorMessage } from "@/lib/api/errors";
 import { CalendarTab } from "@/components/features/settings/CalendarTab";
 import { FinanceTab } from "@/components/features/settings/FinanceTab";
+import { LoyaltyTab } from "@/components/features/settings/LoyaltyTab";
 import { NotificationsTab } from "@/components/features/settings/NotificationsTab";
 import { SalonTab } from "@/components/features/settings/SalonTab";
 import { SecurityTab } from "@/components/features/settings/SecurityTab";
@@ -793,8 +794,6 @@ function SettingsPageContent() {
           />
         ) : null}
 
-        {isAdmin && tab === "billing" ? <BillingTab /> : null}
-
         {isAdmin && tab === "finance" ? (
           <FinanceTab
             saving={saving}
@@ -822,6 +821,10 @@ function SettingsPageContent() {
             }
           />
         ) : null}
+
+        {isAdmin && tab === "loyalty" ? <LoyaltyTab /> : null}
+
+        {isAdmin && tab === "billing" ? <BillingTab /> : null}
 
         {isAdmin && tab === "security" ? (
           <SecurityTab

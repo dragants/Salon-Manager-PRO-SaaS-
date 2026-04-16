@@ -72,6 +72,8 @@ const createAppointmentSchema = Joi.object({
   date: Joi.date().iso().required(),
   status: Joi.string().valid("scheduled", "completed", "no_show"),
   staff_user_id: Joi.number().integer().positive().allow(null),
+  redeems_loyalty: Joi.boolean().optional(),
+  loyalty_program_id: Joi.number().integer().positive().allow(null),
   send_sms: Joi.boolean().default(false),
   send_whatsapp: Joi.boolean().default(false),
   send_email: Joi.boolean().default(false),
@@ -83,6 +85,8 @@ const updateAppointmentSchema = Joi.object({
   date: Joi.date().iso(),
   status: Joi.string().valid("scheduled", "completed", "no_show"),
   staff_user_id: Joi.number().integer().positive().allow(null),
+  redeems_loyalty: Joi.boolean(),
+  loyalty_program_id: Joi.number().integer().positive().allow(null),
 })
   .min(1)
   .messages({

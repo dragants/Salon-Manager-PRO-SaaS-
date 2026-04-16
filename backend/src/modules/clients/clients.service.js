@@ -58,6 +58,15 @@ async function getDetail(clientId, orgId) {
      LIMIT 200`;
   const apptRes = await pool.query(apptSql, [clientId, orgId]);
 
+  let loyalty_balances = [];
+  const reg = await pool.query(
+    `SELECT to_regclass('public.loyalty_programs') AS reg`
+  );
+  if (reg.rows[0]?.reg) {
+    const loyaltyService = require("../loyalty/loyalty.service");
+    loyalty_balances = await loyaltyService.balancesForClient(clientId, orgId);
+  }
+
   const chartRes = await pool.query(
     `SELECT e.id, e.visit_at, e.title, e.notes, e.appointment_id, e.created_at,
        COALESCE(
@@ -86,6 +95,7 @@ async function getDetail(clientId, orgId) {
     client,
     appointments: apptRes.rows,
     chart_entries: chartRes.rows,
+    loyalty_balances,
   };
 }
 
