@@ -496,19 +496,31 @@ function ClientsPageContent() {
           )}
         >
           <span className="text-zinc-700 dark:text-zinc-300">
-            {clientLimits.tier === "free" ? "Besplatan plan" : "Plaćeni plan"} ·{" "}
+            {clientLimits.plan === "pro"
+              ? "Pro plan"
+              : clientLimits.plan === "basic"
+                ? "Basic plan"
+                : "Besplatan plan"}{" "}
+            ·{" "}
             <span className="tabular-nums font-semibold text-zinc-900 dark:text-zinc-100">
               {clientLimits.current_clients}/{clientLimits.max_clients}
             </span>{" "}
             klijenata
             {clientLimits.at_limit ? " — limit je dostignut." : null}
           </span>
-          {clientLimits.tier === "free" ? (
+          {clientLimits.plan === "free" ? (
             <Link
               href="/subscribe"
               className="shrink-0 font-semibold text-sky-700 underline-offset-2 hover:underline dark:text-sky-400"
             >
               Aktiviraj pretplatu
+            </Link>
+          ) : clientLimits.plan === "basic" ? (
+            <Link
+              href="/subscribe"
+              className="shrink-0 font-semibold text-violet-700 underline-offset-2 hover:underline dark:text-violet-400"
+            >
+              Nadogradi na Pro
             </Link>
           ) : null}
         </div>

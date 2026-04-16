@@ -50,6 +50,27 @@ function mapPaddleStatus(statusRaw) {
   return s || "inactive";
 }
 
+/** Paddle Classic: subscription_plan_id ili product_id uporedi sa PADDLE_PRO_PRODUCT_IDS (zarez). */
+function inferBillingPlanFromPaddleEvent(event) {
+  const ids = [];
+  if (event.subscription_plan_id != null) {
+    ids.push(String(event.subscription_plan_id).trim());
+  }
+  if (event.product_id != null) {
+    ids.push(String(event.product_id).trim());
+  }
+  const proIds = (process.env.PADDLE_PRO_PRODUCT_IDS || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  for (const id of ids) {
+    if (id && proIds.includes(id)) {
+      return "pro";
+    }
+  }
+  return "basic";
+}
+
 async function resolveOrgId(event) {
   const fromPass = parsePassthrough(event.passthrough);
   if (fromPass && fromPass.organization_id != null) {
@@ -113,14 +134,31 @@ async function applySubscriptionEvent(event) {
     alert === "subscription_payment_succeeded"
   ) {
     const st = mapPaddleStatus(event.status || "active");
-    await pool.query(
-      `UPDATE organizations
-       SET stripe_customer_id = COALESCE($1::text, stripe_customer_id),
-           stripe_subscription_id = COALESCE($2::text, stripe_subscription_id),
-           subscription_status = $3
-       WHERE id = $4`,
-      [userId, subscriptionId, st, orgId]
-    );
+    const paid = st === "active" || st === "trialing";
+    const billingPlan = paid ? inferBillingPlanFromPaddleEvent(event) : "free";
+    try {
+      await pool.query(
+        `UPDATE organizations
+         SET stripe_customer_id = COALESCE($1::text, stripe_customer_id),
+             stripe_subscription_id = COALESCE($2::text, stripe_subscription_id),
+             subscription_status = $3,
+             billing_plan = $4
+         WHERE id = $5`,
+        [userId, subscriptionId, st, billingPlan, orgId]
+      );
+    } catch (e) {
+      if (e.code !== "42703") {
+        throw e;
+      }
+      await pool.query(
+        `UPDATE organizations
+         SET stripe_customer_id = COALESCE($1::text, stripe_customer_id),
+             stripe_subscription_id = COALESCE($2::text, stripe_subscription_id),
+             subscription_status = $3
+         WHERE id = $4`,
+        [userId, subscriptionId, st, orgId]
+      );
+    }
     return;
   }
 
@@ -130,12 +168,23 @@ async function applySubscriptionEvent(event) {
   ) {
     const st =
       alert === "subscription_cancelled" ? "canceled" : mapPaddleStatus("past_due");
-    await pool.query(
-      `UPDATE organizations
-       SET subscription_status = $1
-       WHERE id = $2`,
-      [st, orgId]
-    );
+    try {
+      await pool.query(
+        `UPDATE organizations
+         SET subscription_status = $1,
+             billing_plan = 'free'
+         WHERE id = $2`,
+        [st, orgId]
+      );
+    } catch (e) {
+      if (e.code !== "42703") {
+        throw e;
+      }
+      await pool.query(
+        `UPDATE organizations SET subscription_status = $1 WHERE id = $2`,
+        [st, orgId]
+      );
+    }
     return;
   }
 }

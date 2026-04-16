@@ -36,18 +36,35 @@ module.exports = {
     1,
     Number(process.env.FREE_TIER_MAX_CLIENTS) || 50
   ),
+  /** @deprecated koristi PRO_TIER_MAX_CLIENTS */
   PAID_TIER_MAX_CLIENTS: Math.max(
     1,
     Number(process.env.PAID_TIER_MAX_CLIENTS) || 10_000
   ),
-  /** Maks. novih termina u tekućem kalendarskom mesecu (timezone salona), free tier. */
+  BASIC_TIER_MAX_CLIENTS: Math.max(
+    1,
+    Number(process.env.BASIC_TIER_MAX_CLIENTS) || 500
+  ),
+  PRO_TIER_MAX_CLIENTS: Math.max(
+    1,
+    Number(process.env.PRO_TIER_MAX_CLIENTS) ||
+      Number(process.env.PAID_TIER_MAX_CLIENTS) ||
+      10_000
+  ),
+  /** Maks. termina u tekućem mesecu (timezone salona) — free. */
   FREE_TIER_MAX_APPOINTMENTS_PER_MONTH: Math.max(
     1,
     Number(process.env.FREE_TIER_MAX_APPOINTMENTS_PER_MONTH) || 200
   ),
-  PAID_TIER_MAX_APPOINTMENTS_PER_MONTH: Math.max(
+  BASIC_TIER_MAX_APPOINTMENTS_PER_MONTH: Math.max(
     1,
-    Number(process.env.PAID_TIER_MAX_APPOINTMENTS_PER_MONTH) || 100_000
+    Number(process.env.BASIC_TIER_MAX_APPOINTMENTS_PER_MONTH) || 2000
+  ),
+  PRO_TIER_MAX_APPOINTMENTS_PER_MONTH: Math.max(
+    1,
+    Number(process.env.PRO_TIER_MAX_APPOINTMENTS_PER_MONTH) ||
+      Number(process.env.PAID_TIER_MAX_APPOINTMENTS_PER_MONTH) ||
+      100_000
   ),
   APP_TIMEZONE: process.env.APP_TIMEZONE || "Europe/Belgrade",
 };

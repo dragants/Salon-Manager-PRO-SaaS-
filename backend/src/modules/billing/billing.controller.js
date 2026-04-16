@@ -5,12 +5,26 @@ const planLimits = require("../../services/plan-limits.service");
 
 /** Kolone stripe_* u bazi čuvaju Paddle user_id i subscription_id (Classic). */
 async function status(req, res) {
-  const r = await pool.query(
-    `SELECT subscription_status, stripe_customer_id, stripe_subscription_id
-     FROM organizations WHERE id = $1`,
-    [req.user.orgId]
-  );
-  const row = r.rows[0] || {};
+  let row;
+  try {
+    const r = await pool.query(
+      `SELECT subscription_status, stripe_customer_id, stripe_subscription_id,
+              billing_plan
+       FROM organizations WHERE id = $1`,
+      [req.user.orgId]
+    );
+    row = r.rows[0] || {};
+  } catch (e) {
+    if (e.code !== "42703") {
+      throw e;
+    }
+    const r = await pool.query(
+      `SELECT subscription_status, stripe_customer_id, stripe_subscription_id
+       FROM organizations WHERE id = $1`,
+      [req.user.orgId]
+    );
+    row = { ...(r.rows[0] || {}), billing_plan: "free" };
+  }
   let client_limits = null;
   let appointment_limits = null;
   try {
@@ -27,6 +41,7 @@ async function status(req, res) {
   }
   res.json({
     subscription_status: row.subscription_status ?? null,
+    billing_plan: row.billing_plan ?? "free",
     has_customer: Boolean(row.stripe_customer_id),
     has_subscription: Boolean(row.stripe_subscription_id),
     subscription_enforced: process.env.SUBSCRIPTION_ENFORCED === "true",

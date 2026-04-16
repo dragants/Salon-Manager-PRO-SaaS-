@@ -1,20 +1,62 @@
 const pool = require("../config/db");
 const env = require("../config/env");
 
-async function getOrganizationSubscriptionTier(orgId) {
-  const r = await pool.query(
-    `SELECT subscription_status FROM organizations WHERE id = $1`,
-    [orgId]
-  );
-  const st = r.rows[0]?.subscription_status;
+function clientCapForPlan(plan) {
+  if (plan === "free") return env.FREE_TIER_MAX_CLIENTS;
+  if (plan === "basic") return env.BASIC_TIER_MAX_CLIENTS;
+  return env.PRO_TIER_MAX_CLIENTS;
+}
+
+function appointmentCapForPlan(plan) {
+  if (plan === "free") return env.FREE_TIER_MAX_APPOINTMENTS_PER_MONTH;
+  if (plan === "basic") return env.BASIC_TIER_MAX_APPOINTMENTS_PER_MONTH;
+  return env.PRO_TIER_MAX_APPOINTMENTS_PER_MONTH;
+}
+
+/**
+ * Efektivni plan za limite: bez aktivne pretplate uvek free.
+ * @param {{ subscription_status?: string | null, billing_plan?: string | null } | undefined} row
+ * @returns {'free'|'basic'|'pro'}
+ */
+function resolveEffectivePlan(row) {
+  if (!row) return "free";
+  const st = row.subscription_status;
   const paid = st === "active" || st === "trialing";
-  return paid ? "paid" : "free";
+  if (!paid) return "free";
+  const p = String(row.billing_plan || "basic").toLowerCase();
+  if (p === "pro") return "pro";
+  if (p === "basic") return "basic";
+  return "basic";
+}
+
+async function fetchOrgPlanRow(orgId) {
+  let r;
+  try {
+    r = await pool.query(
+      `SELECT subscription_status, billing_plan FROM organizations WHERE id = $1`,
+      [orgId]
+    );
+  } catch (e) {
+    if (e.code === "42703") {
+      r = await pool.query(
+        `SELECT subscription_status FROM organizations WHERE id = $1`,
+        [orgId]
+      );
+      if (r.rows[0]) {
+        r.rows[0].billing_plan = "basic";
+      }
+    } else {
+      throw e;
+    }
+  }
+  return r.rows[0];
 }
 
 /**
  * @param {number} orgId
  * @returns {Promise<{
  *   enforced: boolean;
+ *   plan: 'free'|'basic'|'pro';
  *   tier: 'free' | 'paid';
  *   max_clients: number | null;
  *   current_clients: number;
@@ -31,6 +73,7 @@ async function getClientLimitState(orgId) {
   if (!env.PLAN_LIMITS_ENFORCED) {
     return {
       enforced: false,
+      plan: "free",
       tier: "free",
       max_clients: null,
       current_clients: current,
@@ -38,15 +81,14 @@ async function getClientLimitState(orgId) {
     };
   }
 
-  const tier = await getOrganizationSubscriptionTier(orgId);
-  const max =
-    tier === "paid"
-      ? env.PAID_TIER_MAX_CLIENTS
-      : env.FREE_TIER_MAX_CLIENTS;
+  const row = await fetchOrgPlanRow(orgId);
+  const plan = resolveEffectivePlan(row);
+  const max = clientCapForPlan(plan);
 
   return {
     enforced: true,
-    tier,
+    plan,
+    tier: plan === "free" ? "free" : "paid",
     max_clients: max,
     current_clients: current,
     at_limit: current >= max,
@@ -60,13 +102,16 @@ async function assertCanAddClient(orgId) {
   }
   if (s.current_clients >= s.max_clients) {
     const err = new Error(
-      s.tier === "paid"
-        ? "Dostignut je limit klijenata na tvom planu. Obrisi neaktivne zapise ili kontaktiraj podršku."
-        : "Dostignut je besplatni limit klijenata. Aktiviraj pretplatu da dodaš više."
+      s.plan === "free"
+        ? "Dostignut je besplatni limit klijenata. Aktiviraj pretplatu da dodaš više."
+        : s.plan === "basic"
+          ? "Dostignut je limit klijenata na Basic planu. Nadogradi na Pro ili obriši neaktivne zapise."
+          : "Dostignut je limit klijenata na Pro planu. Kontaktiraj podršku."
     );
     err.statusCode = 403;
     err.apiCode = "PLAN_CLIENT_LIMIT";
     err.details = {
+      plan: s.plan,
       tier: s.tier,
       max_clients: s.max_clients,
       current_clients: s.current_clients,
@@ -110,6 +155,7 @@ async function getAppointmentLimitState(orgId) {
   if (!env.PLAN_LIMITS_ENFORCED) {
     return {
       enforced: false,
+      plan: "free",
       tier: "free",
       timezone: tz,
       max_appointments_month: null,
@@ -118,15 +164,14 @@ async function getAppointmentLimitState(orgId) {
     };
   }
 
-  const tier = await getOrganizationSubscriptionTier(orgId);
-  const max =
-    tier === "paid"
-      ? env.PAID_TIER_MAX_APPOINTMENTS_PER_MONTH
-      : env.FREE_TIER_MAX_APPOINTMENTS_PER_MONTH;
+  const row = await fetchOrgPlanRow(orgId);
+  const plan = resolveEffectivePlan(row);
+  const max = appointmentCapForPlan(plan);
 
   return {
     enforced: true,
-    tier,
+    plan,
+    tier: plan === "free" ? "free" : "paid",
     timezone: tz,
     max_appointments_month: max,
     current_appointments_month: current,
@@ -141,13 +186,16 @@ async function assertCanCreateAppointment(orgId) {
   }
   if (s.current_appointments_month >= s.max_appointments_month) {
     const err = new Error(
-      s.tier === "paid"
-        ? "Dostignut je mesečni limit termina na tvom planu. Kontaktiraj podršku."
-        : "Dostignut je besplatni mesečni limit termina. Aktiviraj pretplatu za više rezervacija."
+      s.plan === "free"
+        ? "Dostignut je besplatni mesečni limit termina. Aktiviraj pretplatu za više rezervacija."
+        : s.plan === "basic"
+          ? "Dostignut je mesečni limit termina na Basic planu. Nadogradi na Pro."
+          : "Dostignut je mesečni limit termina na Pro planu. Kontaktiraj podršku."
     );
     err.statusCode = 403;
     err.apiCode = "PLAN_APPOINTMENT_MONTH_LIMIT";
     err.details = {
+      plan: s.plan,
       tier: s.tier,
       max_appointments_month: s.max_appointments_month,
       current_appointments_month: s.current_appointments_month,

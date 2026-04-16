@@ -1,6 +1,9 @@
+export type BillingPlanId = "free" | "basic" | "pro";
+
 export type ClientLimitState = {
   enforced: boolean;
   tier: "free" | "paid";
+  plan: BillingPlanId;
   max_clients: number | null;
   current_clients: number;
   at_limit: boolean;
@@ -9,6 +12,7 @@ export type ClientLimitState = {
 export type AppointmentLimitState = {
   enforced: boolean;
   tier: "free" | "paid";
+  plan: BillingPlanId;
   timezone: string;
   max_appointments_month: number | null;
   current_appointments_month: number;
@@ -17,6 +21,7 @@ export type AppointmentLimitState = {
 
 export type BillingStatus = {
   subscription_status: string | null;
+  billing_plan?: BillingPlanId;
   has_customer: boolean;
   has_subscription: boolean;
   subscription_enforced: boolean;

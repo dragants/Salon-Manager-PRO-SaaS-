@@ -13,6 +13,8 @@ CREATE TABLE IF NOT EXISTS organizations (
   stripe_customer_id TEXT,
   stripe_subscription_id TEXT,
   subscription_status TEXT DEFAULT 'inactive',
+  billing_plan TEXT NOT NULL DEFAULT 'free'
+    CHECK (billing_plan IN ('free', 'basic', 'pro')),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

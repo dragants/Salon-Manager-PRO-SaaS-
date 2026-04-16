@@ -65,7 +65,17 @@ export default function SubscribePage() {
       <div className="mx-auto flex max-w-lg flex-col gap-6 text-center">
         <SectionHeader
           title="Pretplata je aktivna"
-          description="Možeš da nastaviš rad u aplikaciji."
+          description={
+            status?.billing_plan ? (
+              <>
+                Plan u sistemu:{" "}
+                <strong className="capitalize">{status.billing_plan}</strong>.
+                Možeš da nastaviš rad u aplikaciji.
+              </>
+            ) : (
+              "Možeš da nastaviš rad u aplikaciji."
+            )
+          }
         />
         <SurfaceCard padding="lg">
           <Link
@@ -107,9 +117,11 @@ export default function SubscribePage() {
             <span className="font-semibold">Klijenti:</span>{" "}
             {status.client_limits.current_clients} /{" "}
             {status.client_limits.max_clients}
-            {status.client_limits.tier === "free"
+            {status.client_limits.plan === "free"
               ? " na besplatnom planu. Aktivnom pretplatom dobijaš znatno viši limit."
-              : " na tvom planu."}
+              : status.client_limits.plan === "basic"
+                ? " na Basic planu. Pro daje još više kapaciteta."
+                : " na Pro planu."}
           </p>
         ) : null}
         {status?.appointment_limits?.enforced &&
@@ -125,9 +137,11 @@ export default function SubscribePage() {
             <span className="font-semibold">Termini (ovaj mesec):</span>{" "}
             {status.appointment_limits.current_appointments_month} /{" "}
             {status.appointment_limits.max_appointments_month}
-            {status.appointment_limits.tier === "free"
+            {status.appointment_limits.plan === "free"
               ? ` · mesec se računa u zoni ${status.appointment_limits.timezone}.`
-              : " na tvom planu."}
+              : status.appointment_limits.plan === "basic"
+                ? ` · Basic; zona ${status.appointment_limits.timezone}.`
+                : ` · Pro; zona ${status.appointment_limits.timezone}.`}
           </p>
         ) : null}
         <Button
