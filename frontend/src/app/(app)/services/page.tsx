@@ -9,9 +9,9 @@ import {
   useState,
 } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Check, Pencil, X } from "lucide-react";
+import { Check, Pencil, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
-import { createService, getServices, updateService } from "@/lib/api";
+import { createService, deleteService, getServices, updateService } from "@/lib/api";
 import { notifyApp } from "@/lib/notifications-store";
 import { useAuth } from "@/providers/auth-provider";
 import { getApiErrorMessage } from "@/lib/api/errors";
@@ -60,6 +60,7 @@ function ServicesPageContent() {
   });
   const [editSaving, setEditSaving] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const servicesScrollRef = useRef<HTMLDivElement>(null);
   const servicesHeadShadow = useTableHeadShadow(servicesScrollRef);
@@ -126,6 +127,35 @@ function ServicesPageContent() {
   function cancelEdit() {
     setEditingId(null);
     setEditError(null);
+  }
+
+  async function removeService(s: Service) {
+    const ok = window.confirm(
+      `Obrisati uslugu „${s.name}“?\n\n` +
+        "Ako postoje termini (bilo koji status) za ovu uslugu, brisanje neće proći dok ih ne obrišeš ili ne promeniš uslugu na tim terminima. " +
+        "Loyalty program vezan za ovu uslugu biće uklonjen zajedno sa uslugom."
+    );
+    if (!ok) {
+      return;
+    }
+    setDeletingId(s.id);
+    try {
+      await deleteService(s.id);
+      if (editingId === s.id) {
+        setEditingId(null);
+      }
+      toast.success("Usluga je obrisana.");
+      await load({ silent: true });
+    } catch (err) {
+      toast.error(
+        getApiErrorMessage(
+          err,
+          "Brisanje nije uspelo (proveri da li postoje termini za ovu uslugu)."
+        )
+      );
+    } finally {
+      setDeletingId(null);
+    }
   }
 
   async function saveEdit() {
@@ -288,7 +318,7 @@ function ServicesPageContent() {
                   <th className="px-4 py-3.5 sm:px-5 text-right">Trajanje</th>
                   <th className="px-4 py-3.5 sm:px-5 text-right">Buffer</th>
                   {canManage ? (
-                    <th className="w-28 px-4 py-3.5 text-right sm:px-5">
+                    <th className="w-36 px-4 py-3.5 text-right sm:px-5">
                       Akcije
                     </th>
                   ) : null}
@@ -441,16 +471,29 @@ function ServicesPageContent() {
                       </td>
                       {canManage ? (
                         <td className="px-4 py-3 text-right sm:px-5">
-                          <Button
-                            type="button"
-                            size="icon-sm"
-                            variant="ghost"
-                            className="rounded-xl"
-                            onClick={() => startEdit(s)}
-                            aria-label="Izmeni uslugu"
-                          >
-                            <Pencil className="size-4" />
-                          </Button>
+                          <div className="flex justify-end gap-0.5">
+                            <Button
+                              type="button"
+                              size="icon-sm"
+                              variant="ghost"
+                              className="rounded-xl"
+                              onClick={() => startEdit(s)}
+                              aria-label="Izmeni uslugu"
+                            >
+                              <Pencil className="size-4" />
+                            </Button>
+                            <Button
+                              type="button"
+                              size="icon-sm"
+                              variant="ghost"
+                              className="rounded-xl text-red-700 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-950/50"
+                              disabled={deletingId === s.id}
+                              onClick={() => void removeService(s)}
+                              aria-label="Obriši uslugu"
+                            >
+                              <Trash2 className="size-4" />
+                            </Button>
+                          </div>
                         </td>
                       ) : null}
                     </tr>

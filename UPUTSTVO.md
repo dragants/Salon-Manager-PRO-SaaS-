@@ -14,7 +14,7 @@
 | **Kalendar** | Termini po danu ili nedelji; filter statusa i pretraga; dodavanje termina; prevlačenje (nedelja); status (zakazano / završeno / nije došao). |
 | **Smena** | Raspored radnog vremena po zaposlenima za automatske slobodne termine u modalu „Novi termin“. Posle izmena: **Sačuvaj smene**. |
 | **Klijenti** | Evidencija klijenata. |
-| **Usluge** | Usluge, trajanje, buffer; veza sa radnicima gde treba. |
+| **Usluge** | Usluge, trajanje, buffer; **izmena** (olovčica) i **brisanje** (korpa) — samo admin; brisanje nije moguće dok postoje termini za tu uslugu (prvo ih obriši ili promeni uslugu). |
 | **Materijal** | *(samo admin)* Potrošni materijal — zalihe, nabavka, potrošnja po terminu, korekcije. |
 | **Analitika** | Statistike i grafikoni (KPI). |
 | **Finansije** | *(samo admin)* Evidencija prihoda/rashoda. |

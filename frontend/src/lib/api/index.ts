@@ -355,6 +355,13 @@ export function updateService(id: number, data: UpdateServiceBody) {
   });
 }
 
+export function deleteService(id: number) {
+  return api.delete<void>(`/services/${id}`).then((r) => {
+    invalidateByScope("services");
+    return r;
+  });
+}
+
 export function getDashboard() {
   return cachedGet("dashboard", 35_000, () =>
     api.get<DashboardSummary>("/dashboard")
