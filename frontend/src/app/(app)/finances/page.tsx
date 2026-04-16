@@ -18,8 +18,8 @@ import {
   Wallet,
 } from "lucide-react";
 import { toast } from "sonner";
-import { AnalyticsChartSkeleton } from "@/components/dashboard/analytics-chart-skeleton";
-import { DashboardKpiCard } from "@/components/dashboard/dashboard-kpi-card";
+import { AnalyticsChartSkeleton } from "@/components/features/dashboard/analytics-chart-skeleton";
+import { DashboardKpiCard } from "@/components/features/dashboard/dashboard-kpi-card";
 import {
   Dialog,
   DialogContent,
@@ -69,7 +69,7 @@ import type { ExpenseRow } from "@/types/expense";
 
 const AnalyticsSeriesChart = dynamic(
   () =>
-    import("@/components/dashboard/analytics-series-chart").then((m) => ({
+    import("@/components/features/dashboard/analytics-series-chart").then((m) => ({
       default: m.AnalyticsSeriesChart,
     })),
   { ssr: false, loading: () => <AnalyticsChartSkeleton /> }
@@ -314,10 +314,12 @@ export default function FinancesPage() {
       setExpenseMonthlyTotals(
         Array.isArray(monthlyRes.data) ? monthlyRes.data : []
       );
-    } catch {
+    } catch (err) {
       setExpenseRows([]);
       setExpenseMonthlyTotals([]);
-      toast.error("Troškovi nisu učitani.");
+      toast.error(
+        getApiErrorMessage(err, "Troškovi nisu učitani.")
+      );
     } finally {
       setExpensesLoading(false);
     }

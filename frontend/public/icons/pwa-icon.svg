@@ -1,7 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Salon Manager PRO">
-  <rect width="512" height="512" rx="96" fill="#0ea5e9"/>
-  <rect x="120" y="152" width="272" height="208" rx="28" fill="#f0f9ff"/>
-  <rect x="168" y="200" width="72" height="56" rx="10" fill="#0284c7"/>
-  <rect x="272" y="200" width="72" height="56" rx="10" fill="#0284c7"/>
-  <rect x="196" y="296" width="120" height="18" rx="9" fill="#0284c7"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Salon Manager PRO — lepota i wellness">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38766a"/>
+      <stop offset="100%" stop-color="#245a50"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <!-- Organski oblik: list / kap — saloni lepote i masaže, ne frizer -->
+  <path fill="#fafcfb" opacity="0.95" d="M256 108c-56 84-56 140 0 224 56-84 56-140 0-224z"/>
+  <path fill="#a8c8bc" opacity="0.92" d="M256 148c-40 62-40 104 0 168 40-62 40-104 0-168z"/>
+  <path fill="#6a9e90" opacity="0.88" d="M256 188c-24 38-24 64 0 102 24-38 24-64 0-102z"/>
+  <ellipse cx="256" cy="392" rx="100" ry="22" fill="#fafcfb" opacity="0.2"/>
 </svg>

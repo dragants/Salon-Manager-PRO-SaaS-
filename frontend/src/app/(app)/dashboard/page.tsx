@@ -7,35 +7,34 @@ import { Suspense, useEffect, useState } from "react";
 import {
   CalendarDays,
   CalendarPlus,
-  CalendarRange,
-  Clock3,
+  Clock,
   Moon,
-  Package,
+  Sparkles,
   TrendingUp,
   UserPlus,
   Users,
   Wallet,
 } from "lucide-react";
 import { toast } from "sonner";
-import { CalendarPageSkeleton } from "@/components/calendar/calendar-page-skeleton";
+import { CalendarPageSkeleton } from "@/components/features/calendar/calendar-page-skeleton";
+import { appointmentStaffLabel } from "@/components/features/calendar/calendar-utils";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { AnalyticsChartSkeleton } from "@/components/dashboard/analytics-chart-skeleton";
-import { DashboardKpiCard } from "@/components/dashboard/dashboard-kpi-card";
-import { SurfaceCard } from "@/components/ui/surface-card";
+import { AnalyticsChartSkeleton } from "@/components/features/dashboard/analytics-chart-skeleton";
+import { DashboardKpiCard } from "@/components/features/dashboard/dashboard-kpi-card";
 import { getAnalytics, getAppointments, getDashboard } from "@/lib/api";
 import { getApiErrorMessage } from "@/lib/api/errors";
 import { formatRsd } from "@/lib/formatMoney";
+import { cn } from "@/lib/utils";
 import { useAuth } from "@/providers/auth-provider";
 import { useOrganization } from "@/providers/organization-provider";
-import { appointmentStaffLabel } from "@/components/calendar/calendar-utils";
 import type { AppointmentRow } from "@/types/appointment";
 import type { AnalyticsResponse } from "@/types/analytics";
 import type { DashboardSummary } from "@/types/dashboard";
+import "./dashboard-shell.css";
 
 const AnalyticsSeriesChart = dynamic(
   () =>
-    import("@/components/dashboard/analytics-series-chart").then((m) => ({
+    import("@/components/features/dashboard/analytics-series-chart").then((m) => ({
       default: m.AnalyticsSeriesChart,
     })),
   { ssr: false, loading: () => <AnalyticsChartSkeleton /> }
@@ -43,7 +42,7 @@ const AnalyticsSeriesChart = dynamic(
 
 const SalonCalendar = dynamic(
   () =>
-    import("@/components/calendar/salon-calendar").then((m) => m.SalonCalendar),
+    import("@/components/features/calendar/salon-calendar").then((m) => m.SalonCalendar),
   { ssr: false, loading: () => <CalendarPageSkeleton /> }
 );
 
@@ -87,6 +86,11 @@ function displayNameFromEmail(email: string | undefined): string {
   return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
 }
 
+function emailLocalPart(email: string | undefined): string {
+  if (!email?.trim()) return "";
+  return email.split("@")[0]?.trim() ?? "";
+}
+
 function formatApptTimeRange(
   iso: string,
   durationMin: number | undefined,
@@ -114,31 +118,30 @@ function statusLabel(status: AppointmentRow["status"]): string {
 
 function statusStyles(status: AppointmentRow["status"]): string {
   if (status === "completed") {
-    return "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200";
+    return "border-emerald-800/50 bg-emerald-950/40 text-emerald-200";
   }
   if (status === "no_show") {
-    return "border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200";
+    return "border-red-800/50 bg-red-950/40 text-red-200";
   }
-  return "border-amber-200 bg-amber-50 text-amber-950 dark:border-amber-800 dark:bg-amber-950/45 dark:text-amber-100";
+  return "border-primary/40 bg-primary/10 text-primary";
 }
 
 function DashboardSkeleton() {
   return (
-    <div className="animate-pulse space-y-8 px-1">
-      <div className="h-24 rounded-2xl bg-zinc-200/80 dark:bg-zinc-800" />
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="dash-grid animate-pulse">
+      <div className="col-span-12 h-32 rounded-2xl bg-muted" />
+      <div className="col-span-12 grid grid-cols-12 gap-6">
         {Array.from({ length: 4 }).map((_, i) => (
           <div
             key={i}
-            className="h-28 rounded-2xl bg-zinc-200/70 dark:bg-zinc-800"
+            className="col-span-12 h-[100px] rounded-2xl bg-muted sm:col-span-6 xl:col-span-3"
           />
         ))}
       </div>
-      <div className="h-12 rounded-xl bg-zinc-200/70 dark:bg-zinc-800" />
-      <div className="h-[min(70vh,560px)] rounded-2xl bg-zinc-200/70 dark:bg-zinc-800" />
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="h-96 rounded-2xl bg-zinc-200/70 dark:bg-zinc-800 lg:col-span-2" />
-        <div className="h-96 rounded-2xl bg-zinc-200/70 dark:bg-zinc-800" />
+      <div className="col-span-12 h-[520px] rounded-[20px] bg-muted lg:col-span-8" />
+      <div className="col-span-12 space-y-6 lg:col-span-4">
+        <div className="h-[200px] rounded-2xl bg-muted" />
+        <div className="h-[120px] rounded-2xl bg-muted" />
       </div>
     </div>
   );
@@ -209,9 +212,7 @@ export default function DashboardPage() {
       })
       .catch((e) => {
         if (!cancelled) {
-          setAnalyticsError(
-            getApiErrorMessage(e, "Analitika nije učitana.")
-          );
+          setAnalyticsError(getApiErrorMessage(e, "Analitika nije učitana."));
           setAnalytics(null);
         }
       })
@@ -273,48 +274,64 @@ export default function DashboardPage() {
   }
 
   if (authLoading || !user) {
-    return <DashboardSkeleton />;
+    return (
+      <div className="dashboard-shell">
+        <DashboardSkeleton />
+      </div>
+    );
   }
 
   if (orgLoading) {
-    return <DashboardSkeleton />;
+    return (
+      <div className="dashboard-shell">
+        <DashboardSkeleton />
+      </div>
+    );
   }
 
   if (!settings) {
     return (
-      <div className="space-y-3 rounded-2xl border border-amber-200 bg-amber-50 px-6 py-5 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-100">
-        <p>Podešavanja organizacije nisu učitana.</p>
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          className="border-amber-300"
-          onClick={() => void refreshSettings()}
-        >
-          Ponovo učitaj
-        </Button>
+      <div className="dashboard-shell">
+        <div className="mx-auto max-w-[1280px] space-y-3 rounded-2xl border border-primary/25 bg-card px-6 py-5 text-sm text-muted-foreground">
+          <p>Podešavanja organizacije nisu učitana.</p>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="dash-btn border-border text-foreground hover:bg-muted"
+            onClick={() => void refreshSettings()}
+          >
+            Ponovo učitaj
+          </Button>
+        </div>
       </div>
     );
   }
 
   if (dashLoading) {
-    return <DashboardSkeleton />;
+    return (
+      <div className="dashboard-shell">
+        <DashboardSkeleton />
+      </div>
+    );
   }
 
   if (dashError || !dash) {
     return (
-      <div className="space-y-4">
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200">
-          {dashError ?? "Statistika nije dostupna."}
+      <div className="dashboard-shell">
+        <div className="mx-auto max-w-[1280px] space-y-4">
+          <div className="rounded-2xl border border-red-900/50 bg-red-950/30 px-5 py-4 text-sm text-red-200">
+            {dashError ?? "Statistika nije dostupna."}
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            className="dash-btn border-border text-foreground hover:bg-muted"
+            onClick={retryDashboard}
+          >
+            Pokušaj ponovo
+          </Button>
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          className="rounded-xl border-sky-200"
-          onClick={retryDashboard}
-        >
-          Pokušaj ponovo
-        </Button>
       </div>
     );
   }
@@ -326,220 +343,324 @@ export default function DashboardPage() {
   const revenueToday = analytics?.revenue_today ?? dash.revenue;
   const calendarDayUrl = `/calendar?day=${encodeURIComponent(todayYmd)}&view=day`;
   const calendarWeekUrl = `/calendar?day=${encodeURIComponent(todayYmd)}&view=week`;
+  const greetName =
+    emailLocalPart(user.email) || displayNameFromEmail(user.email);
+  const busyToday = todayList?.length ?? 0;
+  const freeEstimate = Math.max(0, 14 - busyToday);
 
   return (
-    <div className="space-y-8 pb-12">
-      <section className="flex flex-col gap-4 border-b border-zinc-200/90 pb-8 dark:border-zinc-800 sm:flex-row sm:items-end sm:justify-between">
-        <div className="min-w-0 space-y-1">
-          <p className="text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-            {settings.name}
-          </p>
-          <h1 className="font-heading text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-4xl">
-            {greetingSr()}, {displayNameFromEmail(user.email)}
-          </h1>
-          <p className="text-sm capitalize text-zinc-600 dark:text-zinc-400">
-            {todayHeadingInTz(tz)}
+    <div className="dashboard-shell pb-16">
+      <div className="dash-grid">
+        {/* HERO */}
+        <section className="col-span-12 mt-4 mb-7 grid grid-cols-12 gap-6">
+          <div className="col-span-12 space-y-3 lg:col-span-8">
+            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-primary">
+              {settings.name}
+            </p>
+            <h1 className="font-heading text-[2.15rem] font-bold leading-[1.12] tracking-tight text-foreground sm:text-[2.35rem]">
+              {greetingSr()},
+              <br />
+              {greetName} <span aria-hidden>👋</span>
+            </h1>
+            <p className="text-base capitalize text-muted-foreground">
+              {todayHeadingInTz(tz)}
+            </p>
             {showFinancialKpi ? (
-              <>
-                <span className="mx-2 text-zinc-300 dark:text-zinc-600">
-                  ·
-                </span>
+              <p className="text-base text-muted-foreground">
                 Prihod danas:{" "}
-                <span className="font-medium text-zinc-800 dark:text-zinc-200">
+                <span className="font-semibold text-primary tabular-nums">
                   {formatRsd(revenueToday)}
                 </span>
-              </>
+              </p>
             ) : null}
-          </p>
-        </div>
-        <Link
-          href="/analytics"
-          className={cn(
-            buttonVariants({ variant: "outline", size: "sm" }),
-            "self-start rounded-xl border-zinc-200 sm:self-auto dark:border-zinc-700"
-          )}
-        >
-          <TrendingUp className="size-4" aria-hidden />
-          Analitika
-        </Link>
-      </section>
-
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <DashboardKpiCard
-          title="Danas zakazano"
-          value={appointmentsToday}
-          accent="sky"
-          icon={<CalendarRange className="size-5" />}
-          hint={
-            appointmentsToday === 1 ? "1 termin danas" : "Termina na današnji dan"
-          }
-        />
-        <DashboardKpiCard
-          title="Ukupno klijenata"
-          value={analytics?.clients ?? dash.clients}
-          accent="rose"
-          icon={<Users className="size-5" />}
-        />
-        <DashboardKpiCard
-          title="Prihod (mesec)"
-          value={
-            !showFinancialKpi
-              ? "—"
-              : analyticsLoading
-                ? "—"
-                : formatRsd(
-                    analytics?.revenue_month ?? analytics?.revenue ?? 0
-                  )
-          }
-          accent="emerald"
-          dominant={showFinancialKpi && !analyticsLoading}
-          icon={<Wallet className="size-5" />}
-          hint={!showFinancialKpi ? "Dostupno administratoru" : undefined}
-        />
-        <DashboardKpiCard
-          title="Sledeći termin"
-          value={dash.nextAppointment ?? "—"}
-          accent="slate"
-          icon={<Clock3 className="size-5" />}
-          hint="Najbliži u rasporedu"
-        />
-      </div>
-
-      {!analyticsLoading && analytics ? (
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          No-show (30 d.):{" "}
-          <span className="font-medium text-zinc-700 dark:text-zinc-300">
-            {analytics.no_show_percent ?? 0}%
-          </span>
-        </p>
-      ) : null}
-
-      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-        <Link
-          href={calendarWeekUrl}
-          className={cn(
-            buttonVariants({ size: "sm" }),
-            "h-11 flex-1 items-center justify-center gap-2 rounded-xl sm:h-10 sm:flex-initial sm:px-5"
-          )}
-        >
-          <CalendarPlus className="size-4" aria-hidden />
-          Nova rezervacija
-        </Link>
-        <Link
-          href="/clients"
-          className={cn(
-            buttonVariants({ variant: "outline", size: "sm" }),
-            "h-11 flex-1 items-center justify-center gap-2 rounded-xl border-zinc-200 bg-white sm:h-10 sm:flex-initial sm:px-5 dark:border-zinc-700 dark:bg-zinc-950"
-          )}
-        >
-          <UserPlus className="size-4" aria-hidden />
-          Novi klijent
-        </Link>
-        <Link
-          href="/services"
-          className={cn(
-            buttonVariants({ variant: "outline", size: "sm" }),
-            "h-11 flex-1 items-center justify-center gap-2 rounded-xl border-zinc-200 bg-white sm:h-10 sm:flex-initial sm:px-5 dark:border-zinc-700 dark:bg-zinc-950"
-          )}
-        >
-          <Package className="size-4" aria-hidden />
-          Nova usluga
-        </Link>
-      </div>
-
-      <section className="space-y-4">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h2 className="font-heading text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-              Nedeljni kalendar
-            </h2>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
-              Prevuci termine da promeniš vreme · boje po statusu
-            </p>
           </div>
+          <div className="col-span-12 flex items-start justify-start lg:col-span-4 lg:justify-end">
+            <Link
+              href={calendarWeekUrl}
+              className="dash-btn flex h-12 items-center justify-center gap-2 rounded-2xl bg-primary px-6 text-base font-semibold text-primary-foreground shadow-md transition hover:opacity-92"
+            >
+              <CalendarPlus className="size-5" aria-hidden />
+              Nova rezervacija
+            </Link>
+          </div>
+        </section>
+
+        {/* KPI — zlatni akcent + status boje */}
+        <section className="col-span-12 mb-8 grid grid-cols-12 gap-6">
+          <div className="col-span-12 sm:col-span-6 xl:col-span-3">
+            <DashboardKpiCard
+              title="Danas zakazano"
+              value={appointmentsToday}
+              hint={
+                appointmentsToday === 1
+                  ? "Jedan termin zakazan za danas"
+                  : "Ukupno termina u kalendaru za današnji dan"
+              }
+              accent="sky"
+              icon={<CalendarDays className="size-5" />}
+            />
+          </div>
+          <div className="col-span-12 sm:col-span-6 xl:col-span-3">
+            <DashboardKpiCard
+              title="Ukupno klijenata"
+              value={analytics?.clients ?? dash.clients}
+              hint="Aktivnih kartica klijenata u sistemu"
+              accent="slate"
+              icon={<Users className="size-5" />}
+            />
+          </div>
+          <div className="col-span-12 sm:col-span-6 xl:col-span-3">
+            <DashboardKpiCard
+              title="Prihod (mesec)"
+              value={
+                !showFinancialKpi
+                  ? "—"
+                  : analyticsLoading
+                    ? "—"
+                    : formatRsd(
+                        analytics?.revenue_month ?? analytics?.revenue ?? 0
+                      )
+              }
+              hint={
+                !showFinancialKpi
+                  ? "Dostupno administratoru"
+                  : "Tekući mesec"
+              }
+              accent="emerald"
+              dominant={showFinancialKpi}
+              icon={<Wallet className="size-5" />}
+            />
+          </div>
+          <div className="col-span-12 sm:col-span-6 xl:col-span-3">
+            <DashboardKpiCard
+              title="Sledeći termin"
+              value={dash.nextAppointment ?? "—"}
+              hint="Naredni dolazak (tretman, masaža…)"
+              accent="amber"
+              icon={<Clock className="size-5" />}
+              valueClassName="line-clamp-2 text-base font-bold leading-snug sm:text-lg"
+            />
+          </div>
+        </section>
+
+        {!analyticsLoading && analytics ? (
+          <p className="col-span-12 -mt-4 text-sm text-muted-foreground">
+            No-show (30 d.):{" "}
+            <span className="font-medium text-foreground">
+              {analytics.no_show_percent ?? 0}%
+            </span>
+          </p>
+        ) : null}
+
+        <div className="col-span-12 mb-6 flex flex-wrap gap-3">
           <Link
-            href={calendarWeekUrl}
+            href="/clients"
             className={cn(
-              buttonVariants({ variant: "ghost", size: "sm" }),
-              "rounded-xl text-zinc-600 dark:text-zinc-400"
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "dash-btn rounded-xl border-border bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
             )}
           >
-            <CalendarDays className="size-4" aria-hidden />
-            Puni ekran
+            <UserPlus className="size-4" aria-hidden />
+            Novi klijent
+          </Link>
+          <Link
+            href="/services"
+            className={cn(
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "dash-btn rounded-xl border-border bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
+            )}
+          >
+            <Sparkles className="size-4" aria-hidden />
+            Nova usluga
+          </Link>
+          <Link
+            href="/analytics"
+            className={cn(
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "dash-btn rounded-xl border-border bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
+            )}
+          >
+            <TrendingUp className="size-4" aria-hidden />
+            Analitika
           </Link>
         </div>
-        <div className="card-stripe max-h-[min(78vh,720px)] overflow-y-auto overflow-x-hidden">
-          <Suspense fallback={<CalendarPageSkeleton />}>
-            <SalonCalendar />
-          </Suspense>
-        </div>
-      </section>
 
-      {/* Trend + današnji */}
-      <div className="grid gap-6 lg:grid-cols-3 lg:items-stretch">
-        <SurfaceCard
-          padding="md"
-          className="flex flex-col transition-all duration-200 hover:-translate-y-1 hover:shadow-md lg:col-span-2"
-        >
-          <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 pb-4 dark:border-slate-700">
-            <div>
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-50">
-                Trend poslovanja
-              </h2>
-              <p className="mt-0.5 text-sm text-slate-600 dark:text-slate-400">
-                Termini{showFinancialKpi ? " i prihod" : ""} — 7 ili 30 dana.
+        {/* Kalendar + desni panel */}
+        <div className="col-span-12 grid grid-cols-12 gap-6">
+          <div
+            className="dash-calendar-host col-span-12 flex h-[520px] flex-col overflow-hidden rounded-[22px] border border-border bg-card p-4 shadow-[var(--lux-shadow-soft)] ring-1 ring-black/[0.03] transition duration-200 hover:border-primary/30 hover:shadow-[var(--lux-shadow-hover)] lg:col-span-8"
+          >
+            <Suspense fallback={<CalendarPageSkeleton />}>
+              <SalonCalendar embedMode />
+            </Suspense>
+          </div>
+
+          <div className="col-span-12 flex flex-col gap-6 lg:col-span-4">
+            <div className="dash-card flex min-h-[200px] flex-col p-5">
+              <div className="border-b border-border pb-3">
+                <h2 className="text-lg font-semibold tracking-tight text-foreground">
+                  Danas
+                </h2>
+                <p className="mt-1 text-sm capitalize text-muted-foreground">
+                  {todayHeadingInTz(tz)}
+                </p>
+              </div>
+              <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pt-3">
+                {todayLoading ? (
+                  <div className="space-y-2" aria-busy="true">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="h-14 animate-pulse rounded-xl bg-muted"
+                      />
+                    ))}
+                  </div>
+                ) : todayError ? (
+                  <p className="text-sm text-red-300">{todayError}</p>
+                ) : todayList && todayList.length === 0 ? (
+                  <div className="flex flex-col items-center py-6 text-center">
+                    <p className="mb-4 text-sm text-muted-foreground">
+                      Nema termina danas
+                    </p>
+                    <Button
+                      type="button"
+                      className="dash-btn rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground hover:opacity-90"
+                      onClick={() => {
+                        toast.info("Kalendar — zakaži prvi termin");
+                        router.push(calendarDayUrl);
+                      }}
+                    >
+                      Dodaj prvi termin
+                    </Button>
+                  </div>
+                ) : (
+                  <ul className="space-y-2">
+                    {todayList?.map((a) => (
+                      <li key={a.id}>
+                        <Link
+                          href={`${calendarDayUrl}&appt=${a.id}`}
+                          className="dash-btn block rounded-xl border border-border bg-muted/40 p-3.5 transition hover:border-primary/35 hover:bg-muted/55 hover:shadow-md"
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="text-base font-semibold tabular-nums text-foreground">
+                              {formatApptTimeRange(
+                                a.date,
+                                a.service_duration,
+                                tz
+                              )}
+                            </p>
+                            <span
+                              className={cn(
+                                "shrink-0 rounded-full border px-2 py-0.5 text-[0.65rem] font-semibold uppercase",
+                                statusStyles(a.status)
+                              )}
+                            >
+                              {statusLabel(a.status)}
+                            </span>
+                          </div>
+                          <p className="mt-1.5 text-base font-medium text-foreground">
+                            {a.client_name ?? `Klijent #${a.client_id}`}
+                          </p>
+                          <p className="mt-0.5 text-sm text-muted-foreground">
+                            {a.service_name ?? `Usluga #${a.service_id}`}
+                          </p>
+                          {appointmentStaffLabel(a) ? (
+                            <p className="mt-1 text-[0.65rem] text-muted-foreground">
+                              {appointmentStaffLabel(a)}
+                            </p>
+                          ) : null}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+
+            <div className="dash-card flex min-h-[128px] flex-col justify-between p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+                Brzi pregled
+              </p>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-2xl font-bold tabular-nums text-foreground">
+                    {freeEstimate}
+                  </p>
+                  <p className="text-sm text-muted-foreground">Slobodnih slotova *</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold tabular-nums text-primary">
+                    {busyToday}
+                  </p>
+                  <p className="text-sm text-muted-foreground">Termina danas</p>
+                </div>
+              </div>
+              <p className="text-xs leading-snug text-muted-foreground">
+                * Procena u odnosu na uobičajen dan u kalendaru
               </p>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <Link
-                href="/analytics"
-                className={cn(
-                  buttonVariants({ variant: "outline", size: "sm" }),
-                  "rounded-xl border-slate-200 no-underline dark:border-slate-600"
-                )}
-              >
-                Puna analitika
-              </Link>
-              <div className="flex rounded-xl border border-slate-200 bg-slate-50/90 p-0.5 dark:border-slate-600 dark:bg-slate-800/80">
-                <button
-                  type="button"
+          </div>
+        </div>
+
+        {/* Grafikon + rezervisano */}
+        <div className="col-span-12 mt-6 grid grid-cols-12 gap-6">
+          <div className="col-span-12 flex min-h-[260px] flex-col rounded-[20px] border border-border bg-card p-4 shadow-md transition duration-200 hover:shadow-lg lg:col-span-8">
+                <div className="mb-3 flex flex-wrap items-start justify-between gap-3 border-b border-border pb-3">
+              <div>
+                <h2 className="text-lg font-semibold tracking-tight text-foreground">
+                  Trend poslovanja
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Zakazivanja{showFinancialKpi ? " i prihod (RSD)" : ""}
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Link
+                  href="/analytics"
                   className={cn(
-                    "rounded-lg px-3 py-1.5 text-xs font-semibold transition",
-                    chartRange === 7
-                      ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white"
-                      : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                    buttonVariants({ variant: "outline", size: "sm" }),
+                    "dash-btn rounded-xl border-border text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
                   )}
-                  onClick={() => setChartRange(7)}
                 >
-                  7 dana
-                </button>
-                <button
-                  type="button"
-                  className={cn(
-                    "rounded-lg px-3 py-1.5 text-xs font-semibold transition",
-                    chartRange === 30
-                      ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white"
-                      : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-                  )}
-                  onClick={() => setChartRange(30)}
-                >
-                  30 dana
-                </button>
+                  Puna analitika
+                </Link>
+                <div className="flex rounded-xl border border-border bg-muted/60 p-0.5">
+                  <button
+                    type="button"
+                    className={cn(
+                      "dash-btn rounded-lg px-3 py-1.5 text-xs font-semibold transition",
+                      chartRange === 7
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                    onClick={() => setChartRange(7)}
+                  >
+                    7 dana
+                  </button>
+                  <button
+                    type="button"
+                    className={cn(
+                      "dash-btn rounded-lg px-3 py-1.5 text-xs font-semibold transition",
+                      chartRange === 30
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                    onClick={() => setChartRange(30)}
+                  >
+                    30 dana
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="min-h-[300px] flex-1 pt-4 sm:min-h-[320px]">
-            {analyticsLoading ? (
-              <div className="flex h-[280px] items-center justify-center text-sm text-slate-500 dark:text-slate-400">
-                <Moon className="mr-2 size-4 animate-pulse opacity-40" />
-                Učitavanje grafikona…
-              </div>
-            ) : analyticsError ? (
-              <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-100">
-                {analyticsError}
-              </div>
-            ) : analytics ? (
-              <div className="rounded-xl border border-slate-200/90 bg-gradient-to-b from-slate-100/95 to-white p-2 shadow-inner dark:border-slate-600 dark:from-slate-800/80 dark:to-slate-900/50 sm:p-3">
+            <div className="min-h-[220px] flex-1 rounded-xl border border-border bg-muted/40 p-2">
+              {analyticsLoading ? (
+                <div className="flex h-[220px] items-center justify-center text-sm text-muted-foreground">
+                  <Moon className="mr-2 size-4 animate-pulse opacity-40" />
+                  Učitavanje grafikona…
+                </div>
+              ) : analyticsError ? (
+                <p className="p-4 text-sm text-destructive">{analyticsError}</p>
+              ) : analytics ? (
                 <AnalyticsSeriesChart
                   data={
                     (chartRange === 7
@@ -547,124 +668,21 @@ export default function DashboardPage() {
                       : analytics.series30) ?? []
                   }
                   showRevenue={showFinancialKpi}
+                  variant="luxury"
                 />
-              </div>
-            ) : null}
+              ) : null}
+            </div>
           </div>
-        </SurfaceCard>
 
-        <SurfaceCard
-          padding="md"
-          className="relative flex flex-col overflow-hidden border-amber-200/50 bg-gradient-to-br from-amber-50/50 via-white to-white shadow-[0_8px_30px_-8px_rgba(251,146,60,0.25)] transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-[0_20px_44px_-12px_rgba(251,146,60,0.35)] dark:border-amber-900/35 dark:from-amber-950/30 dark:via-zinc-950 dark:to-zinc-950 dark:shadow-[0_8px_30px_-8px_rgba(251,146,60,0.12)] dark:hover:shadow-[0_20px_44px_-12px_rgba(251,146,60,0.2)]"
-        >
-          <div
-            className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_90%_60%_at_50%_-30%,rgba(251,191,36,0.14),transparent_55%)] dark:bg-[radial-gradient(ellipse_90%_60%_at_50%_-30%,rgba(251,191,36,0.08),transparent_55%)]"
-            aria-hidden
-          />
-          <div className="relative flex flex-col">
-          <div className="border-b border-slate-100/80 pb-4 dark:border-slate-700/80">
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-50">
-              Današnji termini
-            </h2>
-            <p className="mt-0.5 text-sm capitalize text-slate-600 dark:text-slate-400">
-              {todayHeadingInTz(tz)}
+          <div className="col-span-12 hidden min-h-[260px] flex-col items-center justify-center rounded-[20px] border border-dashed border-border bg-muted/30 text-center lg:col-span-4 lg:flex">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Uskoro
+            </p>
+            <p className="mt-2 max-w-[12rem] text-sm text-muted-foreground">
+              Rezervisano za buduće module (npr. ciljevi, obaveštenja).
             </p>
           </div>
-          <div className="flex flex-wrap gap-2 border-b border-slate-100 py-3 dark:border-slate-700">
-            <Link
-              href={calendarDayUrl}
-              className={cn(
-                buttonVariants({ variant: "outline", size: "sm" }),
-                "rounded-xl border-slate-200 text-slate-900 no-underline dark:border-slate-600 dark:text-slate-100"
-              )}
-            >
-              Kalendar
-            </Link>
-            <Link
-              href="/settings"
-              className={cn(
-                buttonVariants({ variant: "ghost", size: "sm" }),
-                "rounded-xl text-slate-700 dark:text-slate-300"
-              )}
-            >
-              Podešavanja
-            </Link>
-          </div>
-          <div className="min-h-[200px] flex-1 space-y-2 overflow-y-auto pt-3">
-            {todayLoading ? (
-              <div className="space-y-3" aria-busy="true" aria-label="Učitavanje termina">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="h-[4.25rem] animate-pulse rounded-xl bg-slate-200/80 dark:bg-slate-700/80"
-                  />
-                ))}
-              </div>
-            ) : todayError ? (
-              <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-100">
-                {todayError}
-              </div>
-            ) : todayList && todayList.length === 0 ? (
-              <div className="flex flex-col items-center py-10 text-center">
-                <p className="mb-4 text-slate-500 dark:text-slate-400">
-                  Nema termina danas
-                </p>
-                <Button
-                  type="button"
-                  variant="brand"
-                  className="h-11 rounded-xl px-5"
-                  onClick={() => {
-                    toast.info("Kalendar je otvoren — zakaži prvi termin");
-                    router.push(calendarDayUrl);
-                  }}
-                >
-                  + Dodaj prvi termin
-                </Button>
-              </div>
-            ) : (
-              <ul className="space-y-2">
-                {todayList?.map((a) => (
-                  <li key={a.id}>
-                    <Link
-                      href={`${calendarDayUrl}&appt=${a.id}`}
-                      className="block rounded-xl border border-slate-100 bg-slate-50/50 p-3 transition hover:border-sky-200 hover:bg-white hover:shadow-md dark:border-slate-700 dark:bg-slate-800/50 dark:hover:border-sky-700 dark:hover:bg-slate-800"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <p className="text-base font-semibold tabular-nums text-slate-900 dark:text-slate-50">
-                          {formatApptTimeRange(
-                            a.date,
-                            a.service_duration,
-                            tz
-                          )}
-                        </p>
-                        <span
-                          className={cn(
-                            "shrink-0 rounded-full border px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide",
-                            statusStyles(a.status)
-                          )}
-                        >
-                          {statusLabel(a.status)}
-                        </span>
-                      </div>
-                      <p className="mt-1.5 font-medium text-slate-900 dark:text-slate-100">
-                        {a.client_name ?? `Klijent #${a.client_id}`}
-                      </p>
-                      <p className="text-sm text-slate-600 dark:text-slate-400">
-                        {a.service_name ?? `Usluga #${a.service_id}`}
-                      </p>
-                      {appointmentStaffLabel(a) ? (
-                        <p className="mt-1 text-xs text-slate-500 dark:text-slate-500">
-                          {appointmentStaffLabel(a)}
-                        </p>
-                      ) : null}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-          </div>
-        </SurfaceCard>
+        </div>
       </div>
     </div>
   );

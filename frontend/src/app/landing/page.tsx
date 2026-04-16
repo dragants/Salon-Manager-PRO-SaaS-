@@ -42,14 +42,15 @@ export default function LandingPage() {
           padding="lg"
           className="mx-auto max-w-3xl text-center shadow-[0_8px_40px_-12px_rgba(15,23,42,0.12)] dark:shadow-none"
         >
-          <p className="text-sm font-medium uppercase tracking-wide text-sky-600 dark:text-sky-400">
-            SaaS za salone
+          <p className="text-sm font-medium uppercase tracking-wide text-amber-800 dark:text-amber-200/90">
+            Salon lepote i wellness
           </p>
           <h1 className="mt-4 text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-50 sm:text-5xl">
-            Upravljajte salonima bez haosa
+            Upravljajte studiom bez haosa
           </h1>
           <p className="mt-4 text-lg text-slate-600 dark:text-slate-400">
-            Kalendar · Klijenti · Automatski podsetnici · Online rezervacije
+            Masaže, tretmani, rezervacije: kalendar, klijenti, podsetnici i javni
+            link za zakazivanje
           </p>
           <ul className="mx-auto mt-10 max-w-md space-y-3 text-left text-slate-700 dark:text-slate-300">
             <li className="flex gap-2">

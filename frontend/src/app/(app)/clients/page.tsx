@@ -22,7 +22,7 @@ import {
   getClients,
   updateClient,
 } from "@/lib/api";
-import { appointmentStaffLabel } from "@/components/calendar/calendar-utils";
+import { appointmentStaffLabel } from "@/components/features/calendar/calendar-utils";
 import { getApiErrorCode, getApiErrorMessage } from "@/lib/api/errors";
 import { appTableHeadClass, appTableRowClass } from "@/lib/app-ui";
 import { Badge } from "@/components/ui/badge";

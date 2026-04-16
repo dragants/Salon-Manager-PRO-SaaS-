@@ -8,8 +8,8 @@ const {
 let appointmentStaffUserIdColumnCache;
 
 async function hasAppointmentStaffUserColumn() {
-  if (appointmentStaffUserIdColumnCache !== undefined) {
-    return appointmentStaffUserIdColumnCache;
+  if (appointmentStaffUserIdColumnCache === true) {
+    return true;
   }
   const r = await pool.query(
     `SELECT EXISTS (
@@ -19,8 +19,11 @@ async function hasAppointmentStaffUserColumn() {
          AND column_name = 'staff_user_id'
      ) AS ok`
   );
-  appointmentStaffUserIdColumnCache = Boolean(r.rows[0]?.ok);
-  return appointmentStaffUserIdColumnCache;
+  const ok = Boolean(r.rows[0]?.ok);
+  if (ok) {
+    appointmentStaffUserIdColumnCache = true;
+  }
+  return ok;
 }
 
 function assertValidTimeZone(zone) {

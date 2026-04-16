@@ -72,29 +72,33 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-gradient-to-b from-sky-50/50 to-[#f8fafc] px-4 py-12 dark:from-slate-900 dark:to-slate-950 sm:px-6">
-      <SurfaceCard padding="lg" className="w-full max-w-md shadow-lg">
+    <div className="flex min-h-dvh items-center justify-center px-4 py-12 sm:px-6">
+      <SurfaceCard
+        padding="none"
+        className="w-full max-w-[400px] rounded-[var(--lux-radius-xl)] p-8 shadow-[var(--lux-shadow-hover)]"
+      >
       <form onSubmit={onSubmit} className="space-y-6">
         <div className="space-y-1 text-center sm:text-left">
-          <p className="text-xs">
+          <p className="text-[length:var(--lux-text-small)]">
             <Link
               href="/landing"
-              className="font-medium text-sky-700 underline-offset-2 hover:underline dark:text-sky-400"
+              className="font-medium text-primary underline-offset-2 hover:underline"
             >
               ← Početna stranica
             </Link>
           </p>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+          <h1 className="font-heading text-[length:var(--lux-text-h1)] font-medium tracking-tight text-foreground">
             Registracija
           </h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            Kreiraj salon i administratorski nalog. Lozinka min. 8 karaktera.
+          <p className="text-[length:var(--lux-text-body)] text-muted-foreground">
+            Kreiraj nalog za salon lepote, masažu ili wellness i administratora.
+            Lozinka min. 8 karaktera.
           </p>
         </div>
 
         <div className="space-y-4">
           {error ? (
-            <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-100">
+            <p className="rounded-[var(--lux-radius-md)] border border-destructive/35 bg-destructive/10 px-3 py-2 text-[length:var(--lux-text-body)] text-destructive">
               {error}
             </p>
           ) : null}
@@ -133,20 +137,20 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-3 border-t border-slate-100 pt-2 dark:border-slate-800">
+        <div className="flex flex-col gap-3 border-t border-border pt-2">
           <Button
             type="submit"
-            variant="brand"
-            className="h-11 w-full"
+            variant="default"
+            className="h-11 w-full shadow-[var(--lux-shadow-soft)]"
             disabled={loading}
           >
             {loading ? "Šaljem…" : "Napravi nalog"}
           </Button>
-          <p className="text-center text-sm text-slate-600 dark:text-slate-400">
+          <p className="text-center text-[length:var(--lux-text-body)] text-muted-foreground">
             Već imaš nalog?{" "}
             <Link
               href="/login"
-              className="font-medium text-sky-700 underline dark:text-sky-400"
+              className="font-medium text-primary underline-offset-2 hover:underline"
             >
               Prijava
             </Link>

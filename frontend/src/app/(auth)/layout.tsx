@@ -6,7 +6,7 @@ export default function AuthLayout({
   return (
     <div
       id="main-content"
-      className="flex min-h-dvh min-w-0 flex-1 flex-col bg-[#f8fafc] dark:bg-slate-950"
+      className="relative z-[1] flex min-h-dvh min-w-0 flex-1 flex-col bg-background text-foreground"
     >
       {children}
     </div>

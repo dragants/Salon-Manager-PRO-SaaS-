@@ -1,12 +1,12 @@
 import type { AppointmentRow } from "@/types/appointment";
 import type { CalendarRules } from "@/types/organization";
-import type { DayId } from "@/components/settings/working-hours-editor";
+import type { DayId } from "@/components/features/settings/working-hours-editor";
 import {
   isoFromYmdAndMinutesInZone,
   minutesSinceMidnightInZone,
   weekdayDayIdFromYmd,
   ymdInTimeZone,
-} from "@/components/calendar/calendar-utils";
+} from "@/components/features/calendar/calendar-utils";
 import type { OrgTeamMember } from "@/types/user";
 
 const DAY_IDS: DayId[] = [

@@ -2,13 +2,13 @@ import {
   GRID_END_HOUR,
   GRID_START_HOUR,
   PX_PER_HOUR,
-} from "@/components/calendar/calendar-constants";
+} from "@/components/features/calendar/calendar-constants";
 import {
   minutesSinceMidnightInZone,
   weekdayDayIdFromYmd,
   ymdInTimeZone,
-} from "@/components/calendar/calendar-utils";
-import type { DayId } from "@/components/settings/working-hours-editor";
+} from "@/components/features/calendar/calendar-utils";
+import type { DayId } from "@/components/features/settings/working-hours-editor";
 import { intervalsForWorkingDay } from "@/lib/admin-slot-suggestions";
 import type { AppointmentRow } from "@/types/appointment";
 

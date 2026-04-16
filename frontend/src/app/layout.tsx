@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Inter } from "next/font/google";
-import { SiteFooter } from "@/components/site-footer";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { AppProviders } from "@/providers/app-providers";
 import "./globals.css";
 
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     template: "%s · Salon Manager PRO",
   },
   description:
-    "SaaS za salone: kalendar, klijenti, finansije, online rezervacije i podsetnici.",
+    "Za salone lepote, masaže i wellness: kalendar, klijenti, finansije, online rezervacije i podsetnici.",
   applicationName: "Salon Manager PRO",
   authors: [{ name: "Dragan Saric" }],
   creator: "Dragan Saric",
@@ -46,10 +46,12 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f7f7f5" },
-    { media: "(prefers-color-scheme: dark)", color: "#0c0a09" },
+    { media: "(prefers-color-scheme: light)", color: "#f4f6f2" },
+    { media: "(prefers-color-scheme: dark)", color: "#1a201d" },
   ],
 };
+
+const themeInitScript = `(function(){try{var k='smpro-theme';var s=localStorage.getItem(k);var dark;if(s==='dark')dark=true;else if(s==='light')dark=false;else dark=window.matchMedia('(prefers-color-scheme: dark)').matches;document.documentElement.classList.toggle('dark',dark);}catch(e){document.documentElement.classList.toggle('dark',window.matchMedia('(prefers-color-scheme: dark)').matches);}})();`;
 
 export default function RootLayout({
   children,
@@ -59,12 +61,16 @@ export default function RootLayout({
   return (
     <html
       lang="sr"
+      suppressHydrationWarning
       className={`${inter.variable} ${fraunces.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full min-h-dvh flex-col">
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
+      <body className="flex min-h-full min-h-dvh flex-col bg-background text-foreground">
         <a
           href="#main-content"
-          className="sr-only absolute left-4 top-4 z-[9999] rounded-md bg-white px-4 py-2 text-sm font-medium text-slate-900 shadow-lg outline-none ring-2 ring-sky-500 focus:not-sr-only"
+          className="sr-only absolute left-4 top-4 z-[9999] rounded-md bg-card px-4 py-2 text-sm font-medium text-foreground shadow-lg outline-none ring-2 ring-primary focus:not-sr-only"
         >
           Preskoči na sadržaj
         </a>

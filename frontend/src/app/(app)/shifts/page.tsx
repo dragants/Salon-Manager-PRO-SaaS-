@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ClipboardCopy, Save } from "lucide-react";
-import ShiftPlanner from "@/components/shifts/ShiftPlanner";
+import ShiftPlanner from "@/components/features/shifts/ShiftPlanner";
 import { Button } from "@/components/ui/button";
 import { SectionHeader } from "@/components/ui/section-header";
 import { SurfaceCard } from "@/components/ui/surface-card";
@@ -12,7 +12,7 @@ import {
   replaceWorkShifts,
 } from "@/lib/api";
 import { getApiErrorMessage } from "@/lib/api/errors";
-import { browserTimeZone } from "@/components/calendar/calendar-utils";
+import { browserTimeZone } from "@/components/features/calendar/calendar-utils";
 import { formatYyyyMmDd, todayLocal } from "@/lib/dateLocal";
 import {
   shiftsToApiPayload,
@@ -25,7 +25,7 @@ import { useOrganization } from "@/providers/organization-provider";
 import type { OrgTeamMember } from "@/types/user";
 import type { ShiftPlannerShift } from "@/types/shift";
 import { toast } from "sonner";
-import { SHIFT_PLANNER_END_HOUR } from "@/components/calendar/calendar-constants";
+import { SHIFT_PLANNER_END_HOUR } from "@/components/features/calendar/calendar-constants";
 
 function teamToEmployees(team: OrgTeamMember[]) {
   return team.map((m) => ({

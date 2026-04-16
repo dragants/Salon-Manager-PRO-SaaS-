@@ -1,0 +1,112 @@
+/* Dashboard: prati globalni light/dark (rgb varijable) */
+.dashboard-shell {
+  --dash-pad: 24px;
+  --dash-gap: 24px;
+  --dash-radius-card: 16px;
+  --dash-radius-lg: 20px;
+}
+
+.dashboard-shell {
+  background: rgb(var(--bg));
+  color: rgb(var(--text));
+  margin: -1.25rem -1rem -2.5rem;
+  padding: var(--dash-pad);
+  min-height: calc(100dvh - 4rem);
+}
+
+@media (min-width: 640px) {
+  .dashboard-shell {
+    margin: -1.25rem -1.5rem -2.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .dashboard-shell {
+    margin: -2rem -2rem -2.5rem;
+  }
+}
+
+.dashboard-shell .dash-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--dash-gap);
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.dashboard-shell .dash-card {
+  background: rgb(var(--card));
+  border: 1px solid rgb(var(--border));
+  border-radius: var(--dash-radius-card);
+  box-shadow: var(--lux-shadow-soft);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.dashboard-shell .dash-card:hover {
+  transform: scale(1.02);
+  box-shadow: var(--lux-shadow-hover);
+  border-color: rgb(var(--primary) / 0.28);
+}
+
+.dashboard-shell .dash-kpi-label {
+  color: rgb(var(--text) / 0.92);
+  letter-spacing: 0.06em;
+}
+
+.dashboard-shell .dash-kpi-caption {
+  color: rgb(var(--text-muted));
+}
+
+.dashboard-shell .dash-card-primary {
+  background: linear-gradient(
+    145deg,
+    rgb(var(--primary) / 0.14) 0%,
+    rgb(var(--card)) 45%,
+    rgb(var(--card)) 100%
+  );
+  border: 1px solid rgb(var(--border));
+  box-shadow:
+    var(--lux-shadow-soft),
+    0 0 28px -8px rgb(var(--primary) / 0.25);
+}
+
+.dashboard-shell .dash-card-primary:hover {
+  border-color: rgb(var(--primary) / 0.35);
+  box-shadow:
+    var(--lux-shadow-hover),
+    0 0 36px -6px rgb(var(--primary) / 0.3);
+}
+
+.dashboard-shell .dash-btn {
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.dashboard-shell .dash-btn:hover {
+  transform: scale(1.02);
+  filter: brightness(1.05);
+}
+
+.dashboard-shell .dash-btn:active {
+  transform: scale(0.98);
+}
+
+.dashboard-shell .dash-cal-scroll {
+  overflow: auto;
+  max-height: calc(520px - 56px);
+  border-radius: 12px;
+}
+
+.dashboard-shell .dash-muted {
+  color: rgb(var(--text-muted));
+}
+
+.dashboard-shell .dash-calendar-host {
+  color-scheme: light dark;
+}

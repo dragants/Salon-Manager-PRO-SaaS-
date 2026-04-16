@@ -1,11 +1,11 @@
-import { AppShellProvider } from "@/components/app/app-shell-provider";
-import { AppSidebar } from "@/components/app/sidebar";
-import { AppTopBar } from "@/components/app/app-top-bar";
-import { AuthGuard } from "@/components/app/auth-guard";
-import { MobileDock } from "@/components/app/mobile-dock";
-import { NotificationsBootstrap } from "@/components/app/notifications-bootstrap";
-import { PageStatsStrip } from "@/components/app/page-stats-strip";
-import { SetupBanner } from "@/components/app/setup-banner";
+import { AppShellProvider } from "@/components/layout/app-shell-provider";
+import { AppSidebar } from "@/components/layout/sidebar";
+import { AppTopBar } from "@/components/layout/app-top-bar";
+import { AuthGuard } from "@/components/layout/auth-guard";
+import { MobileDock } from "@/components/layout/mobile-dock";
+import { NotificationsBootstrap } from "@/components/layout/notifications-bootstrap";
+import { PageStatsStrip } from "@/components/layout/page-stats-strip";
+import { SetupBanner } from "@/components/layout/setup-banner";
 
 export default function AppLayout({
   children,

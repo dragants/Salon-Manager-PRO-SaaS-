@@ -1,5 +1,5 @@
-import { weekdayDayIdFromYmd } from "@/components/calendar/calendar-utils";
-import { parseWorkingHoursFromApi } from "@/components/settings/working-hours-editor";
+import { weekdayDayIdFromYmd } from "@/components/features/calendar/calendar-utils";
+import { parseWorkingHoursFromApi } from "@/components/features/settings/working-hours-editor";
 import type {
   ShiftPlannerApiRow,
   ShiftPlannerShift,

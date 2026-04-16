@@ -11,29 +11,29 @@ import {
 import { useSearchParams } from "next/navigation";
 import { getOrgTeam, getServices } from "@/lib/api";
 import { getApiErrorMessage } from "@/lib/api/errors";
-import { CalendarTab } from "@/components/settings/CalendarTab";
-import { FinanceTab } from "@/components/settings/FinanceTab";
-import { NotificationsTab } from "@/components/settings/NotificationsTab";
-import { SalonTab } from "@/components/settings/SalonTab";
-import { SecurityTab } from "@/components/settings/SecurityTab";
-import { ServicesTab } from "@/components/settings/ServicesTab";
+import { CalendarTab } from "@/components/features/settings/CalendarTab";
+import { FinanceTab } from "@/components/features/settings/FinanceTab";
+import { NotificationsTab } from "@/components/features/settings/NotificationsTab";
+import { SalonTab } from "@/components/features/settings/SalonTab";
+import { SecurityTab } from "@/components/features/settings/SecurityTab";
+import { ServicesTab } from "@/components/features/settings/ServicesTab";
 import { SurfaceCard } from "@/components/ui/surface-card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { SettingsTabBar } from "@/components/settings/SettingsTabBar";
-import { BillingTab } from "@/components/settings/BillingTab";
-import { TeamTab } from "@/components/settings/TeamTab";
-import { TeamScheduleTab } from "@/components/settings/team-schedule";
-import { WorkingHoursTab } from "@/components/settings/WorkingHoursTab";
+import { SettingsTabBar } from "@/components/features/settings/SettingsTabBar";
+import { BillingTab } from "@/components/features/settings/BillingTab";
+import { TeamTab } from "@/components/features/settings/TeamTab";
+import { TeamScheduleTab } from "@/components/features/settings/team-schedule";
+import { WorkingHoursTab } from "@/components/features/settings/WorkingHoursTab";
 import {
   parseWorkingHoursFromApi,
   workingHoursToPayload,
   type DayScheduleRow,
-} from "@/components/settings/working-hours-editor";
+} from "@/components/features/settings/working-hours-editor";
 import {
   SETTINGS_TABS,
   WORKER_SETTINGS_TABS,
   type SettingsTabId,
-} from "@/components/settings/types";
+} from "@/components/features/settings/types";
 import { useOrganization } from "@/providers/organization-provider";
 import { useAuth } from "@/providers/auth-provider";
 import type { OrgTeamMember, WorkerProfile } from "@/types/user";
@@ -553,7 +553,7 @@ function SettingsPageContent() {
           </h1>
           <p className="text-sm text-zinc-600 dark:text-zinc-400">
             {isAdmin
-              ? "Upravljaj salonom, timom i rezervacijama."
+              ? "Upravljaj studiom, timom i rezervacijama (lepota, masaža, wellness)."
               : "Pregled članova tima. Za izmene salona i finansija obrati se administratoru."}
           </p>
         </div>

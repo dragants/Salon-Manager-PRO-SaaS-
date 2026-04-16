@@ -1,7 +1,7 @@
 import { forwardRef } from "react";
 import type { SVGProps } from "react";
 
-/** Kompaktan „Spa” znak za wellness / salon usluge (umesto makaza). */
+/** Znak za usluge: lepota, masaža, wellness (ne frizerski salon). */
 export const SpaIcon = forwardRef<SVGSVGElement, SVGProps<SVGSVGElement>>(
   function SpaIcon({ className, ...rest }, ref) {
     return (

@@ -2,11 +2,11 @@ import {
   minutesSinceMidnightInZone,
   weekdayDayIdFromYmd,
   ymdInTimeZone,
-} from "@/components/calendar/calendar-utils";
+} from "@/components/features/calendar/calendar-utils";
 import {
   parseWorkingHoursFromApi,
   type DayId,
-} from "@/components/settings/working-hours-editor";
+} from "@/components/features/settings/working-hours-editor";
 import type { OrgTeamMember } from "@/types/user";
 
 /** JS Date.getDay(): 0=ned … 6=sub → mon..sun */

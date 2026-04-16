@@ -2,11 +2,11 @@
 
 import { Suspense } from "react";
 import dynamic from "next/dynamic";
-import { CalendarPageSkeleton } from "@/components/calendar/calendar-page-skeleton";
+import { CalendarPageSkeleton } from "@/components/features/calendar/calendar-page-skeleton";
 
 const SalonCalendar = dynamic(
   () =>
-    import("@/components/calendar/salon-calendar").then((m) => ({
+    import("@/components/features/calendar/salon-calendar").then((m) => ({
       default: m.SalonCalendar,
     })),
   {

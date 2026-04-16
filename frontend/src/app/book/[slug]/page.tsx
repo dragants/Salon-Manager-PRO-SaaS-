@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { addDays, formatYyyyMmDd, todayLocal } from "@/lib/dateLocal";
-import { browserTimeZone } from "@/components/calendar/calendar-utils";
+import { browserTimeZone } from "@/components/features/calendar/calendar-utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

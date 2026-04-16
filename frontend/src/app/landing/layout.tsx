@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Salon Manager PRO — kalendar, klijenti, online rezervacije",
+  title: "Salon Manager PRO — lepota, masaža, online rezervacije",
   description:
-    "Upravljajte salonima bez haosa: kalendar, CRM, podsetnici i javni link za zakazivanje. Isprobajte besplatno.",
+    "Za salone lepote i wellness: kalendar, klijenti, podsetnici i javni link za zakazivanje. Isprobajte besplatno.",
   openGraph: {
     title: "Salon Manager PRO",
     description:
-      "Kalendar, klijenti, automatski podsetnici i online rezervacije za salone.",
+      "Kalendar, klijenti, podsetnici i online rezervacije za salone lepote i wellness.",
     type: "website",
   },
 };

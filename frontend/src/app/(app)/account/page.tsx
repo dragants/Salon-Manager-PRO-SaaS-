@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SectionHeader } from "@/components/ui/section-header";
 import { SurfaceCard } from "@/components/ui/surface-card";
-import { PushNotificationsCard } from "@/components/account/push-notifications-card";
+import { PushNotificationsCard } from "@/components/features/account/push-notifications-card";
 import { clearToken } from "@/lib/auth/token";
 import { useAuth } from "@/providers/auth-provider";
 

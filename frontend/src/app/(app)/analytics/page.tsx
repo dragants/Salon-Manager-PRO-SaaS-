@@ -4,11 +4,11 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { BarChart3, ChevronLeft } from "lucide-react";
-import { AnalyticsChartSkeleton } from "@/components/dashboard/analytics-chart-skeleton";
+import { AnalyticsChartSkeleton } from "@/components/features/dashboard/analytics-chart-skeleton";
 
 const AnalyticsSeriesChart = dynamic(
   () =>
-    import("@/components/dashboard/analytics-series-chart").then((m) => ({
+    import("@/components/features/dashboard/analytics-series-chart").then((m) => ({
       default: m.AnalyticsSeriesChart,
     })),
   { ssr: false, loading: () => <AnalyticsChartSkeleton /> }

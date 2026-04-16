@@ -13,9 +13,9 @@ export default function Icon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%)",
-          color: "#fff",
-          fontSize: 18,
+          background: "linear-gradient(145deg, #38766a 0%, #245a50 100%)",
+          color: "#fafcfb",
+          fontSize: 17,
           fontWeight: 700,
           fontFamily:
             "ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif",
