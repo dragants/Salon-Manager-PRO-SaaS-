@@ -17,6 +17,14 @@ import type {
   ExpenseRow,
   UpdateExpenseBody,
 } from "@/types/expense";
+import type {
+  CreateSupplyItemBody,
+  CreateSupplyMovementBody,
+  PatchSupplyItemBody,
+  SupplyItem,
+  SupplyMovement,
+  SupplyMovementResult,
+} from "@/types/supply";
 import type { MeUser, OrgTeamMember, PatchTeamMemberBody } from "@/types/user";
 import { api } from "./client";
 import {
@@ -255,6 +263,33 @@ export function updateExpense(id: number, data: UpdateExpenseBody) {
 
 export function deleteExpense(id: number) {
   return api.delete<void>(`/expenses/${id}`);
+}
+
+export function getSupplyItems() {
+  return api.get<SupplyItem[]>("/supplies");
+}
+
+export function createSupplyItem(data: CreateSupplyItemBody) {
+  return api.post<SupplyItem>("/supplies", data);
+}
+
+export function patchSupplyItem(id: number, data: PatchSupplyItemBody) {
+  return api.patch<SupplyItem>(`/supplies/${id}`, data);
+}
+
+export function deleteSupplyItem(id: number) {
+  return api.delete<void>(`/supplies/${id}`);
+}
+
+export function getSupplyMovements(params?: {
+  supply_item_id?: number;
+  limit?: number;
+}) {
+  return api.get<SupplyMovement[]>("/supplies/movements", { params });
+}
+
+export function createSupplyMovement(data: CreateSupplyMovementBody) {
+  return api.post<SupplyMovementResult>("/supplies/movements", data);
 }
 
 export function getServices() {

@@ -10,6 +10,7 @@ import {
   CreditCard,
   ExternalLink,
   LayoutDashboard,
+  Package,
   LogOut,
   Menu,
   Settings,
@@ -30,6 +31,7 @@ const allNav = [
   { href: "/shifts", label: "Smena", icon: CalendarClock },
   { href: "/clients", label: "Klijenti", icon: Users },
   { href: "/services", label: "Usluge", icon: SpaIcon },
+  { href: "/supplies", label: "Materijal", icon: Package },
   { href: "/analytics", label: "Analitika", icon: BarChart3 },
   { href: "/finances", label: "Finansije", icon: CreditCard },
   { href: "/account", label: "Moj nalog", icon: UserCircle },
@@ -46,7 +48,10 @@ export function AppSidebar() {
   const nav = useMemo(() => {
     if (user?.role === "worker") {
       return allNav.filter(
-        (item) => item.href !== "/finances" && item.href !== "/shifts"
+        (item) =>
+          item.href !== "/finances" &&
+          item.href !== "/shifts" &&
+          item.href !== "/supplies"
       );
     }
     return [...allNav];

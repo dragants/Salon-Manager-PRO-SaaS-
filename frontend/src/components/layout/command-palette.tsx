@@ -14,6 +14,7 @@ import {
   Clock3,
   CreditCard,
   LayoutDashboard,
+  Package,
   Search,
   Sparkles,
   UserPlus,
@@ -168,8 +169,8 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     return items;
   }, [isAdmin, weekCal]);
 
-  const navDefs = useMemo<CmdItem[]>(
-    () => [
+  const navDefs = useMemo<CmdItem[]>(() => {
+    const items: CmdItem[] = [
       {
         id: "nav-clients",
         label: "Idi na Klijente",
@@ -184,23 +185,34 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
         href: weekCal,
         keywords: "raspored termini",
       },
-      {
-        id: "nav-finances",
-        label: "Idi na Finansije",
-        icon: <CreditCard className="size-4" />,
-        href: "/finances",
-        keywords: "prihod transakcije novac",
-      },
-      {
-        id: "nav-dashboard",
-        label: "Idi na Dashboard",
-        icon: <LayoutDashboard className="size-4" />,
-        href: "/dashboard",
-        keywords: "početna pregled",
-      },
-    ],
-    [weekCal]
-  );
+    ];
+    if (isAdmin) {
+      items.push(
+        {
+          id: "nav-finances",
+          label: "Idi na Finansije",
+          icon: <CreditCard className="size-4" />,
+          href: "/finances",
+          keywords: "prihod transakcije novac",
+        },
+        {
+          id: "nav-supplies",
+          label: "Idi na Potrošni materijal",
+          icon: <Package className="size-4" />,
+          href: "/supplies",
+          keywords: "zalihe nabavka potrošnja inventura",
+        }
+      );
+    }
+    items.push({
+      id: "nav-dashboard",
+      label: "Idi na Dashboard",
+      icon: <LayoutDashboard className="size-4" />,
+      href: "/dashboard",
+      keywords: "početna pregled",
+    });
+    return items;
+  }, [weekCal, isAdmin]);
 
   useEffect(() => {
     if (!open || !isAdmin) {

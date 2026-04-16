@@ -21,6 +21,7 @@ const bookingRoutes = require("./modules/booking/booking.routes");
 const availabilityRoutes = require("./modules/availability/availability.routes");
 const shiftsRoutes = require("./modules/shifts/shifts.routes");
 const expensesRoutes = require("./modules/expenses/expenses.routes");
+const suppliesRoutes = require("./modules/supplies/supplies.routes");
 
 const errorHandler = require("./middleware/error.middleware");
 
@@ -73,6 +74,7 @@ app.use("/analytics", analyticsRoutes);
 app.use("/audit", auditRoutes);
 app.use("/billing", billingRoutes);
 app.use("/expenses", expensesRoutes);
+app.use("/supplies", suppliesRoutes);
 
 app.use(errorHandler);
 
