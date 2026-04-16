@@ -39,8 +39,8 @@ export function DashboardKpiCard({
   return (
     <div
       className={cn(
-        "group relative overflow-hidden rounded-2xl border border-slate-200/80 border-l-4 bg-gradient-to-br to-white p-5 shadow-sm transition-all duration-200",
-        "hover:-translate-y-1 hover:border-slate-300/90 hover:shadow-md",
+        "group relative overflow-hidden rounded-2xl border border-zinc-200/90 border-l-4 bg-gradient-to-br to-white p-5 shadow-[0_4px_20px_rgba(0,0,0,0.04)] transition-all duration-200 dark:border-zinc-700/90 dark:to-zinc-950",
+        "hover:-translate-y-0.5 hover:border-zinc-300/90 hover:shadow-[0_8px_28px_rgba(0,0,0,0.08)] dark:hover:border-zinc-600",
         accentClass[accent],
         dominant &&
           "z-[1] scale-[1.02] shadow-md ring-2 ring-emerald-300/45 dark:ring-emerald-700/50"
@@ -61,7 +61,7 @@ export function DashboardKpiCard({
           ) : null}
         </div>
         <div
-          className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-white/80 text-slate-500 shadow-sm ring-1 ring-slate-200/60 transition group-hover:text-slate-700 dark:bg-slate-800/80 dark:text-slate-400 dark:ring-slate-700"
+          className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-zinc-50 text-zinc-500 shadow-sm ring-1 ring-zinc-200/80 transition group-hover:text-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:ring-zinc-700"
           aria-hidden
         >
           {icon}

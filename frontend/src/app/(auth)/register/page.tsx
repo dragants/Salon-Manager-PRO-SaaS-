@@ -27,10 +27,18 @@ export default function RegisterPage() {
     if (authLoading) {
       return;
     }
-    if (user) {
-      syncSessionCookie(true);
-      router.replace("/dashboard");
+    if (!user) {
+      return;
     }
+    syncSessionCookie(true);
+    if (
+      typeof window !== "undefined" &&
+      sessionStorage.getItem("salon_onboarding_pending") === "1"
+    ) {
+      router.replace("/onboarding");
+      return;
+    }
+    router.replace("/dashboard");
   }, [router, authLoading, user]);
 
   async function onSubmit(e: React.FormEvent) {
@@ -43,9 +51,12 @@ export default function RegisterPage() {
         password,
         organization_name: organizationName,
       });
-      setToken(data.token);
+      setToken(data.token, true);
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("salon_onboarding_pending", "1");
+      }
       await refreshUser();
-      router.replace("/dashboard");
+      router.replace("/onboarding");
       router.refresh();
     } catch (err) {
       if (axios.isAxiosError(err) && !err.response) {
@@ -61,7 +72,8 @@ export default function RegisterPage() {
   }
 
   return (
-    <SurfaceCard padding="lg" className="w-full">
+    <div className="flex min-h-dvh items-center justify-center bg-gradient-to-b from-sky-50/50 to-[#f8fafc] px-4 py-12 dark:from-slate-900 dark:to-slate-950 sm:px-6">
+      <SurfaceCard padding="lg" className="w-full max-w-md shadow-lg">
       <form onSubmit={onSubmit} className="space-y-6">
         <div className="space-y-1 text-center sm:text-left">
           <p className="text-xs">
@@ -142,5 +154,6 @@ export default function RegisterPage() {
         </div>
       </form>
     </SurfaceCard>
+    </div>
   );
 }

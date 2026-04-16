@@ -1,7 +1,12 @@
 const router = require("express").Router();
 const rateLimit = require("express-rate-limit");
 const controller = require("./auth.controller");
-const { registerSchema, loginSchema } = require("./auth.validation");
+const {
+  registerSchema,
+  loginSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+} = require("./auth.validation");
 const validate = require("../../middleware/validate.middleware");
 const asyncHandler = require("../../utils/asyncHandler");
 
@@ -17,6 +22,19 @@ const authRouteLimit = rateLimit({
   },
 });
 
+/** Još stroži za login (credential stuffing). */
+const loginRouteLimit = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true,
+  message: {
+    error:
+      "Previše neuspešnih prijava sa ove adrese. Pokušajte ponovo za nekoliko minuta.",
+  },
+});
+
 router.post(
   "/register",
   authRouteLimit,
@@ -25,9 +43,23 @@ router.post(
 );
 router.post(
   "/login",
-  authRouteLimit,
+  loginRouteLimit,
   validate(loginSchema),
   asyncHandler(controller.login)
+);
+
+router.post(
+  "/forgot-password",
+  authRouteLimit,
+  validate(forgotPasswordSchema),
+  asyncHandler(controller.forgotPassword)
+);
+
+router.post(
+  "/reset-password",
+  authRouteLimit,
+  validate(resetPasswordSchema),
+  asyncHandler(controller.resetPassword)
 );
 
 module.exports = router;

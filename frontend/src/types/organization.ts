@@ -15,6 +15,8 @@ export type FinanceSettings = {
   vat_enabled: boolean;
   accept_cash: boolean;
   accept_card: boolean;
+  /** Mesečni operativni trošak (RSD), sinhronizovano sa API-jem. */
+  monthly_overhead_rsd?: number;
 };
 
 export type AutomationSettings = {

@@ -22,11 +22,11 @@ export function SectionHeader({
       )}
     >
       <div className="min-w-0 space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50 sm:text-3xl">
+        <h1 className="font-heading text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-3xl">
           {title}
         </h1>
         {description ? (
-          <div className="max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+          <div className="max-w-2xl text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
             {description}
           </div>
         ) : null}

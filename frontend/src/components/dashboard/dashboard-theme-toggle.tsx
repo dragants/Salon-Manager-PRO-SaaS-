@@ -45,7 +45,7 @@ export function DashboardThemeToggle({ className }: { className?: string }) {
       size="icon"
       onClick={toggle}
       className={cn(
-        "size-10 rounded-xl border-white/25 bg-white/10 text-white shadow-sm backdrop-blur-sm hover:bg-white/20 hover:text-white dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100",
+        "size-10 rounded-xl border-zinc-200 bg-white text-zinc-700 shadow-sm hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800",
         className
       )}
       aria-label={dark ? "Uključi svetli režim" : "Uključi tamni režim"}

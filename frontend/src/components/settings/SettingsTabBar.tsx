@@ -18,7 +18,7 @@ export function SettingsTabBar({
         aria-label="Odeljci podešavanja"
         className={cn(
           "flex w-full min-w-0 flex-nowrap gap-1.5 overflow-x-auto overscroll-x-contain scroll-px-1 pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] sm:gap-2 [&::-webkit-scrollbar]:hidden",
-          "rounded-2xl border border-gray-200 bg-white p-1.5 shadow-sm dark:border-slate-700 dark:bg-slate-900",
+          "rounded-2xl border border-zinc-200/90 bg-white p-1.5 shadow-[0_4px_20px_rgba(0,0,0,0.05)] dark:border-zinc-800 dark:bg-zinc-950",
           "touch-pan-x lg:flex-wrap lg:overflow-x-visible lg:overscroll-x-auto lg:pb-0"
         )}
       >
@@ -34,14 +34,16 @@ export function SettingsTabBar({
               className={cn(
                 "flex min-h-9 shrink-0 snap-start items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-medium transition-colors sm:min-h-10 sm:gap-2 sm:px-4 sm:text-sm",
                 isActive
-                  ? "bg-blue-600 text-white shadow-sm dark:bg-blue-600"
-                  : "text-gray-600 hover:bg-gray-100 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                  ? "bg-zinc-900 text-white shadow-sm dark:bg-zinc-100 dark:text-zinc-900"
+                  : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
               )}
             >
               <Icon
                 className={cn(
                   "size-3.5 shrink-0 sm:size-4",
-                  isActive ? "text-white/95" : "text-gray-500 dark:text-slate-500"
+                  isActive
+                    ? "text-white/95 dark:text-zinc-900"
+                    : "text-zinc-500 dark:text-zinc-500"
                 )}
                 aria-hidden
               />

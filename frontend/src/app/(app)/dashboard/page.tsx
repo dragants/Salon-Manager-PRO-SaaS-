@@ -3,26 +3,25 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import {
   CalendarDays,
   CalendarPlus,
   CalendarRange,
   Clock3,
   Moon,
-  Percent,
-  Sparkles,
+  Package,
   TrendingUp,
   UserPlus,
   Users,
   Wallet,
 } from "lucide-react";
 import { toast } from "sonner";
+import { CalendarPageSkeleton } from "@/components/calendar/calendar-page-skeleton";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { AnalyticsChartSkeleton } from "@/components/dashboard/analytics-chart-skeleton";
 import { DashboardKpiCard } from "@/components/dashboard/dashboard-kpi-card";
-import { DashboardThemeToggle } from "@/components/dashboard/dashboard-theme-toggle";
 import { SurfaceCard } from "@/components/ui/surface-card";
 import { getAnalytics, getAppointments, getDashboard } from "@/lib/api";
 import { getApiErrorMessage } from "@/lib/api/errors";
@@ -40,6 +39,12 @@ const AnalyticsSeriesChart = dynamic(
       default: m.AnalyticsSeriesChart,
     })),
   { ssr: false, loading: () => <AnalyticsChartSkeleton /> }
+);
+
+const SalonCalendar = dynamic(
+  () =>
+    import("@/components/calendar/salon-calendar").then((m) => m.SalonCalendar),
+  { ssr: false, loading: () => <CalendarPageSkeleton /> }
 );
 
 const DEFAULT_TZ = "Europe/Belgrade";
@@ -82,16 +87,6 @@ function displayNameFromEmail(email: string | undefined): string {
   return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
 }
 
-function userInitials(email: string | undefined): string {
-  if (!email?.trim()) return "?";
-  const local = email.split("@")[0] ?? "";
-  const clean = local.replace(/[^a-zA-Z0-9]/g, "");
-  if (clean.length >= 2) {
-    return (clean[0] + clean[1]).toUpperCase();
-  }
-  return email.charAt(0).toUpperCase();
-}
-
 function formatApptTimeRange(
   iso: string,
   durationMin: number | undefined,
@@ -124,24 +119,26 @@ function statusStyles(status: AppointmentRow["status"]): string {
   if (status === "no_show") {
     return "border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200";
   }
-  return "border-sky-200 bg-sky-50 text-sky-900 dark:border-sky-800 dark:bg-sky-950/50 dark:text-sky-200";
+  return "border-amber-200 bg-amber-50 text-amber-950 dark:border-amber-800 dark:bg-amber-950/45 dark:text-amber-100";
 }
 
 function DashboardSkeleton() {
   return (
     <div className="animate-pulse space-y-8 px-1">
-      <div className="h-36 rounded-3xl bg-slate-200/80 dark:bg-slate-800" />
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-        {Array.from({ length: 6 }).map((_, i) => (
+      <div className="h-24 rounded-2xl bg-zinc-200/80 dark:bg-zinc-800" />
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
           <div
             key={i}
-            className="h-28 rounded-2xl bg-slate-200/70 dark:bg-slate-800"
+            className="h-28 rounded-2xl bg-zinc-200/70 dark:bg-zinc-800"
           />
         ))}
       </div>
+      <div className="h-12 rounded-xl bg-zinc-200/70 dark:bg-zinc-800" />
+      <div className="h-[min(70vh,560px)] rounded-2xl bg-zinc-200/70 dark:bg-zinc-800" />
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="h-96 rounded-2xl bg-slate-200/70 dark:bg-slate-800 lg:col-span-2" />
-        <div className="h-96 rounded-2xl bg-slate-200/70 dark:bg-slate-800" />
+        <div className="h-96 rounded-2xl bg-zinc-200/70 dark:bg-zinc-800 lg:col-span-2" />
+        <div className="h-96 rounded-2xl bg-zinc-200/70 dark:bg-zinc-800" />
       </div>
     </div>
   );
@@ -327,196 +324,158 @@ export default function DashboardPage() {
   const appointmentsToday =
     analytics?.appointments_today ?? dash.todayAppointments;
   const revenueToday = analytics?.revenue_today ?? dash.revenue;
-  const themeTint = settings.theme_color?.trim() || "#0ea5e9";
   const calendarDayUrl = `/calendar?day=${encodeURIComponent(todayYmd)}&view=day`;
+  const calendarWeekUrl = `/calendar?day=${encodeURIComponent(todayYmd)}&view=week`;
 
   return (
     <div className="space-y-8 pb-12">
-      {/* Hero */}
-      <section
-        className="relative overflow-hidden rounded-3xl px-5 py-8 text-white shadow-[0_20px_50px_-15px_rgba(15,23,42,0.45)] ring-1 ring-white/15 sm:px-8 sm:py-10"
-        style={{
-          background: `linear-gradient(135deg, rgb(15 23 42) 0%, color-mix(in srgb, ${themeTint} 35%, rgb(15 23 42)) 45%, rgb(15 23 42) 100%)`,
-        }}
-      >
-        <div
-          className="pointer-events-none absolute -right-20 -top-20 size-72 rounded-full opacity-30 blur-3xl"
-          style={{
-            background: `radial-gradient(circle, ${themeTint}, transparent 65%)`,
-          }}
-        />
-        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-          <div className="min-w-0 space-y-3">
-            <p className="flex items-center gap-2 text-sm font-medium text-white/85">
-              <Sparkles className="size-4 shrink-0 text-amber-200" aria-hidden />
-              {settings.name}
-            </p>
-            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              {greetingSr()}, {displayNameFromEmail(user.email)}{" "}
-              <span className="inline-block" aria-hidden>
-                {"\u{1F44B}"}
-              </span>
-            </h1>
-            <p className="mt-2 text-blue-100">
-              Danas:{" "}
-              <b className="font-semibold text-white">
-                {appointmentsToday}{" "}
-                {appointmentsToday === 1 ? "termin" : "termina"}
-              </b>
-              {showFinancialKpi ? (
-                <>
-                  {" "}
-                  • Prihod:{" "}
-                  <b className="font-semibold text-white">
-                    {formatRsd(revenueToday)}
-                  </b>
-                </>
-              ) : null}
-            </p>
-            <p className="max-w-xl text-base text-white/80">
-              Pregled poslovanja i raspored na jednom mestu.
-            </p>
-            <div className="flex flex-wrap gap-2 pt-1">
-              <Link
-                href={calendarDayUrl}
-                className={cn(
-                  buttonVariants({ size: "sm" }),
-                  "inline-flex items-center gap-2 rounded-xl border-0 bg-white text-slate-900 shadow-md hover:bg-white/95"
-                )}
-              >
-                <CalendarPlus className="size-4" aria-hidden />
-                Novi termin
-              </Link>
-              <Link
-                href={calendarDayUrl}
-                className={cn(
-                  buttonVariants({ variant: "outline", size: "sm" }),
-                  "inline-flex items-center gap-2 rounded-xl border-white/40 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20 hover:text-white"
-                )}
-              >
-                <CalendarDays className="size-4" aria-hidden />
-                Otvori kalendar
-              </Link>
-              <Link
-                href="/clients"
-                className={cn(
-                  buttonVariants({ variant: "outline", size: "sm" }),
-                  "inline-flex items-center gap-2 rounded-xl border-white/40 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20 hover:text-white"
-                )}
-              >
-                <UserPlus className="size-4" aria-hidden />
-                Novi klijent
-              </Link>
-              <Link
-                href="/analytics"
-                className={cn(
-                  buttonVariants({ variant: "outline", size: "sm" }),
-                  "inline-flex items-center gap-2 rounded-xl border-white/40 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20 hover:text-white"
-                )}
-              >
-                <TrendingUp className="size-4" aria-hidden />
-                Analitika
-              </Link>
-            </div>
-          </div>
-          <div className="flex shrink-0 items-center gap-3 self-start lg:flex-col lg:items-end">
-            <div className="flex items-center gap-2">
-              <DashboardThemeToggle />
-              <div
-                className="flex size-12 items-center justify-center rounded-2xl bg-white/15 text-sm font-bold uppercase tracking-tight text-white ring-2 ring-white/25 backdrop-blur-sm"
-                title={user.email}
-              >
-                {userInitials(user.email)}
-              </div>
-            </div>
-            <p className="hidden max-w-[14rem] truncate text-right text-xs text-white/65 lg:block">
-              {user.email}
-            </p>
-          </div>
+      <section className="flex flex-col gap-4 border-b border-zinc-200/90 pb-8 dark:border-zinc-800 sm:flex-row sm:items-end sm:justify-between">
+        <div className="min-w-0 space-y-1">
+          <p className="text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+            {settings.name}
+          </p>
+          <h1 className="font-heading text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-4xl">
+            {greetingSr()}, {displayNameFromEmail(user.email)}
+          </h1>
+          <p className="text-sm capitalize text-zinc-600 dark:text-zinc-400">
+            {todayHeadingInTz(tz)}
+            {showFinancialKpi ? (
+              <>
+                <span className="mx-2 text-zinc-300 dark:text-zinc-600">
+                  ·
+                </span>
+                Prihod danas:{" "}
+                <span className="font-medium text-zinc-800 dark:text-zinc-200">
+                  {formatRsd(revenueToday)}
+                </span>
+              </>
+            ) : null}
+          </p>
         </div>
+        <Link
+          href="/analytics"
+          className={cn(
+            buttonVariants({ variant: "outline", size: "sm" }),
+            "self-start rounded-xl border-zinc-200 sm:self-auto dark:border-zinc-700"
+          )}
+        >
+          <TrendingUp className="size-4" aria-hidden />
+          Analitika
+        </Link>
       </section>
 
-      {/* KPI */}
-      <div
-        className={cn(
-          "grid gap-4 sm:grid-cols-2",
-          showFinancialKpi
-            ? "lg:grid-cols-3 xl:grid-cols-6"
-            : "lg:grid-cols-2 xl:grid-cols-4"
-        )}
-      >
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <DashboardKpiCard
-          title="Termini danas"
+          title="Danas zakazano"
           value={appointmentsToday}
           accent="sky"
           icon={<CalendarRange className="size-5" />}
+          hint={
+            appointmentsToday === 1 ? "1 termin danas" : "Termina na današnji dan"
+          }
         />
-        {showFinancialKpi &&
-        typeof dash.revenue === "number" &&
-        typeof dash.clients === "number" ? (
-          <>
-            <DashboardKpiCard
-              title="Prihod danas"
-              value={formatRsd(revenueToday)}
-              accent="emerald"
-              dominant
-              icon={<Wallet className="size-5" />}
-            />
-            <DashboardKpiCard
-              title="Prihod (mesec)"
-              value={
-                analyticsLoading
-                  ? "—"
-                  : formatRsd(
-                      analytics?.revenue_month ?? analytics?.revenue ?? 0
-                    )
-              }
-              accent="violet"
-              icon={<TrendingUp className="size-5" />}
-            />
-            <DashboardKpiCard
-              title="No-show"
-              value={
-                analyticsLoading ? "—" : `${analytics?.no_show_percent ?? 0}%`
-              }
-              accent="amber"
-              icon={<Percent className="size-5" />}
-            />
-            <DashboardKpiCard
-              title="Klijenti"
-              value={analytics?.clients ?? dash.clients}
-              accent="rose"
-              icon={<Users className="size-5" />}
-            />
-          </>
-        ) : (
-          <>
-            <DashboardKpiCard
-              title="No-show"
-              value={
-                analyticsLoading ? "—" : `${analytics?.no_show_percent ?? 0}%`
-              }
-              accent="amber"
-              icon={<Percent className="size-5" />}
-            />
-            <DashboardKpiCard
-              title="Klijenti"
-              value={analytics?.clients ?? "—"}
-              accent="rose"
-              icon={<Users className="size-5" />}
-            />
-          </>
-        )}
+        <DashboardKpiCard
+          title="Ukupno klijenata"
+          value={analytics?.clients ?? dash.clients}
+          accent="rose"
+          icon={<Users className="size-5" />}
+        />
+        <DashboardKpiCard
+          title="Prihod (mesec)"
+          value={
+            !showFinancialKpi
+              ? "—"
+              : analyticsLoading
+                ? "—"
+                : formatRsd(
+                    analytics?.revenue_month ?? analytics?.revenue ?? 0
+                  )
+          }
+          accent="emerald"
+          dominant={showFinancialKpi && !analyticsLoading}
+          icon={<Wallet className="size-5" />}
+          hint={!showFinancialKpi ? "Dostupno administratoru" : undefined}
+        />
         <DashboardKpiCard
           title="Sledeći termin"
           value={dash.nextAppointment ?? "—"}
           accent="slate"
           icon={<Clock3 className="size-5" />}
-          hint="Iz kratkog pregleda"
+          hint="Najbliži u rasporedu"
         />
       </div>
 
-      {/* Chart + today */}
+      {!analyticsLoading && analytics ? (
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          No-show (30 d.):{" "}
+          <span className="font-medium text-zinc-700 dark:text-zinc-300">
+            {analytics.no_show_percent ?? 0}%
+          </span>
+        </p>
+      ) : null}
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+        <Link
+          href={calendarWeekUrl}
+          className={cn(
+            buttonVariants({ size: "sm" }),
+            "h-11 flex-1 items-center justify-center gap-2 rounded-xl sm:h-10 sm:flex-initial sm:px-5"
+          )}
+        >
+          <CalendarPlus className="size-4" aria-hidden />
+          Nova rezervacija
+        </Link>
+        <Link
+          href="/clients"
+          className={cn(
+            buttonVariants({ variant: "outline", size: "sm" }),
+            "h-11 flex-1 items-center justify-center gap-2 rounded-xl border-zinc-200 bg-white sm:h-10 sm:flex-initial sm:px-5 dark:border-zinc-700 dark:bg-zinc-950"
+          )}
+        >
+          <UserPlus className="size-4" aria-hidden />
+          Novi klijent
+        </Link>
+        <Link
+          href="/services"
+          className={cn(
+            buttonVariants({ variant: "outline", size: "sm" }),
+            "h-11 flex-1 items-center justify-center gap-2 rounded-xl border-zinc-200 bg-white sm:h-10 sm:flex-initial sm:px-5 dark:border-zinc-700 dark:bg-zinc-950"
+          )}
+        >
+          <Package className="size-4" aria-hidden />
+          Nova usluga
+        </Link>
+      </div>
+
+      <section className="space-y-4">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 className="font-heading text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+              Nedeljni kalendar
+            </h2>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              Prevuci termine da promeniš vreme · boje po statusu
+            </p>
+          </div>
+          <Link
+            href={calendarWeekUrl}
+            className={cn(
+              buttonVariants({ variant: "ghost", size: "sm" }),
+              "rounded-xl text-zinc-600 dark:text-zinc-400"
+            )}
+          >
+            <CalendarDays className="size-4" aria-hidden />
+            Puni ekran
+          </Link>
+        </div>
+        <div className="card-stripe max-h-[min(78vh,720px)] overflow-y-auto overflow-x-hidden">
+          <Suspense fallback={<CalendarPageSkeleton />}>
+            <SalonCalendar />
+          </Suspense>
+        </div>
+      </section>
+
+      {/* Trend + današnji */}
       <div className="grid gap-6 lg:grid-cols-3 lg:items-stretch">
         <SurfaceCard
           padding="md"
@@ -596,9 +555,14 @@ export default function DashboardPage() {
 
         <SurfaceCard
           padding="md"
-          className="flex flex-col transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
+          className="relative flex flex-col overflow-hidden border-amber-200/50 bg-gradient-to-br from-amber-50/50 via-white to-white shadow-[0_8px_30px_-8px_rgba(251,146,60,0.25)] transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-[0_20px_44px_-12px_rgba(251,146,60,0.35)] dark:border-amber-900/35 dark:from-amber-950/30 dark:via-zinc-950 dark:to-zinc-950 dark:shadow-[0_8px_30px_-8px_rgba(251,146,60,0.12)] dark:hover:shadow-[0_20px_44px_-12px_rgba(251,146,60,0.2)]"
         >
-          <div className="border-b border-slate-100 pb-4 dark:border-slate-700">
+          <div
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_90%_60%_at_50%_-30%,rgba(251,191,36,0.14),transparent_55%)] dark:bg-[radial-gradient(ellipse_90%_60%_at_50%_-30%,rgba(251,191,36,0.08),transparent_55%)]"
+            aria-hidden
+          />
+          <div className="relative flex flex-col">
+          <div className="border-b border-slate-100/80 pb-4 dark:border-slate-700/80">
             <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-50">
               Današnji termini
             </h2>
@@ -698,6 +662,7 @@ export default function DashboardPage() {
                 ))}
               </ul>
             )}
+          </div>
           </div>
         </SurfaceCard>
       </div>

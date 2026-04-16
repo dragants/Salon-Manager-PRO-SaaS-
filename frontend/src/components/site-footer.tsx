@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export function SiteFooter() {
   return (
-    <footer className="mt-auto border-t border-zinc-200/90 bg-zinc-50/90 py-6 text-center text-sm text-zinc-600 dark:border-zinc-800 dark:bg-zinc-950/60 dark:text-zinc-400">
+    <footer className="mt-auto border-t border-zinc-200/90 bg-background py-6 text-center text-sm text-zinc-600 dark:border-zinc-800 dark:text-zinc-400">
       <p>© 2026 Dragan Saric</p>
       <nav
         className="mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1"

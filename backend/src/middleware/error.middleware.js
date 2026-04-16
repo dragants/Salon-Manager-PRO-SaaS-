@@ -43,6 +43,14 @@ module.exports = function errorHandler(err, req, res, next) {
     });
   }
 
+  if (err.apiCode) {
+    return res.status(err.statusCode || 403).json({
+      error: err.message || "Zabranjeno",
+      code: err.apiCode,
+      ...(err.details ? { details: err.details } : {}),
+    });
+  }
+
   const status = err.statusCode || err.status;
   if (status && status !== 500) {
     return res.status(status).json({ error: err.message || "Error" });

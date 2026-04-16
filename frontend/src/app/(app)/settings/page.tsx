@@ -17,6 +17,7 @@ import { SalonTab } from "@/components/settings/SalonTab";
 import { SecurityTab } from "@/components/settings/SecurityTab";
 import { ServicesTab } from "@/components/settings/ServicesTab";
 import { SurfaceCard } from "@/components/ui/surface-card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { SettingsTabBar } from "@/components/settings/SettingsTabBar";
 import { BillingTab } from "@/components/settings/BillingTab";
 import { TeamTab } from "@/components/settings/TeamTab";
@@ -110,8 +111,16 @@ function SettingsPageContent() {
 
   useEffect(() => {
     const t = searchParams.get("tab");
-    if (t === "billing" && isAdmin) {
-      setTab("billing");
+    if (!t) {
+      return;
+    }
+    const adminIds = SETTINGS_TABS.map((x) => x.id);
+    const workerIds = WORKER_SETTINGS_TABS.map((x) => x.id);
+    const ok = isAdmin
+      ? adminIds.includes(t as SettingsTabId)
+      : workerIds.includes(t as SettingsTabId);
+    if (ok) {
+      setTab(t as SettingsTabId);
     }
   }, [searchParams, isAdmin]);
 
@@ -330,11 +339,22 @@ function SettingsPageContent() {
 
   if (loading || !settings) {
     return (
-      <div className="mx-auto w-full max-w-7xl space-y-2 px-1">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
-          Podešavanja
-        </h1>
-        <p className="text-sm text-gray-500 dark:text-slate-400">Učitavanje…</p>
+      <div className="mx-auto w-full max-w-7xl space-y-6 px-1 pb-10">
+        <div className="space-y-3 border-b border-zinc-200/90 pb-6 dark:border-zinc-800">
+          <Skeleton className="h-9 w-48 rounded-lg sm:h-10" />
+          <Skeleton className="h-4 w-full max-w-xl rounded-md" />
+          <div className="flex flex-wrap gap-2 pt-2">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Skeleton key={i} className="h-8 w-[5.5rem] rounded-lg" />
+            ))}
+          </div>
+        </div>
+        <SurfaceCard padding="lg" className="overflow-hidden">
+          <Skeleton className="h-8 w-2/5 max-w-xs rounded-lg" />
+          <Skeleton className="mt-6 h-12 w-full rounded-xl" />
+          <Skeleton className="mt-4 h-12 w-full rounded-xl" />
+          <Skeleton className="mt-4 h-24 w-full rounded-xl" />
+        </SurfaceCard>
       </div>
     );
   }
@@ -342,13 +362,13 @@ function SettingsPageContent() {
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6 pb-10 pt-0 sm:space-y-8">
       <div
-        className="sticky top-0 z-30 -mx-1 space-y-4 border-b border-slate-200/80 bg-[#f8fafc]/95 px-1 pb-4 pt-1 backdrop-blur-md supports-[backdrop-filter]:bg-[#f8fafc]/85 dark:border-slate-800 dark:bg-slate-950/95 dark:supports-[backdrop-filter]:bg-slate-950/85"
+        className="sticky top-0 z-30 -mx-1 space-y-4 border-b border-zinc-200/90 bg-background/95 px-1 pb-4 pt-1 backdrop-blur-md supports-[backdrop-filter]:bg-background/85 dark:border-zinc-800 dark:bg-background/95"
       >
         <div className="space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
+          <h1 className="font-heading text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-3xl">
             Podešavanja
           </h1>
-          <p className="text-sm text-gray-500 dark:text-slate-400">
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">
             {isAdmin
               ? "Upravljaj salonom, timom i rezervacijama."
               : "Pregled članova tima. Za izmene salona i finansija obrati se administratoru."}
@@ -638,7 +658,7 @@ export default function SettingsPage() {
   return (
     <Suspense
       fallback={
-        <div className="mx-auto max-w-7xl px-1 py-2 text-sm text-gray-500 dark:text-slate-400">
+        <div className="mx-auto max-w-7xl px-1 py-2 text-sm text-zinc-500 dark:text-zinc-400">
           Učitavanje podešavanja…
         </div>
       }

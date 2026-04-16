@@ -13,4 +13,18 @@ async function login(req, res) {
   res.json({ token });
 }
 
-module.exports = { register, login };
+async function forgotPassword(req, res) {
+  await authService.requestPasswordReset(req.body);
+  res.json({
+    ok: true,
+    message:
+      "Ako nalog postoji, poslali smo uputstvo na e-adresu (proveri i spam).",
+  });
+}
+
+async function resetPassword(req, res) {
+  await authService.resetPassword(req.body);
+  res.json({ ok: true, message: "Lozinka je ažurirana. Možete se prijaviti." });
+}
+
+module.exports = { register, login, forgotPassword, resetPassword };

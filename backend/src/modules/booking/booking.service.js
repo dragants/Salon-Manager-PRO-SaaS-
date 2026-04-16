@@ -12,6 +12,7 @@ const {
 } = require("../appointments/appointmentOverlap.service");
 const { sendBookingNotifications } = require("../appointments/appointments.notify");
 const { intervalsForDay } = require("../../utils/workingHoursIntervals");
+const { assertCanAddClient } = require("../../services/plan-limits.service");
 
 const DAY_IDS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 
@@ -315,6 +316,8 @@ async function findOrCreateClient(orgId, name, phone, email) {
     }
     return id;
   }
+
+  await assertCanAddClient(orgId);
 
   try {
     const ins = await pool.query(

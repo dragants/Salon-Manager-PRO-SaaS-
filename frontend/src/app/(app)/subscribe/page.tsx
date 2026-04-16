@@ -94,6 +94,24 @@ export default function SubscribePage() {
             {error}
           </p>
         ) : null}
+        {status?.client_limits?.enforced &&
+        status.client_limits.max_clients != null ? (
+          <p
+            className={cn(
+              "mb-4 rounded-xl border px-3 py-2 text-left text-sm",
+              status.client_limits.at_limit
+                ? "border-amber-200 bg-amber-50 text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/35 dark:text-amber-100"
+                : "border-slate-200 bg-slate-50 text-slate-800 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-200"
+            )}
+          >
+            <span className="font-semibold">Klijenti:</span>{" "}
+            {status.client_limits.current_clients} /{" "}
+            {status.client_limits.max_clients}
+            {status.client_limits.tier === "free"
+              ? " na besplatnom planu. Aktivnom pretplatom dobijaš znatno viši limit."
+              : " na tvom planu."}
+          </p>
+        ) : null}
         <Button
           type="button"
           variant="brand"

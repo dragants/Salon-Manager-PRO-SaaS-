@@ -21,7 +21,7 @@ export function MobileDock() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-40 border-t border-sky-100 bg-white/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] pt-1 shadow-[0_-4px_20px_rgba(15,23,42,0.06)] backdrop-blur-md md:hidden"
+      className="fixed bottom-0 left-0 right-0 z-40 border-t border-zinc-200/90 bg-white/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] pt-1 shadow-[0_-4px_24px_rgba(0,0,0,0.08)] backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/95 md:hidden"
       aria-label="Brza navigacija"
     >
       <ul className="mx-auto flex max-w-lg items-stretch justify-between gap-1">
@@ -35,14 +35,16 @@ export function MobileDock() {
                 className={cn(
                   "flex min-h-12 touch-manipulation flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1 text-[10px] font-medium transition-colors",
                   active
-                    ? "bg-sky-100 text-sky-900"
-                    : "text-sky-700/85 active:bg-sky-50"
+                    ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                    : "text-zinc-600 active:bg-zinc-100 dark:text-zinc-400 dark:active:bg-zinc-800"
                 )}
               >
                 <Icon
                   className={cn(
                     "size-5 shrink-0",
-                    active ? "text-sky-700" : "text-sky-600/90"
+                    active
+                      ? "text-white dark:text-zinc-900"
+                      : "text-zinc-500 dark:text-zinc-500"
                   )}
                   aria-hidden
                 />

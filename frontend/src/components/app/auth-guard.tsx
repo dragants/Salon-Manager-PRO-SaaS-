@@ -35,14 +35,14 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   if (loading || !user) {
     const label = loading ? "Učitavanje…" : "Preusmeravanje na prijavu…";
     return (
-      <div className="flex min-h-full flex-1 flex-col items-center justify-center gap-3 bg-[#f8fafc] p-8 text-center text-sm text-sky-800">
+      <div className="flex min-h-full flex-1 flex-col items-center justify-center gap-3 bg-background p-8 text-center text-sm text-zinc-800 dark:text-zinc-200">
         <Loader2
-          className="size-8 animate-spin text-sky-600"
+          className="size-8 animate-spin text-zinc-600 dark:text-zinc-400"
           aria-hidden
         />
         <p className="font-medium">{label}</p>
         {showSlowHint ? (
-          <p className="max-w-md text-xs text-sky-700/90">
+          <p className="max-w-md text-xs text-zinc-600 dark:text-zinc-400">
             Ako ovo traje predugo: pokreni backend (
             <span className="font-mono">npm run dev</span> u{" "}
             <span className="font-mono">backend</span>, port 5000,{" "}

@@ -10,6 +10,7 @@ const {
   readClientFile,
   deleteClientFolder,
 } = require("../../utils/clientUploads");
+const { assertCanAddClient } = require("../../services/plan-limits.service");
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
 
@@ -265,6 +266,8 @@ async function assertChartFileBelongsToClient(fileId, clientId, orgId) {
 }
 
 async function create(data, orgId) {
+  await assertCanAddClient(orgId);
+
   const { name, phone, notes } = data;
   const email =
     data.email != null && String(data.email).trim() !== ""

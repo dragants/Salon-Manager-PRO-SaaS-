@@ -2,6 +2,7 @@ import axios from "axios";
 
 type ErrorBody = {
   error?: string;
+  code?: string;
   errors?: Array<{ message?: string }>;
 };
 
@@ -21,4 +22,13 @@ export function getApiErrorMessage(err: unknown, fallback = "Greška. Pokušaj p
     return err.message;
   }
   return fallback;
+}
+
+/** Biznis kod iz JSON tela (npr. PLAN_CLIENT_LIMIT). */
+export function getApiErrorCode(err: unknown): string | undefined {
+  if (!axios.isAxiosError(err)) {
+    return undefined;
+  }
+  const data = err.response?.data as ErrorBody | undefined;
+  return typeof data?.code === "string" ? data.code : undefined;
 }

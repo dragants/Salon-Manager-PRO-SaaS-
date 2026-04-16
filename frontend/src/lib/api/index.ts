@@ -12,6 +12,11 @@ import type { OrganizationSettings } from "@/types/organization";
 import type { Service } from "@/types/service";
 import type { BillingStatus } from "@/types/billing";
 import type { AvailabilitySlotDto, WorkShiftRow } from "@/types/shift";
+import type {
+  CreateExpenseBody,
+  ExpenseRow,
+  UpdateExpenseBody,
+} from "@/types/expense";
 import type { MeUser, OrgTeamMember, PatchTeamMemberBody } from "@/types/user";
 import { api } from "./client";
 import {
@@ -30,6 +35,19 @@ export function login(data: LoginBody) {
 
 export function register(data: RegisterBody) {
   return api.post<AuthTokenResponse>("/auth/register", data);
+}
+
+export function requestPasswordReset(email: string) {
+  return api.post<{ ok: boolean; message?: string }>("/auth/forgot-password", {
+    email,
+  });
+}
+
+export function resetPasswordWithToken(token: string, password: string) {
+  return api.post<{ ok: boolean; message?: string }>("/auth/reset-password", {
+    token,
+    password,
+  });
 }
 
 export function getClients() {
@@ -215,6 +233,22 @@ export function patchSettings(data: PatchOrgSettingsBody) {
   });
 }
 
+export function getExpenses(params: { from: string; to: string }) {
+  return api.get<ExpenseRow[]>("/expenses", { params });
+}
+
+export function createExpense(data: CreateExpenseBody) {
+  return api.post<ExpenseRow>("/expenses", data);
+}
+
+export function updateExpense(id: number, data: UpdateExpenseBody) {
+  return api.patch<ExpenseRow>(`/expenses/${id}`, data);
+}
+
+export function deleteExpense(id: number) {
+  return api.delete<void>(`/expenses/${id}`);
+}
+
 export function getServices() {
   return cachedGet("services", 60_000, () => api.get<Service[]>("/services"));
 }
@@ -226,6 +260,20 @@ export function createService(data: {
   buffer_minutes?: number;
 }) {
   return api.post<Service>("/services", data).then((r) => {
+    invalidateByScope("services");
+    return r;
+  });
+}
+
+export type UpdateServiceBody = {
+  name?: string;
+  price?: number;
+  duration?: number;
+  buffer_minutes?: number;
+};
+
+export function updateService(id: number, data: UpdateServiceBody) {
+  return api.patch<Service>(`/services/${id}`, data).then((r) => {
     invalidateByScope("services");
     return r;
   });

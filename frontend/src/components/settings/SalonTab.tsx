@@ -1,3 +1,6 @@
+"use client";
+
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -64,6 +67,8 @@ export function SalonTab({
   setPublicSiteUrl,
   onSave,
 }: SalonTabProps) {
+  const router = useRouter();
+
   return (
     <div className="space-y-6">
       <SettingsCard
@@ -220,6 +225,25 @@ export function SalonTab({
             </p>
           </div>
         </div>
+      </SettingsCard>
+
+      <SettingsCard
+        title="Čarobnjak podešavanja"
+        description="Ponovo pokreni uvodni tok — korisno posle preseljenja ili velikih promena u salonu."
+      >
+        <Button
+          type="button"
+          variant="outline"
+          className="border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900"
+          onClick={() => {
+            if (typeof window !== "undefined") {
+              sessionStorage.setItem("salon_onboarding_pending", "1");
+            }
+            router.push("/onboarding");
+          }}
+        >
+          Ponovo podesi salon
+        </Button>
       </SettingsCard>
 
       <SettingsCard

@@ -1,9 +1,9 @@
 import { cn } from "@/lib/utils";
 
 const items = [
-  { label: "Z", desc: "Zakazano", className: "bg-sky-500" },
+  { label: "Z", desc: "Zakazano", className: "bg-amber-500" },
   { label: "V", desc: "Završeno", className: "bg-emerald-500" },
-  { label: "×", desc: "Nije došao", className: "bg-rose-500" },
+  { label: "×", desc: "Nije došao", className: "bg-red-500" },
 ];
 
 export function CalendarLegend({

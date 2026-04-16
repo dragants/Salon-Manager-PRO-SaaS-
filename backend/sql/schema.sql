@@ -29,6 +29,8 @@ CREATE TABLE IF NOT EXISTS users (
   token_version INTEGER NOT NULL DEFAULT 0,
   display_name TEXT,
   worker_profile JSONB NOT NULL DEFAULT '{}'::jsonb,
+  password_reset_token_hash TEXT,
+  password_reset_expires_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -154,3 +156,19 @@ CREATE INDEX IF NOT EXISTS idx_work_shifts_org_date
 
 CREATE INDEX IF NOT EXISTS idx_work_shifts_org_user_date
   ON work_shifts (organization_id, user_id, shift_date);
+
+CREATE TABLE IF NOT EXISTS expenses (
+  id BIGSERIAL PRIMARY KEY,
+  organization_id INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  amount_rsd INTEGER NOT NULL CHECK (amount_rsd >= 0),
+  title TEXT NOT NULL,
+  category TEXT,
+  notes TEXT,
+  spent_at DATE NOT NULL,
+  created_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_expenses_org_spent
+  ON expenses (organization_id, spent_at DESC);

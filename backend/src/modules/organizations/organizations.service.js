@@ -165,6 +165,12 @@ async function patchSettings(orgId, body) {
     for (const [k, v] of Object.entries(body.settings)) {
       if (v === null) {
         delete next[k];
+      } else if (
+        k === "finance" &&
+        typeof v === "object" &&
+        !Array.isArray(v)
+      ) {
+        next.finance = { ...(current.finance || {}), ...v };
       } else {
         next[k] = v;
       }
@@ -328,6 +334,17 @@ async function getSettingsBundle(orgId) {
       vat_enabled: Boolean(finance.vat_enabled),
       accept_cash: finance.accept_cash !== false,
       accept_card: finance.accept_card !== false,
+      monthly_overhead_rsd: (() => {
+        const v = finance.monthly_overhead_rsd;
+        if (typeof v === "number" && Number.isFinite(v) && v >= 0) {
+          return Math.round(v);
+        }
+        if (typeof v === "string" && String(v).trim() !== "") {
+          const n = Number(String(v).replace(",", "."));
+          return Number.isFinite(n) && n >= 0 ? Math.round(n) : 0;
+        }
+        return 0;
+      })(),
     },
     automation: {
       auto_confirm_booking: Boolean(automation.auto_confirm_booking),

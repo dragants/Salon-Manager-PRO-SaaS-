@@ -69,7 +69,7 @@ export function AppSidebar() {
 
   return (
     <>
-      <header className="sticky top-0 z-30 flex min-h-14 shrink-0 items-center gap-3 border-b border-sky-100 bg-white px-4 pt-[env(safe-area-inset-top,0px)] md:hidden">
+      <header className="sticky top-0 z-30 flex min-h-14 shrink-0 items-center gap-3 border-b border-zinc-200/90 bg-white px-4 pt-[env(safe-area-inset-top,0px)] md:hidden dark:border-zinc-800 dark:bg-zinc-950">
         <Button
           type="button"
           variant="ghost"
@@ -84,11 +84,13 @@ export function AppSidebar() {
         </Button>
         <Link
           href="/dashboard"
-          className="min-w-0 truncate text-base font-semibold text-sky-900"
+          className="font-heading min-w-0 truncate text-base font-semibold text-zinc-900 dark:text-zinc-50"
           onClick={closeMobile}
         >
           Salon Manager{" "}
-          <span className="text-xs font-normal text-sky-600">PRO</span>
+          <span className="font-sans text-xs font-normal text-zinc-500 dark:text-zinc-400">
+            PRO
+          </span>
         </Link>
       </header>
 
@@ -104,21 +106,23 @@ export function AppSidebar() {
       <aside
         id="app-sidebar"
         className={cn(
-          "flex min-h-0 w-[min(18rem,88vw)] shrink-0 flex-col border-r border-sky-100 bg-white md:relative md:z-auto md:min-h-screen md:w-56",
+          "flex min-h-0 w-[min(18rem,88vw)] shrink-0 flex-col border-r border-zinc-200/90 bg-white md:relative md:z-auto md:min-h-screen md:w-56 dark:border-zinc-800 dark:bg-zinc-950",
           "fixed inset-y-0 left-0 z-50 pt-[env(safe-area-inset-top,0px)] transition-transform duration-200 ease-out md:translate-x-0 md:pt-0",
           mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}
       >
-        <div className="flex items-start justify-between gap-2 border-b border-sky-100 px-4 py-4 md:block md:py-5">
+        <div className="flex items-start justify-between gap-2 border-b border-zinc-200/90 px-4 py-4 md:block md:py-5 dark:border-zinc-800">
           <div className="min-w-0">
             <Link
               href="/dashboard"
-              className="text-lg font-semibold text-sky-900"
+              className="font-heading text-lg font-semibold text-zinc-900 dark:text-zinc-50"
               onClick={closeMobile}
             >
               Salon Manager
             </Link>
-            <p className="text-xs text-sky-600/80">PRO</p>
+            <p className="font-sans text-xs text-zinc-500 dark:text-zinc-400">
+              PRO
+            </p>
           </div>
           <Button
             type="button"
@@ -142,8 +146,8 @@ export function AppSidebar() {
                 className={cn(
                   "flex min-h-11 items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors duration-200 touch-manipulation md:min-h-0 md:py-2",
                   active
-                    ? "bg-blue-100 font-semibold text-blue-700 dark:bg-blue-950/70 dark:text-blue-200"
-                    : "text-sky-800/80 hover:bg-gray-100 hover:text-sky-950 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+                    ? "bg-zinc-900 font-semibold text-white shadow-sm dark:bg-zinc-100 dark:text-zinc-900"
+                    : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50"
                 )}
               >
                 <Icon className="size-4 shrink-0 opacity-80" aria-hidden />
@@ -158,7 +162,7 @@ export function AppSidebar() {
               rel="noopener noreferrer"
               onClick={closeMobile}
               className={cn(
-                "flex min-h-11 items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-sky-800/80 transition-colors duration-200 hover:bg-gray-100 hover:text-sky-950 touch-manipulation md:min-h-0 md:py-2 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+                "flex min-h-11 items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-600 transition-colors duration-200 hover:bg-zinc-100 hover:text-zinc-900 touch-manipulation md:min-h-0 md:py-2 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50"
               )}
             >
               <ExternalLink className="size-4 shrink-0 opacity-80" aria-hidden />
@@ -166,20 +170,23 @@ export function AppSidebar() {
             </a>
           ) : null}
         </nav>
-        <div className="relative z-10 mt-auto shrink-0 border-t border-sky-100 bg-white pb-[env(safe-area-inset-bottom,0px)]">
+        <div className="relative z-10 mt-auto shrink-0 border-t border-zinc-200/90 bg-white pb-[env(safe-area-inset-bottom,0px)] dark:border-zinc-800 dark:bg-zinc-950">
           {user ? (
-            <div className="flex items-start gap-2 border-b border-sky-50 px-3 py-2">
+            <div className="flex items-start gap-2 border-b border-zinc-100 px-3 py-2 dark:border-zinc-800">
               <span
-                className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-sky-200 text-xs font-semibold text-sky-900"
+                className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-xs font-semibold text-white dark:bg-zinc-100 dark:text-zinc-900"
                 aria-hidden
               >
                 {initial}
               </span>
               <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-medium uppercase tracking-wide text-sky-600/90">
+                <p className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                   Nalog
                 </p>
-                <p className="truncate text-xs text-sky-900" title={user.email}>
+                <p
+                  className="truncate text-xs text-zinc-800 dark:text-zinc-200"
+                  title={user.email}
+                >
                   {user.email}
                 </p>
               </div>
@@ -190,7 +197,7 @@ export function AppSidebar() {
               type="button"
               variant="ghost"
               size="sm"
-              className="h-11 w-full touch-manipulation justify-start gap-2 px-3 text-sky-800 hover:bg-sky-50 hover:text-sky-900 md:h-9"
+              className="h-11 w-full touch-manipulation justify-start gap-2 px-3 text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900 md:h-9 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-white"
               onClick={logout}
             >
               <LogOut className="size-4 shrink-0 opacity-80" aria-hidden />
