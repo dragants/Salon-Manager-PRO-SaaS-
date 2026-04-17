@@ -2,7 +2,8 @@
 
 /**
  * Deljivi UI sloj za komandnu paletu (Dialog + pretraga + lista).
- * Poslovna logika ostaje u `components/layout/command-palette.tsx`.
+ * Stavke (labela + ruta): `lib/command-palette-registry.ts`.
+ * Sastavljanje liste: `components/layout/command-palette.tsx`.
  */
 import * as React from "react";
 import { cn } from "@/lib/utils";

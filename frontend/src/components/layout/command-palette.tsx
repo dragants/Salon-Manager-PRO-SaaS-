@@ -38,6 +38,11 @@ import { Input } from "@/components/ui/input";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { getAuditLog, getClients, getServices } from "@/lib/api";
 import {
+  getCommandPaletteNavTemplates,
+  getCommandPaletteQuickActionTemplates,
+  type CommandPaletteItemTemplate,
+} from "@/lib/command-palette-registry";
+import {
   getRecentEntries,
   recordRecentCalendar,
   recordRecentClient,
@@ -65,6 +70,28 @@ type CmdItem = {
 };
 
 type CmdSection = { id: string; title: string; items: CmdItem[] };
+
+const PALETTE_ICON_BY_ID: Record<string, ReactNode> = {
+  "add-client": <UserPlus className="size-4" />,
+  "new-booking": <CalendarDays className="size-4" />,
+  "new-service": <Wrench className="size-4" />,
+  "nav-clients": <Users className="size-4" />,
+  "nav-calendar": <CalendarDays className="size-4" />,
+  "nav-finances": <CreditCard className="size-4" />,
+  "nav-supplies": <Package className="size-4" />,
+  "nav-dashboard": <LayoutDashboard className="size-4" />,
+};
+
+function templateToCmdItem(t: CommandPaletteItemTemplate): CmdItem {
+  return {
+    id: t.id,
+    label: t.label,
+    hint: t.hint,
+    icon: PALETTE_ICON_BY_ID[t.id] ?? <Sparkles className="size-4" />,
+    href: t.path,
+    keywords: t.keywords,
+  };
+}
 
 function escapeRegExp(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -138,81 +165,16 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   const weekCal = `/calendar?day=${encodeURIComponent(todayYmd)}&view=week`;
 
   const actionDefs = useMemo<CmdItem[]>(() => {
-    const items: CmdItem[] = [
-      {
-        id: "add-client",
-        label: "Dodaj klijenta",
-        hint: "Formular za novog klijenta",
-        icon: <UserPlus className="size-4" />,
-        href: "/clients?new=1",
-        keywords: "novi kupac",
-      },
-      {
-        id: "new-booking",
-        label: "Nova rezervacija",
-        hint: "Kalendar (nedeljni prikaz)",
-        icon: <CalendarDays className="size-4" />,
-        href: weekCal,
-        keywords: "termin zakazivanje booking",
-      },
-    ];
-    if (isAdmin) {
-      items.push({
-        id: "new-service",
-        label: "Nova usluga",
-        hint: "Dodaj uslugu i cenu",
-        icon: <Wrench className="size-4" />,
-        href: "/services?new=1",
-        keywords: "tretman cena trajanje",
-      });
-    }
-    return items;
-  }, [isAdmin, weekCal]);
+    return getCommandPaletteQuickActionTemplates(todayYmd, isAdmin).map(
+      templateToCmdItem
+    );
+  }, [isAdmin, todayYmd]);
 
   const navDefs = useMemo<CmdItem[]>(() => {
-    const items: CmdItem[] = [
-      {
-        id: "nav-clients",
-        label: "Idi na Klijente",
-        icon: <Users className="size-4" />,
-        href: "/clients",
-        keywords: "lista klijenata",
-      },
-      {
-        id: "nav-calendar",
-        label: "Idi na Kalendar",
-        icon: <CalendarDays className="size-4" />,
-        href: weekCal,
-        keywords: "raspored termini",
-      },
-    ];
-    if (isAdmin) {
-      items.push(
-        {
-          id: "nav-finances",
-          label: "Idi na Finansije",
-          icon: <CreditCard className="size-4" />,
-          href: "/finances",
-          keywords: "prihod transakcije novac",
-        },
-        {
-          id: "nav-supplies",
-          label: "Idi na Potrošni materijal",
-          icon: <Package className="size-4" />,
-          href: "/supplies",
-          keywords: "zalihe nabavka potrošnja inventura",
-        }
-      );
-    }
-    items.push({
-      id: "nav-dashboard",
-      label: "Idi na Dashboard",
-      icon: <LayoutDashboard className="size-4" />,
-      href: "/dashboard",
-      keywords: "početna pregled",
-    });
-    return items;
-  }, [weekCal, isAdmin]);
+    return getCommandPaletteNavTemplates(todayYmd, isAdmin).map(
+      templateToCmdItem
+    );
+  }, [todayYmd, isAdmin]);
 
   useEffect(() => {
     if (!open || !isAdmin) {

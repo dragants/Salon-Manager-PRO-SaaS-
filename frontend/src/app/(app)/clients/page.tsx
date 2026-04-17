@@ -23,7 +23,9 @@ import {
   updateClient,
 } from "@/lib/api";
 import { appointmentStaffLabel } from "@/components/features/calendar/calendar-utils";
+import { useModal } from "@/components/providers/ModalProvider";
 import { getApiErrorCode, getApiErrorMessage } from "@/lib/api/errors";
+import { isPlanLimitClientCode } from "@/lib/plan-paywall";
 import { appTableHeadClass, appTableRowClass } from "@/lib/app-ui";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -113,6 +115,7 @@ function isNewClient(c: Client): boolean {
 function ClientsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { setOpen: setAppModal } = useModal();
   const { user } = useAuth();
   const { settings } = useOrganization();
   const allowDelete = canDeleteRecords(user, settings);
@@ -354,14 +357,11 @@ function ClientsPageContent() {
         .then((r) => setClientLimits(r.data.client_limits ?? null))
         .catch(() => {});
     } catch (err) {
-      if (getApiErrorCode(err) === "PLAN_CLIENT_LIMIT") {
+      const code = getApiErrorCode(err);
+      if (isPlanLimitClientCode(code)) {
         setFormError(null);
-        toast.error(getApiErrorMessage(err, "Dostignut je limit klijenata."), {
-          action: {
-            label: "Pretplata",
-            onClick: () => router.push("/subscribe"),
-          },
-        });
+        setAppModal("paywall");
+        toast.error(getApiErrorMessage(err, "Dostignut je limit klijenata."));
       } else {
         setFormError(getApiErrorMessage(err, "Klijent nije kreiran."));
       }

@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -11,7 +10,9 @@ import {
   getOrgTeam,
 } from "@/lib/api";
 import { api } from "@/lib/api/client";
+import { useModal } from "@/components/providers/ModalProvider";
 import { getApiErrorCode, getApiErrorMessage } from "@/lib/api/errors";
+import { isPlanLimitAppointmentCode } from "@/lib/plan-paywall";
 import { computeSuggestedSlots } from "@/lib/admin-slot-suggestions";
 import { useAppointmentsSse } from "@/hooks/useAppointmentsSse";
 import {
@@ -64,7 +65,7 @@ export default function AddAppointmentModal({
   defaultStartLocal,
   onCreated,
 }: Props) {
-  const router = useRouter();
+  const { setOpen: setAppModal } = useModal();
   const { settings } = useOrganization();
   const [clients, setClients] = useState<ClientOpt[]>([]);
   const [services, setServices] = useState<ServiceOpt[]>([]);
@@ -450,16 +451,12 @@ export default function AddAppointmentModal({
       await onCreated();
       toast.success("Termin dodat");
     } catch (err) {
-      if (getApiErrorCode(err) === "PLAN_APPOINTMENT_MONTH_LIMIT") {
+      const code = getApiErrorCode(err);
+      if (isPlanLimitAppointmentCode(code)) {
         setFormError(null);
+        setAppModal("paywall");
         toast.error(
-          getApiErrorMessage(err, "Dostignut je mesečni limit termina."),
-          {
-            action: {
-              label: "Pretplata",
-              onClick: () => router.push("/subscribe"),
-            },
-          }
+          getApiErrorMessage(err, "Dostignut je mesečni limit termina.")
         );
       } else {
         setFormError(getApiErrorMessage(err, "Termin nije kreiran."));

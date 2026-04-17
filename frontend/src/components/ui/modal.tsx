@@ -2,7 +2,8 @@
 
 /**
  * Modal = semantički alias iznad Dialog (isti Base UI sloj).
- * Koristi za potvrde, forme, pune ekrane — ne za paywall (vidi paywall-dialog).
+ * Koristi za potvrde, forme, pune ekrane — ne za paywall
+ * (vidi `PaywallModal` u `components/features/billing` i `paywall-dialog`).
  */
 export {
   Dialog as Modal,

@@ -95,5 +95,4 @@ export function PaywallDialog({
   );
 }
 
-/** Isto kao PaywallDialog — ime iz UI kit reference fajla. */
-export { PaywallDialog as PaywallModal };
+/** Za globalni paywall koristi `PaywallModal` iz `@/components/features/billing/PaywallModal`. */

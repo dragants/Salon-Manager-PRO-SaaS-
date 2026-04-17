@@ -1,6 +1,7 @@
 "use client";
 
 import { Toaster } from "sonner";
+import { ModalProvider } from "@/components/providers/ModalProvider";
 import { AuthProvider } from "./auth-provider";
 import { ChunkLoadRecovery } from "./chunk-load-recovery";
 import { OrganizationProvider } from "./organization-provider";
@@ -10,10 +11,12 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
   return (
     <AuthProvider>
       <OrganizationProvider>
-        <ServiceWorkerRegister />
-        <ChunkLoadRecovery />
-        {children}
-        <Toaster richColors position="top-center" closeButton />
+        <ModalProvider>
+          <ServiceWorkerRegister />
+          <ChunkLoadRecovery />
+          {children}
+          <Toaster richColors position="top-center" closeButton />
+        </ModalProvider>
       </OrganizationProvider>
     </AuthProvider>
   );
