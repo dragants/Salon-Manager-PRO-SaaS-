@@ -9,7 +9,7 @@ import {
 } from "react";
 import axios from "axios";
 import { api } from "@/lib/api/client";
-import { clearToken, getToken } from "@/lib/auth/token";
+import { clearToken } from "@/lib/auth/token";
 import { syncSessionCookie } from "@/lib/auth/session-cookie";
 import type { MeUser } from "@/types/user";
 
@@ -27,18 +27,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshUser = useCallback(async () => {
     try {
-      const token = getToken();
-      if (!token) {
-        syncSessionCookie(false);
-        setUser(null);
-        setLoading(false);
-        return;
-      }
-      syncSessionCookie(true);
       setLoading(true);
       try {
         const { data } = await api.get<MeUser>("/users/me");
         setUser(data);
+        syncSessionCookie(true);
       } catch (e) {
         /**
          * Bilo koja greška na /users/me sa tokenom u localStorage inače pravi petlju:
@@ -53,11 +46,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else {
           clearToken();
         }
+        syncSessionCookie(false);
         setUser(null);
       } finally {
         setLoading(false);
       }
     } catch {
+      syncSessionCookie(false);
       setUser(null);
       setLoading(false);
     }

@@ -1,5 +1,4 @@
 import { useEffect, useRef } from "react";
-import { getToken } from "@/lib/auth/token";
 import { getApiBaseUrl } from "@/lib/api/api-base-url";
 
 /** Telo SSE poruke sa `/appointments/stream` (server: `type` + `event` + `payload`). */
@@ -12,7 +11,7 @@ export type AppointmentSseMessage = {
 };
 
 /**
- * SSE na `/appointments/stream` (token u query — EventSource ne šalje Authorization).
+ * SSE na `/appointments/stream` (httpOnly JWT kolačić + `withCredentials`).
  * Prosleđuje parsiran JSON u `onMessage` (npr. NEW_APPOINTMENT / UPDATE_APPOINTMENT / DELETE_APPOINTMENT).
  */
 export function useAppointmentsSse(
@@ -28,13 +27,8 @@ export function useAppointmentsSse(
     if (!enabled || typeof window === "undefined") {
       return;
     }
-    const token = getToken();
-    if (!token) {
-      return;
-    }
-
-    const url = `${getApiBaseUrl()}/appointments/stream?token=${encodeURIComponent(token)}`;
-    const es = new EventSource(url);
+    const url = `${getApiBaseUrl()}/appointments/stream`;
+    const es = new EventSource(url, { withCredentials: true });
 
     es.onmessage = (ev) => {
       if (!ev.data) {

@@ -10,7 +10,6 @@ import { Label } from "@/components/ui/label";
 import { SurfaceCard } from "@/components/ui/surface-card";
 import { api } from "@/lib/api/client";
 import { getApiErrorMessage } from "@/lib/api/errors";
-import { setToken } from "@/lib/auth/token";
 import { syncSessionCookie } from "@/lib/auth/session-cookie";
 import { useAuth } from "@/providers/auth-provider";
 
@@ -57,11 +56,12 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
     try {
-      const { data } = await api.post<{ token: string }>("/auth/login", {
+      await api.post("/auth/login", {
         email,
         password,
+        remember: rememberMe,
       });
-      setToken(data.token, rememberMe);
+      syncSessionCookie(true);
       await refreshUser();
       router.replace("/dashboard");
       router.refresh();

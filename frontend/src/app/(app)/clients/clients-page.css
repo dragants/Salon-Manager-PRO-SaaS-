@@ -1,0 +1,217 @@
+/* Lista klijenata — grid kartica po specifikaciji (.clients-grid / .client-card) */
+
+.clients-stats-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  margin-bottom: 1.25rem;
+  padding: 0.85rem 1.1rem;
+  border-radius: 14px;
+  background: rgb(var(--muted) / 0.45);
+  border: 1px solid rgb(var(--border) / 0.85);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgb(var(--text-muted));
+}
+
+.clients-stats-bar > div {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.clients-stats-bar .tabular-nums {
+  color: rgb(var(--text));
+  font-weight: 700;
+}
+
+.clients-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+@media (min-width: 1280px) {
+  .clients-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.client-card {
+  background: rgb(var(--card));
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid rgb(var(--border) / 0.85);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.dark .client-card {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+.client-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
+  border-color: rgb(99 102 241 / 0.35);
+}
+
+.dark .client-card:hover {
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.45);
+}
+
+.client-card .top {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.client-card .avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: #6366f1;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  flex-shrink: 0;
+  font-size: 1.125rem;
+}
+
+.client-card-name {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: rgb(var(--text));
+}
+
+@media (min-width: 640px) {
+  .client-card-name {
+    font-size: 1.25rem;
+  }
+}
+
+.client-card .status {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 700;
+  display: inline-block;
+  margin-top: 4px;
+}
+
+.client-card .status.active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.client-card .status.new {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.dark .client-card .status.active {
+  background: rgb(20 83 45 / 0.45);
+  color: #bbf7d0;
+}
+
+.dark .client-card .status.new {
+  background: rgb(120 53 15 / 0.45);
+  color: #fde68a;
+}
+
+.client-card .note {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: rgb(var(--text-muted));
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 2.5rem;
+}
+
+.client-card .meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  flex-wrap: wrap;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.dark .client-card .meta {
+  color: rgb(var(--text-muted));
+}
+
+.client-card .main-btn {
+  margin-top: auto;
+  width: 100%;
+  background: #6366f1;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease,
+    box-shadow 0.15s ease;
+  box-shadow: 0 2px 8px rgb(99 102 241 / 0.35);
+}
+
+.client-card .main-btn:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgb(99 102 241 / 0.45);
+}
+
+.client-card .main-btn:active {
+  transform: translateY(0);
+}
+
+.client-card-secondary {
+  text-align: center;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #6366f1;
+  text-decoration: none;
+  padding: 0.35rem;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+}
+
+.client-card-secondary:hover {
+  background: rgb(99 102 241 / 0.08);
+}
+
+.dark .client-card-secondary {
+  color: #a5b4fc;
+}
+
+/* Skeleton kartice pri učitavanju */
+.clients-grid-skeleton {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.clients-card-skeleton {
+  height: 220px;
+  border-radius: 16px;
+  background: rgb(var(--muted) / 0.65);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}

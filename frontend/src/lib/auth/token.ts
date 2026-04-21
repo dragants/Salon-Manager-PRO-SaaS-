@@ -1,3 +1,4 @@
+import { getApiBaseUrl } from "@/lib/api/api-base-url";
 import { syncSessionCookie } from "./session-cookie";
 
 const TOKEN_KEY = "token";
@@ -15,20 +16,15 @@ export function getToken(): string | null {
 }
 
 /**
- * @param remember false — zatvori tab / sesiju i token nestaje (sessionStorage).
+ * @deprecated JWT je u httpOnly kolačiću; pozovi `syncSessionCookie(true)` posle uspešnog login-a.
  */
-export function setToken(token: string, remember = true): void {
+export function setToken(_token: string, remember = true): void {
   if (typeof window === "undefined") {
     return;
   }
-  if (remember) {
-    window.localStorage.setItem(TOKEN_KEY, token);
-    window.sessionStorage.removeItem(SESSION_TOKEN_KEY);
-  } else {
-    window.sessionStorage.setItem(SESSION_TOKEN_KEY, token);
-    window.localStorage.removeItem(TOKEN_KEY);
-  }
   syncSessionCookie(true);
+  void _token;
+  void remember;
 }
 
 export function clearToken(): void {
@@ -38,6 +34,11 @@ export function clearToken(): void {
   window.localStorage.removeItem(TOKEN_KEY);
   window.sessionStorage.removeItem(SESSION_TOKEN_KEY);
   syncSessionCookie(false);
+  void fetch(`${getApiBaseUrl()}/auth/logout`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+  }).catch(() => {});
 }
 
 export function hasToken(): boolean {

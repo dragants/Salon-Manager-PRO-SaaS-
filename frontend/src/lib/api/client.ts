@@ -11,6 +11,8 @@ export const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  /** httpOnly JWT kolačić + CORS `credentials` na backendu. */
+  withCredentials: true,
 });
 
 api.interceptors.request.use((config) => {
@@ -18,9 +20,12 @@ api.interceptors.request.use((config) => {
   if (typeof window === "undefined") {
     return config;
   }
-  const token = window.localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  /** Privremena podrška za stare sesije u localStorage/sessionStorage (migracija). */
+  const legacy =
+    window.localStorage.getItem("token") ??
+    window.sessionStorage.getItem("token_session");
+  if (legacy) {
+    config.headers.Authorization = `Bearer ${legacy}`;
   }
   return config;
 });

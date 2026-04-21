@@ -110,3 +110,61 @@
 .dashboard-shell .dash-calendar-host {
   color-scheme: light dark;
 }
+
+/* SaaS hero KPI — jake boje, hijerarhija (2026) */
+.dashboard-shell .stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+@media (min-width: 1024px) {
+  .dashboard-shell .stats-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.dashboard-shell .stat-card {
+  padding: 1.25rem 1.35rem;
+  border-radius: 16px;
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.dashboard-shell .stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
+}
+
+.dashboard-shell .stat-card-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.92;
+}
+
+.dashboard-shell .stat-card-value {
+  margin-top: 0.35rem;
+  font-size: 1.65rem;
+  line-height: 1.15;
+  font-weight: 700;
+}
+
+.dashboard-shell .stat-card-purple {
+  background: #6366f1;
+}
+.dashboard-shell .stat-card-green {
+  background: #22c55e;
+}
+.dashboard-shell .stat-card-yellow {
+  background: #f59e0b;
+}
+.dashboard-shell .stat-card-red {
+  background: #ef4444;
+}
+

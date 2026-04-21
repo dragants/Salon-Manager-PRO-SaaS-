@@ -1,6 +1,7 @@
 export type LoginBody = {
   email: string;
   password: string;
+  remember?: boolean;
 };
 
 export type RegisterBody = {
@@ -9,6 +10,8 @@ export type RegisterBody = {
   organization_name: string;
 };
 
+/** Login/register postavljaju httpOnly kolačić; telo može biti samo `{ ok: true }`. */
 export type AuthTokenResponse = {
-  token: string;
+  ok?: boolean;
+  token?: string;
 };

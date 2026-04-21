@@ -3,24 +3,22 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useState } from "react";
+import { useQueries } from "@tanstack/react-query";
 import {
-  CalendarDays,
   CalendarPlus,
   Clock,
   Moon,
   Sparkles,
   TrendingUp,
   UserPlus,
-  Users,
-  Wallet,
 } from "lucide-react";
 import { toast } from "sonner";
 import { CalendarPageSkeleton } from "@/components/features/calendar/calendar-page-skeleton";
 import { appointmentStaffLabel } from "@/components/features/calendar/calendar-utils";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { AnalyticsChartSkeleton } from "@/components/features/dashboard/analytics-chart-skeleton";
-import { DashboardKpiCard } from "@/components/features/dashboard/dashboard-kpi-card";
+import { DashboardHeroStats } from "@/components/features/dashboard/dashboard-hero-stats";
 import { getAnalytics, getAppointments, getDashboard } from "@/lib/api";
 import { getApiErrorMessage } from "@/lib/api/errors";
 import { formatRsd } from "@/lib/formatMoney";
@@ -28,8 +26,6 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/providers/auth-provider";
 import { useOrganization } from "@/providers/organization-provider";
 import type { AppointmentRow } from "@/types/appointment";
-import type { AnalyticsResponse } from "@/types/analytics";
-import type { DashboardSummary } from "@/types/dashboard";
 import "./dashboard-shell.css";
 
 const AnalyticsSeriesChart = dynamic(
@@ -155,122 +151,60 @@ export default function DashboardPage() {
     loading: orgLoading,
     refreshSettings,
   } = useOrganization();
-  const [dash, setDash] = useState<DashboardSummary | null>(null);
-  const [dashLoading, setDashLoading] = useState(true);
-  const [dashError, setDashError] = useState<string | null>(null);
-  const [todayList, setTodayList] = useState<AppointmentRow[] | null>(null);
-  const [todayLoading, setTodayLoading] = useState(true);
-  const [todayError, setTodayError] = useState<string | null>(null);
-  const [analytics, setAnalytics] = useState<AnalyticsResponse | null>(null);
-  const [analyticsLoading, setAnalyticsLoading] = useState(true);
-  const [analyticsError, setAnalyticsError] = useState<string | null>(null);
   const [chartRange, setChartRange] = useState<7 | 30>(30);
 
   const showFinancialKpi = user?.role !== "worker";
 
-  useEffect(() => {
-    if (authLoading || !user) {
-      return;
-    }
-    let cancelled = false;
-    setDashLoading(true);
-    setDashError(null);
-    getDashboard()
-      .then((res) => {
-        if (!cancelled) {
-          setDash(res.data);
-        }
-      })
-      .catch((e) => {
-        if (!cancelled) {
-          setDashError(getApiErrorMessage(e, "Statistika nije učitana."));
-          setDash(null);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setDashLoading(false);
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [authLoading, user]);
+  const dataEnabled = !authLoading && !!user;
+  const tz = settings ? orgTimeZone(settings.timezone) : DEFAULT_TZ;
 
-  useEffect(() => {
-    if (authLoading || !user) {
-      return;
-    }
-    let cancelled = false;
-    setAnalyticsLoading(true);
-    setAnalyticsError(null);
-    getAnalytics()
-      .then((res) => {
-        if (!cancelled) {
-          setAnalytics(res.data);
-        }
-      })
-      .catch((e) => {
-        if (!cancelled) {
-          setAnalyticsError(getApiErrorMessage(e, "Analitika nije učitana."));
-          setAnalytics(null);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setAnalyticsLoading(false);
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [authLoading, user]);
+  const [dashQuery, analyticsQuery, todayQuery] = useQueries({
+    queries: [
+      {
+        queryKey: ["dashboard"] as const,
+        queryFn: async () => (await getDashboard()).data,
+        enabled: dataEnabled,
+        staleTime: 35_000,
+      },
+      {
+        queryKey: ["analytics"] as const,
+        queryFn: async () => (await getAnalytics()).data,
+        enabled: dataEnabled,
+        staleTime: 45_000,
+      },
+      {
+        queryKey: ["appointments", "today", tz] as const,
+        queryFn: async () =>
+          (await getAppointments({ day: "today", timezone: tz })).data,
+        enabled: dataEnabled && !!settings,
+        staleTime: 20_000,
+      },
+    ],
+  });
 
-  useEffect(() => {
-    if (authLoading || !user || !settings) {
-      return;
-    }
-    const tz = orgTimeZone(settings.timezone);
-    let cancelled = false;
-    setTodayLoading(true);
-    setTodayError(null);
-    getAppointments({ day: "today", timezone: tz })
-      .then((res) => {
-        if (!cancelled) {
-          setTodayList(res.data);
-        }
-      })
-      .catch((e) => {
-        if (!cancelled) {
-          setTodayError(
-            getApiErrorMessage(e, "Današnji termini nisu učitani.")
-          );
-          setTodayList(null);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setTodayLoading(false);
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [authLoading, user, settings]);
+  const dash = dashQuery.data ?? null;
+  const dashError = dashQuery.isError
+    ? getApiErrorMessage(dashQuery.error, "Statistika nije učitana.")
+    : null;
+  const dashLoading = dashQuery.isPending;
+
+  const analytics = analyticsQuery.data ?? null;
+  const analyticsLoading = analyticsQuery.isPending;
+  const analyticsError = analyticsQuery.isError
+    ? getApiErrorMessage(analyticsQuery.error, "Analitika nije učitana.")
+    : null;
+
+  const todayList = todayQuery.data ?? null;
+  const todayLoading = todayQuery.isPending;
+  const todayError = todayQuery.isError
+    ? getApiErrorMessage(todayQuery.error, "Današnji termini nisu učitani.")
+    : null;
 
   function retryDashboard() {
     if (!user) {
       return;
     }
-    setDashLoading(true);
-    setDashError(null);
-    getDashboard()
-      .then((res) => setDash(res.data))
-      .catch((e) => {
-        setDashError(getApiErrorMessage(e, "Statistika nije učitana."));
-        setDash(null);
-      })
-      .finally(() => setDashLoading(false));
+    void dashQuery.refetch();
   }
 
   if (authLoading || !user) {
@@ -336,7 +270,6 @@ export default function DashboardPage() {
     );
   }
 
-  const tz = orgTimeZone(settings.timezone);
   const todayYmd = todayYmdInTz(tz);
   const appointmentsToday =
     analytics?.appointments_today ?? dash.todayAppointments;
@@ -365,14 +298,6 @@ export default function DashboardPage() {
             <p className="text-base capitalize text-muted-foreground">
               {todayHeadingInTz(tz)}
             </p>
-            {showFinancialKpi ? (
-              <p className="text-base text-muted-foreground">
-                Prihod danas:{" "}
-                <span className="font-semibold text-primary tabular-nums">
-                  {formatRsd(revenueToday)}
-                </span>
-              </p>
-            ) : null}
           </div>
           <div className="col-span-12 flex items-start justify-start lg:col-span-4 lg:justify-end">
             <Link
@@ -385,61 +310,38 @@ export default function DashboardPage() {
           </div>
         </section>
 
-        {/* KPI — zlatni akcent + status boje */}
-        <section className="col-span-12 mb-8 grid grid-cols-12 gap-6">
-          <div className="col-span-12 sm:col-span-6 xl:col-span-3">
-            <DashboardKpiCard
-              title="Danas zakazano"
-              value={appointmentsToday}
-              hint={
-                appointmentsToday === 1
-                  ? "Jedan termin zakazan za danas"
-                  : "Ukupno termina u kalendaru za današnji dan"
-              }
-              accent="sky"
-              icon={<CalendarDays className="size-5" />}
-            />
-          </div>
-          <div className="col-span-12 sm:col-span-6 xl:col-span-3">
-            <DashboardKpiCard
-              title="Ukupno klijenata"
-              value={analytics?.clients ?? dash.clients}
-              hint="Aktivnih kartica klijenata u sistemu"
-              accent="slate"
-              icon={<Users className="size-5" />}
-            />
-          </div>
-          <div className="col-span-12 sm:col-span-6 xl:col-span-3">
-            <DashboardKpiCard
-              title="Prihod (mesec)"
-              value={
-                !showFinancialKpi
-                  ? "—"
-                  : analyticsLoading
-                    ? "—"
-                    : formatRsd(
-                        analytics?.revenue_month ?? analytics?.revenue ?? 0
-                      )
-              }
-              hint={
-                !showFinancialKpi
-                  ? "Dostupno administratoru"
-                  : "Tekući mesec"
-              }
-              accent="emerald"
-              dominant={showFinancialKpi}
-              icon={<Wallet className="size-5" />}
-            />
-          </div>
-          <div className="col-span-12 sm:col-span-6 xl:col-span-3">
-            <DashboardKpiCard
-              title="Sledeći termin"
-              value={dash.nextAppointment ?? "—"}
-              hint="Naredni dolazak (tretman, masaža…)"
-              accent="amber"
-              icon={<Clock className="size-5" />}
-              valueClassName="line-clamp-2 text-base font-bold leading-snug sm:text-lg"
-            />
+        {/* Glavni KPI — obojene kartice, business insight odmah */}
+        <section className="col-span-12 mb-6">
+          <DashboardHeroStats
+            clientsCount={analytics?.clients ?? dash.clients ?? 0}
+            appointmentsToday={appointmentsToday}
+            revenueToday={
+              showFinancialKpi
+                ? (revenueToday ?? analytics?.revenue_today ?? null)
+                : null
+            }
+            showFinancial={showFinancialKpi}
+          />
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/80 bg-card/80 px-4 py-3 text-sm shadow-sm backdrop-blur-sm">
+            <div className="flex flex-wrap items-center gap-2 text-muted-foreground">
+              <Clock className="size-4 shrink-0 text-primary" aria-hidden />
+              <span>
+                Sledeći termin u kalendaru:{" "}
+                <strong className="text-foreground">
+                  {dash.nextAppointment ?? "—"}
+                </strong>
+              </span>
+            </div>
+            {showFinancialKpi && !analyticsLoading && analytics ? (
+              <span className="text-muted-foreground">
+                Prihod (mesec):{" "}
+                <strong className="tabular-nums text-foreground">
+                  {formatRsd(
+                    analytics.revenue_month ?? analytics.revenue ?? 0
+                  )}
+                </strong>
+              </span>
+            ) : null}
           </div>
         </section>
 
@@ -539,10 +441,10 @@ export default function DashboardPage() {
                       <li key={a.id}>
                         <Link
                           href={`${calendarDayUrl}&appt=${a.id}`}
-                          className="dash-btn block rounded-xl border border-border bg-muted/40 p-3.5 transition hover:border-primary/35 hover:bg-muted/55 hover:shadow-md"
+                          className="dash-btn block rounded-xl border border-border border-l-[3px] border-l-[#6366F1] bg-muted/40 p-3.5 transition hover:-translate-y-0.5 hover:border-primary/35 hover:bg-muted/55 hover:shadow-md"
                         >
                           <div className="flex items-start justify-between gap-2">
-                            <p className="text-base font-semibold tabular-nums text-foreground">
+                            <p className="text-lg font-bold tabular-nums tracking-tight text-foreground">
                               {formatApptTimeRange(
                                 a.date,
                                 a.service_duration,

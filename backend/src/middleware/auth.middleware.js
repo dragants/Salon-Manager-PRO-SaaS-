@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const pool = require("../config/db");
 const { JWT_SECRET } = require("../config/env");
+const { ACCESS_TOKEN_COOKIE } = require("../config/accessTokenCookie");
 
 function subscriptionBypass(req) {
   const path = req.originalUrl.split("?")[0];
@@ -33,13 +34,27 @@ function subscriptionBypass(req) {
   return false;
 }
 
-module.exports = async function authMiddleware(req, res, next) {
+function extractBearerOrCookie(req) {
+  const fromCookie = req.cookies?.[ACCESS_TOKEN_COOKIE];
+  if (fromCookie && String(fromCookie).trim()) {
+    return String(fromCookie).trim();
+  }
   const header = req.headers.authorization;
-  if (!header || !header.startsWith("Bearer ")) {
-    return res.status(401).json({ error: "Unauthorized" });
+  if (header && header.startsWith("Bearer ")) {
+    const t = header.slice("Bearer ".length).trim();
+    if (t) {
+      return t;
+    }
+  }
+  return null;
+}
+
+module.exports = async function authMiddleware(req, res, next) {
+  if (!JWT_SECRET) {
+    return res.status(500).json({ error: "Server misconfiguration" });
   }
 
-  const token = header.slice("Bearer ".length).trim();
+  const token = extractBearerOrCookie(req);
   if (!token) {
     return res.status(401).json({ error: "Unauthorized" });
   }

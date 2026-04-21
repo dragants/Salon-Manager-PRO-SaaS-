@@ -22,6 +22,12 @@ const nextConfig: NextConfig = {
    */
   allowedDevOrigins: ["192.168.*.*", "10.*.*.*", "172.*.*.*"],
 
+  async redirects() {
+    return [
+      { source: "/finansije", destination: "/finances", permanent: true },
+    ];
+  },
+
   async headers() {
     return [
       {

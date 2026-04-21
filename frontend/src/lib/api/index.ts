@@ -51,6 +51,10 @@ export function register(data: RegisterBody) {
   return api.post<AuthTokenResponse>("/auth/register", data);
 }
 
+export function logout() {
+  return api.post<{ ok: boolean }>("/auth/logout");
+}
+
 export function requestPasswordReset(email: string) {
   return api.post<{ ok: boolean; message?: string }>("/auth/forgot-password", {
     email,

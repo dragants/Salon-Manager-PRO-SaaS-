@@ -1,5 +1,8 @@
 "use client";
 
+/**
+ * Nedeljni grid termina. (Drag-and-drop pomeranje → `patchAppointment`; vidi docs/ROADMAP.md.)
+ */
 import { useState } from "react";
 import {
   DragOverlay,

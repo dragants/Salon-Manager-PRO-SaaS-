@@ -7,19 +7,46 @@ const UPLOAD_ROOT = path.resolve(
   process.env.UPLOAD_ROOT || "uploads"
 );
 
+const NODE_ENV = process.env.NODE_ENV || "development";
+const isProduction = NODE_ENV === "production";
+
+/** Javni URL(ovi) frontenda za CORS i CSRF proveru — zarezom odvojeni. */
+let FRONTEND_URLS = (process.env.FRONTEND_URL || "http://localhost:3000")
+  .split(",")
+  .map((s) => s.trim().replace(/\/$/, ""))
+  .filter(Boolean);
+if (FRONTEND_URLS.length === 0) {
+  FRONTEND_URLS = ["http://localhost:3000"];
+}
+
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (isProduction) {
+  if (!JWT_SECRET || String(JWT_SECRET).length < 32) {
+    throw new Error(
+      "JWT_SECRET must be set to a random string of at least 32 characters in production."
+    );
+  }
+} else if (!JWT_SECRET || String(JWT_SECRET).length < 16) {
+  console.warn(
+    "[env] JWT_SECRET is missing or short — set a strong secret before production."
+  );
+}
+
 module.exports = {
+  NODE_ENV,
   PORT: process.env.PORT || 5000,
   /** 0.0.0.0 = slušaj na svim interfejsima (LAN, Wi‑Fi, Ethernet). */
   HOST: process.env.HOST || "0.0.0.0",
-  JWT_SECRET: process.env.JWT_SECRET,
+  JWT_SECRET,
+  /** Za CORS `origin` i provera `Origin` zaglavlja. */
+  FRONTEND_URLS,
   UPLOAD_ROOT,
   /**
    * Javni URL frontenda za link u mejlu reset lozinke (npr. https://app.domen.com).
    */
   PASSWORD_RESET_PUBLIC_URL:
-    process.env.PASSWORD_RESET_PUBLIC_URL ||
-    process.env.FRONTEND_URL ||
-    "http://localhost:3000",
+    process.env.PASSWORD_RESET_PUBLIC_URL || FRONTEND_URLS[0] || "http://localhost:3000",
   /** Opcioni SMTP za sistem mejlove (reset lozinke). Ako nije podešen, link se loguje u konzolu (dev). */
   APP_SMTP_HOST: process.env.APP_SMTP_HOST || "",
   APP_SMTP_PORT: Number(process.env.APP_SMTP_PORT) || 587,

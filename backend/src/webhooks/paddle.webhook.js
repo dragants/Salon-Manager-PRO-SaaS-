@@ -1,4 +1,5 @@
 const crypto = require("crypto");
+/** Paddle Classic potpisuje telo kao PHP-serijalizovani string — potrebno za verify (ne JSON). */
 const { serialize } = require("php-serialize");
 const pool = require("../config/db");
 

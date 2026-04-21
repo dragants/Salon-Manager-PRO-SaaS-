@@ -40,7 +40,7 @@ async function register({ email, password, organization_name }) {
   }
 }
 
-async function login({ email, password }) {
+async function login({ email, password, remember: _remember }) {
   let result;
   try {
     result = await pool.query(

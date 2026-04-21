@@ -1,22 +1,15 @@
 "use client";
 
-import {
-  Suspense,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Check, Pencil, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   createClient,
   createClientChartEntry,
   deleteClient,
   downloadClientChartFile,
+  getAnalytics,
   getBillingStatus,
   getClientDetail,
   getClients,
@@ -26,12 +19,11 @@ import { appointmentStaffLabel } from "@/components/features/calendar/calendar-u
 import { useModal } from "@/components/providers/ModalProvider";
 import { getApiErrorCode, getApiErrorMessage } from "@/lib/api/errors";
 import { isPlanLimitClientCode } from "@/lib/plan-paywall";
-import { appTableHeadClass, appTableRowClass } from "@/lib/app-ui";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ClientsGrid } from "@/components/features/clients/clients-grid";
 import { SectionHeader } from "@/components/ui/section-header";
 import { SurfaceCard } from "@/components/ui/surface-card";
-import { Skeleton, TableRowSkeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
   DialogContent,
@@ -41,10 +33,9 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { formatRsd } from "@/lib/formatMoney";
 import { canDeleteRecords } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
-import { useTableHeadShadow } from "@/hooks/useTableHeadShadow";
-import { useTableViewportWindow } from "@/hooks/useTableViewportWindow";
 import { useAuth } from "@/providers/auth-provider";
 import { useOrganization } from "@/providers/organization-provider";
 import { notifyApp } from "@/lib/notifications-store";
@@ -54,6 +45,9 @@ import type {
   ClientDetail,
 } from "@/types/client";
 import type { ClientLimitState } from "@/types/billing";
+import type { AnalyticsResponse } from "@/types/analytics";
+
+import "./clients-page.css";
 
 const MAX_FILES = 5;
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
@@ -91,25 +85,43 @@ function formatDt(iso: string) {
   }
 }
 
-function formatDateShort(iso: string) {
-  try {
-    return new Date(iso).toLocaleDateString("sr-Latn-RS", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
-  } catch {
-    return iso;
-  }
-}
+function clientInsights(detail: ClientDetail) {
+  const now = Date.now();
+  const appts = detail.appointments;
+  const scheduled = appts
+    .filter((a) => a.status === "scheduled")
+    .sort(
+      (a, b) =>
+        new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+  const next = scheduled.find((a) => new Date(a.date).getTime() >= now);
+  const completed = appts
+    .filter((a) => a.status === "completed")
+    .sort(
+      (a, b) =>
+        new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+  const lastDone = completed[0];
+  const therapyStatus = next
+    ? "Aktivan · zakazan sledeći dolazak"
+    : lastDone
+      ? "Poslednji tretman završen"
+      : "Bez završenih tretmana u listi";
+  const problemLine =
+    detail.client.notes?.trim()?.split(/\n/)[0]?.trim() || "—";
+  const lastChart = detail.chart_entries[0];
+  const therapistNotes =
+    lastChart?.notes?.trim() ||
+    lastChart?.title?.trim() ||
+    "Još nema unosa u karton.";
 
-function isNewClient(c: Client): boolean {
-  try {
-    const d = new Date(c.created_at).getTime();
-    return (Date.now() - d) / 86_400_000 <= 7;
-  } catch {
-    return false;
-  }
+  return {
+    next,
+    lastDone,
+    therapyStatus,
+    problemLine,
+    therapistNotes,
+  };
 }
 
 function ClientsPageContent() {
@@ -154,16 +166,12 @@ function ClientsPageContent() {
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const [tableEditId, setTableEditId] = useState<number | null>(null);
-  const [tableDraft, setTableDraft] = useState({
-    name: "",
-    phone: "",
-    email: "",
-  });
-  const [tableSaving, setTableSaving] = useState(false);
   const [clientLimits, setClientLimits] = useState<ClientLimitState | null>(
     null
   );
+  const [analytics, setAnalytics] = useState<AnalyticsResponse | null>(null);
+
+  const showFinancialKpi = user?.role !== "worker";
 
   const load = useCallback(async (opts?: { silent?: boolean }) => {
     if (!opts?.silent) {
@@ -197,6 +205,15 @@ function ClientsPageContent() {
   }, [user]);
 
   useEffect(() => {
+    if (!user) {
+      return;
+    }
+    void getAnalytics()
+      .then((r) => setAnalytics(r.data))
+      .catch(() => setAnalytics(null));
+  }, [user]);
+
+  useEffect(() => {
     if (searchParams.get("new") === "1") {
       setOpen(true);
       router.replace("/clients", { scroll: false });
@@ -221,63 +238,6 @@ function ClientsPageContent() {
       );
     });
   }, [rows, search]);
-
-  const editRowIndex = useMemo(() => {
-    if (tableEditId == null) {
-      return null;
-    }
-    const i = filteredRows.findIndex((c) => c.id === tableEditId);
-    return i >= 0 ? i : null;
-  }, [tableEditId, filteredRows]);
-
-  const clientsTableScrollRef = useRef<HTMLDivElement>(null);
-  const clientsHeadShadow = useTableHeadShadow(clientsTableScrollRef);
-  const clientsTv = useTableViewportWindow(
-    clientsTableScrollRef,
-    filteredRows.length,
-    52,
-    { minItems: 45, pinIndex: editRowIndex }
-  );
-  const showClientsVirtual = clientsTv.enabled;
-  const visibleClients = showClientsVirtual
-    ? filteredRows.slice(clientsTv.from, clientsTv.to)
-    : filteredRows;
-
-  function startTableEdit(c: Client) {
-    setTableEditId(c.id);
-    setTableDraft({
-      name: c.name,
-      phone: c.phone ?? "",
-      email: c.email?.trim() ?? "",
-    });
-  }
-
-  function cancelTableEdit() {
-    setTableEditId(null);
-  }
-
-  async function saveTableEdit() {
-    if (tableEditId == null) {
-      return;
-    }
-    if (!tableDraft.name.trim() || !tableDraft.phone.trim()) {
-      return;
-    }
-    setTableSaving(true);
-    try {
-      await updateClient(tableEditId, {
-        name: tableDraft.name.trim(),
-        phone: tableDraft.phone.trim(),
-        email: tableDraft.email.trim() ? tableDraft.email.trim() : null,
-      });
-      setTableEditId(null);
-      await load({ silent: true });
-    } catch (e) {
-      setError(getApiErrorMessage(e, "Izmena nije sačuvana."));
-    } finally {
-      setTableSaving(false);
-    }
-  }
 
   async function openCard(clientId: number) {
     setCardOpen(true);
@@ -484,10 +444,9 @@ function ClientsPageContent() {
         title="Klijenti"
         description={
           <>
-            Lista klijenata. Unesi <strong>e-mail</strong> za slanje podsetnika
-            i potvrda termina (ako je u podešavanjima uključen e-mail). Karton:
-            prilozi se čuvaju u <strong>folderu tog klijenta</strong> na serveru;
-            ceo folder se briše kad obrišeš klijenta.
+            Kartice umesto tabele — ime i akcija su uvek u prvom planu.{" "}
+            <strong>E-mail</strong> za podsetnike. Karton i prilozi su u folderu
+            klijenta na serveru.
           </>
         }
         action={
@@ -544,31 +503,15 @@ function ClientsPageContent() {
       ) : null}
 
       {loading ? (
-        <SurfaceCard padding="none" className="overflow-hidden">
-          <div className="flex flex-col gap-3 border-b border-zinc-200/90 bg-zinc-50/50 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-900/40 sm:flex-row sm:items-center sm:justify-between sm:px-5">
-            <Skeleton className="h-10 w-full max-w-md rounded-xl" />
-            <Skeleton className="h-4 w-24 rounded-md" />
+        <SurfaceCard padding="md" className="overflow-hidden">
+          <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <Skeleton className="h-11 w-full max-w-md rounded-xl" />
+            <Skeleton className="h-4 w-28 rounded-md" />
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[760px] text-left text-sm">
-              <thead>
-                <tr className={appTableHeadClass}>
-                  <th className="px-5 py-3.5">Ime</th>
-                  <th className="px-5 py-3.5">Telefon</th>
-                  <th className="hidden px-5 py-3.5 lg:table-cell">E-mail</th>
-                  <th className="hidden px-5 py-3.5 md:table-cell">
-                    Poslednji kontekst
-                  </th>
-                  <th className="px-5 py-3.5">Registrovan</th>
-                  <th className="w-44 px-5 py-3.5 text-right">Akcije</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <TableRowSkeleton key={i} cols={6} />
-                ))}
-              </tbody>
-            </table>
+          <div className="clients-grid-skeleton">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="clients-card-skeleton" />
+            ))}
           </div>
         </SurfaceCard>
       ) : rows.length === 0 ? (
@@ -576,229 +519,59 @@ function ClientsPageContent() {
           Još nema klijenata. Klikni „+ Novi klijent“.
         </SurfaceCard>
       ) : (
-        <SurfaceCard padding="none" className="overflow-hidden">
-          <div className="flex flex-col gap-3 border-b border-zinc-200/90 bg-zinc-50/50 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-900/40 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+        <SurfaceCard padding="md" className="overflow-hidden">
+          <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Pretraga: ime, telefon, e-mail, beleška…"
-              className="max-w-md rounded-xl border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-950"
+              className="max-w-lg rounded-xl border-zinc-200 bg-white text-base dark:border-zinc-700 dark:bg-zinc-950"
               aria-label="Pretraga klijenata"
             />
-            <p className="shrink-0 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-              {filteredRows.length} od {rows.length}
-              {clientsTv.enabled && filteredRows.length > 0
-                ? ` · prikaz ${clientsTv.from + 1}–${clientsTv.to}`
-                : null}
+            <p className="shrink-0 text-sm font-medium text-muted-foreground">
+              <span className="tabular-nums font-semibold text-foreground">
+                {filteredRows.length}
+              </span>{" "}
+              od {rows.length} klijenata
             </p>
           </div>
-          <div
-            ref={clientsTableScrollRef}
-            className={cn(
-              "overflow-x-auto",
-              filteredRows.length >= 45 && "max-h-[min(70vh,560px)] overflow-y-auto"
-            )}
-          >
-            <table className="w-full min-w-[760px] text-left text-sm">
-              <thead
-                className={cn(
-                  appTableHeadClass,
-                  "sticky top-0 z-20 bg-zinc-50/95 backdrop-blur-sm dark:bg-zinc-900/95",
-                  clientsHeadShadow &&
-                    "shadow-[0_6px_12px_-4px_rgba(0,0,0,0.12)] dark:shadow-[0_6px_12px_-4px_rgba(0,0,0,0.45)]"
-                )}
-              >
-                <tr className="border-b border-zinc-200/90 dark:border-zinc-800">
-                  <th className="px-5 py-3.5">Ime</th>
-                  <th className="px-5 py-3.5">Telefon</th>
-                  <th className="hidden px-5 py-3.5 lg:table-cell">E-mail</th>
-                  <th className="hidden px-5 py-3.5 md:table-cell">
-                    Poslednji kontekst
-                  </th>
-                  <th className="px-5 py-3.5">Registrovan</th>
-                  <th className="w-44 px-5 py-3.5 text-right">Akcije</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredRows.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={6}
-                      className="px-5 py-14 text-center text-sm text-zinc-500 dark:text-zinc-400"
-                    >
-                      Nema rezultata za „{search.trim()}“. Pokušaj drugu
-                      pretragu.
-                    </td>
-                  </tr>
-                ) : (
-                  <>
-                    {showClientsVirtual && clientsTv.topSpacer > 0 ? (
-                      <tr aria-hidden>
-                        <td
-                          colSpan={6}
-                          style={{
-                            height: clientsTv.topSpacer,
-                            padding: 0,
-                            border: 0,
-                          }}
-                        />
-                      </tr>
-                    ) : null}
-                    {visibleClients.map((c) => (
-                    <tr
-                      key={c.id}
-                      className={cn(
-                        appTableRowClass,
-                        "box-border h-[52px] max-h-[52px]",
-                        isNewClient(c) &&
-                          "bg-amber-50/55 dark:bg-amber-950/25",
-                        tableEditId === c.id &&
-                          "bg-sky-50/50 ring-1 ring-sky-200/60 dark:bg-sky-950/20 dark:ring-sky-800/50"
-                      )}
-                    >
-                      <td className="h-[52px] max-h-[52px] overflow-hidden px-5 py-1 align-middle font-medium text-zinc-900 dark:text-zinc-100">
-                        {tableEditId === c.id ? (
-                          <Input
-                            value={tableDraft.name}
-                            onChange={(e) =>
-                              setTableDraft((d) => ({
-                                ...d,
-                                name: e.target.value,
-                              }))
-                            }
-                            className="h-8 rounded-lg text-sm"
-                            aria-label="Ime klijenta"
-                          />
-                        ) : (
-                          <span className="inline-flex flex-wrap items-center gap-2">
-                            {c.name}
-                            {isNewClient(c) ? (
-                              <Badge
-                                variant="secondary"
-                                className="rounded-md bg-amber-100 text-amber-900 dark:bg-amber-900/50 dark:text-amber-100"
-                              >
-                                Novo
-                              </Badge>
-                            ) : null}
-                          </span>
-                        )}
-                      </td>
-                      <td className="h-[52px] max-h-[52px] overflow-hidden px-5 py-1 align-middle tabular-nums text-zinc-700 dark:text-zinc-300">
-                        {tableEditId === c.id ? (
-                          <Input
-                            value={tableDraft.phone}
-                            onChange={(e) =>
-                              setTableDraft((d) => ({
-                                ...d,
-                                phone: e.target.value,
-                              }))
-                            }
-                            className="h-8 rounded-lg text-sm"
-                            inputMode="tel"
-                            aria-label="Telefon"
-                          />
-                        ) : (
-                          (c.phone ?? "—")
-                        )}
-                      </td>
-                      <td className="hidden h-[52px] max-h-[52px] overflow-hidden px-5 py-1 align-middle lg:table-cell lg:max-w-[14rem]">
-                        {tableEditId === c.id ? (
-                          <Input
-                            value={tableDraft.email}
-                            onChange={(e) =>
-                              setTableDraft((d) => ({
-                                ...d,
-                                email: e.target.value,
-                              }))
-                            }
-                            className="h-8 rounded-lg text-sm"
-                            type="email"
-                            placeholder="E-mail (opciono)"
-                            aria-label="E-mail"
-                          />
-                        ) : (
-                          <span className="truncate text-zinc-600 dark:text-zinc-400">
-                            {c.email?.trim() ? c.email.trim() : "—"}
-                          </span>
-                        )}
-                      </td>
-                      <td className="hidden h-[52px] max-h-[52px] truncate px-5 py-1 align-middle text-zinc-600 md:table-cell md:max-w-xs dark:text-zinc-400">
-                        {c.notes ?? "—"}
-                      </td>
-                      <td className="h-[52px] max-h-[52px] px-5 py-1 align-middle text-zinc-600 dark:text-zinc-400">
-                        {formatDateShort(c.created_at)}
-                      </td>
-                      <td className="h-[52px] max-h-[52px] px-5 py-1 align-middle text-right">
-                        <div className="flex flex-wrap items-center justify-end gap-1">
-                          {tableEditId === c.id ? (
-                            <>
-                              <Button
-                                type="button"
-                                size="icon-sm"
-                                variant="ghost"
-                                className="rounded-xl text-emerald-700 hover:bg-emerald-100 dark:text-emerald-400 dark:hover:bg-emerald-950/50"
-                                disabled={tableSaving}
-                                onClick={() => void saveTableEdit()}
-                                aria-label="Sačuvaj izmenu"
-                              >
-                                <Check className="size-4" />
-                              </Button>
-                              <Button
-                                type="button"
-                                size="icon-sm"
-                                variant="ghost"
-                                className="rounded-xl"
-                                disabled={tableSaving}
-                                onClick={cancelTableEdit}
-                                aria-label="Otkaži izmenu"
-                              >
-                                <X className="size-4" />
-                              </Button>
-                            </>
-                          ) : (
-                            <>
-                              <Button
-                                type="button"
-                                size="icon-sm"
-                                variant="ghost"
-                                className="rounded-xl"
-                                onClick={() => startTableEdit(c)}
-                                aria-label="Izmeni u tabeli"
-                              >
-                                <Pencil className="size-4" />
-                              </Button>
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                className="rounded-xl border-zinc-200 dark:border-zinc-700"
-                                onClick={() => void openCard(c.id)}
-                              >
-                                Karton
-                              </Button>
-                            </>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                    ))}
-                    {showClientsVirtual && clientsTv.bottomSpacer > 0 ? (
-                      <tr aria-hidden>
-                        <td
-                          colSpan={6}
-                          style={{
-                            height: clientsTv.bottomSpacer,
-                            padding: 0,
-                            border: 0,
-                          }}
-                        />
-                      </tr>
-                    ) : null}
-                  </>
-                )}
-              </tbody>
-            </table>
+
+          <div className="clients-stats-bar" aria-label="Brzi pregled salona">
+            <div>
+              👥{" "}
+              <span className="tabular-nums">
+                {analytics?.clients ?? rows.length}
+              </span>{" "}
+              klijenata
+            </div>
+            <div>
+              📅{" "}
+              <span className="tabular-nums">
+                {analytics?.appointments_today ?? "—"}
+              </span>{" "}
+              termina danas
+            </div>
+            {showFinancialKpi ? (
+              <div>
+                💰{" "}
+                <span className="tabular-nums">
+                  {formatRsd(analytics?.revenue_today)}
+                </span>
+              </div>
+            ) : null}
           </div>
+
+          {filteredRows.length === 0 ? (
+            <p className="py-12 text-center text-sm text-muted-foreground">
+              Nema rezultata za „{search.trim()}“.
+            </p>
+          ) : (
+            <ClientsGrid
+              clients={filteredRows}
+              onOpen={(c) => void openCard(c.id)}
+              calendarHref="/calendar"
+            />
+          )}
         </SurfaceCard>
       )}
 
@@ -883,7 +656,7 @@ function ClientsPageContent() {
         }}
       >
         <DialogContent
-          className="flex max-h-[90vh] flex-col border-zinc-200 sm:max-w-3xl dark:border-zinc-800"
+          className="flex max-h-[92vh] flex-col border-zinc-200 sm:max-w-4xl lg:max-w-5xl dark:border-zinc-800"
           showCloseButton
         >
           <DialogHeader>
@@ -970,7 +743,63 @@ function ClientsPageContent() {
                 ) : null}
 
                 {cardTab === "osnovno" ? (
-                  <div className="space-y-4 py-2">
+                  <div className="grid gap-6 py-2 lg:grid-cols-10 lg:gap-8">
+                    <aside className="space-y-4 rounded-2xl border border-zinc-200/90 bg-gradient-to-b from-violet-50/90 via-white to-zinc-50/80 p-4 dark:border-zinc-800 dark:from-violet-950/30 dark:via-zinc-950/40 dark:to-zinc-950/60 lg:col-span-3">
+                      {detail ? (
+                        (() => {
+                          const ins = clientInsights(detail);
+                          return (
+                            <>
+                              <div>
+                                <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                                  Status terapije
+                                </p>
+                                <p className="mt-1 text-sm font-semibold leading-snug text-zinc-900 dark:text-zinc-50">
+                                  {ins.therapyStatus}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                                  Poslednja poseta
+                                </p>
+                                <p className="mt-1 text-sm text-zinc-800 dark:text-zinc-200">
+                                  {ins.lastDone
+                                    ? `${formatDt(ins.lastDone.date)} · ${ins.lastDone.service_name}`
+                                    : "—"}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                                  Sledeći termin
+                                </p>
+                                <p className="mt-1 text-sm text-zinc-800 dark:text-zinc-200">
+                                  {ins.next
+                                    ? `${formatDt(ins.next.date)} · ${ins.next.service_name}`
+                                    : "Nema zakazanog"}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                                  Tip problema / cilj
+                                </p>
+                                <p className="mt-1 line-clamp-4 text-sm text-zinc-800 dark:text-zinc-200">
+                                  {ins.problemLine}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                                  Terapeutske napomene
+                                </p>
+                                <p className="mt-1 line-clamp-5 whitespace-pre-wrap text-sm text-zinc-700 dark:text-zinc-300">
+                                  {ins.therapistNotes}
+                                </p>
+                              </div>
+                            </>
+                          );
+                        })()
+                      ) : null}
+                    </aside>
+                    <div className="space-y-4 lg:col-span-7">
                     <div className="space-y-2">
                       <Label htmlFor="ec-name">Ime</Label>
                       <Input
@@ -1063,6 +892,7 @@ function ClientsPageContent() {
                             : "Brisanje nije dostupno."}
                         </p>
                       )}
+                    </div>
                     </div>
                   </div>
                 ) : null}
@@ -1251,30 +1081,12 @@ export default function ClientsPage() {
             title="Klijenti"
             description="Učitavanje liste klijenata…"
           />
-          <SurfaceCard padding="none" className="overflow-hidden">
-            <div className="border-b border-zinc-200/90 bg-zinc-50/50 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-900/40 sm:px-5">
-              <Skeleton className="h-10 w-full max-w-md rounded-xl" />
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[760px] text-left text-sm">
-                <thead>
-                  <tr className={appTableHeadClass}>
-                    <th className="px-5 py-3.5">Ime</th>
-                    <th className="px-5 py-3.5">Telefon</th>
-                    <th className="hidden px-5 py-3.5 lg:table-cell">E-mail</th>
-                    <th className="hidden px-5 py-3.5 md:table-cell">
-                      Kontekst
-                    </th>
-                    <th className="px-5 py-3.5">Registrovan</th>
-                    <th className="w-44 px-5 py-3.5 text-right">Akcije</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {Array.from({ length: 8 }).map((_, i) => (
-                    <TableRowSkeleton key={i} cols={6} />
-                  ))}
-                </tbody>
-              </table>
+          <SurfaceCard padding="md">
+            <Skeleton className="mb-5 h-11 w-full max-w-md rounded-xl" />
+            <div className="clients-grid-skeleton">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="clients-card-skeleton" />
+              ))}
             </div>
           </SurfaceCard>
         </div>

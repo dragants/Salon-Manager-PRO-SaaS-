@@ -3,12 +3,14 @@
 import { Toaster } from "sonner";
 import { ModalProvider } from "@/components/providers/ModalProvider";
 import { AuthProvider } from "./auth-provider";
+import { QueryProvider } from "./query-provider";
 import { ChunkLoadRecovery } from "./chunk-load-recovery";
 import { OrganizationProvider } from "./organization-provider";
 import { ServiceWorkerRegister } from "./service-worker-register";
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
   return (
+    <QueryProvider>
     <AuthProvider>
       <OrganizationProvider>
         <ModalProvider>
@@ -19,5 +21,6 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
         </ModalProvider>
       </OrganizationProvider>
     </AuthProvider>
+    </QueryProvider>
   );
 }

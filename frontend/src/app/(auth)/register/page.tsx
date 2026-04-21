@@ -10,7 +10,6 @@ import { Label } from "@/components/ui/label";
 import { SurfaceCard } from "@/components/ui/surface-card";
 import { api } from "@/lib/api/client";
 import { getApiErrorMessage } from "@/lib/api/errors";
-import { setToken } from "@/lib/auth/token";
 import { syncSessionCookie } from "@/lib/auth/session-cookie";
 import { useAuth } from "@/providers/auth-provider";
 
@@ -46,12 +45,12 @@ export default function RegisterPage() {
     setError(null);
     setLoading(true);
     try {
-      const { data } = await api.post<{ token: string }>("/auth/register", {
+      await api.post("/auth/register", {
         email,
         password,
         organization_name: organizationName,
       });
-      setToken(data.token, true);
+      syncSessionCookie(true);
       if (typeof window !== "undefined") {
         sessionStorage.setItem("salon_onboarding_pending", "1");
       }

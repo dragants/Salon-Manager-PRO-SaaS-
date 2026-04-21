@@ -42,3 +42,6 @@ coverage/
 # Hosting / alati
 .vercel
 .turbo
+
+# Lokalni arhivi (ne commitovati)
+*.zip

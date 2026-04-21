@@ -27,13 +27,13 @@ import { Button } from "@/components/ui/button";
 
 const allNav = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/calendar", label: "Kalendar", icon: CalendarDays },
+  { href: "/calendar", label: "Termini", icon: CalendarDays },
   { href: "/shifts", label: "Smena", icon: CalendarClock },
   { href: "/clients", label: "Klijenti", icon: Users },
   { href: "/services", label: "Usluge", icon: SpaIcon },
   { href: "/supplies", label: "Materijal", icon: Package },
   { href: "/analytics", label: "Analitika", icon: BarChart3 },
-  { href: "/finances", label: "Finansije", icon: CreditCard },
+  { href: "/finances", label: "Kasa", icon: CreditCard },
   { href: "/account", label: "Moj nalog", icon: UserCircle },
   { href: "/settings", label: "Podešavanja", icon: Settings },
 ] as const;

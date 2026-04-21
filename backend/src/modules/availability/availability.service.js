@@ -1,4 +1,5 @@
 const pool = require("../../config/db");
+const { intervalOverlap } = require("../../utils/intervalOverlap");
 const {
   minutesSinceMidnightInZone,
   isoFromYmdAndMinutesInZone,
@@ -44,10 +45,6 @@ function minutesToHHMM(total) {
   const h = Math.floor(total / 60) % 24;
   const m = Math.round(total % 60);
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-}
-
-function intervalOverlap(a0, a1, b0, b1) {
-  return a0 < b1 && b0 < a1;
 }
 
 /**

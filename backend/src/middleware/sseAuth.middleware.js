@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const pool = require("../config/db");
 const { JWT_SECRET } = require("../config/env");
+const { ACCESS_TOKEN_COOKIE } = require("../config/accessTokenCookie");
 
 function subscriptionBypass(req) {
   const path = req.originalUrl.split("?")[0];
@@ -37,6 +38,10 @@ function subscriptionBypass(req) {
 }
 
 function extractToken(req) {
+  const fromCookie = req.cookies?.[ACCESS_TOKEN_COOKIE];
+  if (fromCookie && String(fromCookie).trim()) {
+    return String(fromCookie).trim();
+  }
   const header = req.headers.authorization;
   if (header && header.startsWith("Bearer ")) {
     const t = header.slice("Bearer ".length).trim();

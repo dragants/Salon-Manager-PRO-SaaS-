@@ -13,7 +13,7 @@ const asyncHandler = require("../../utils/asyncHandler");
 /** Stroži limit od globalnog (brute-force / credential stuffing). */
 const authRouteLimit = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 30,
+  max: 40,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -22,18 +22,20 @@ const authRouteLimit = rateLimit({
   },
 });
 
-/** Još stroži za login (credential stuffing). */
+/** Brute-force: najviše 10 pokušaja prijave u minuti (po IP). */
 const loginRouteLimit = rateLimit({
-  windowMs: 15 * 60 * 1000,
+  windowMs: 60 * 1000,
   max: 10,
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: true,
   message: {
     error:
-      "Previše neuspešnih prijava sa ove adrese. Pokušajte ponovo za nekoliko minuta.",
+      "Previše neuspešnih prijava sa ove adrese. Pokušajte ponovo za minut.",
   },
 });
+
+router.post("/logout", asyncHandler(controller.logout));
 
 router.post(
   "/register",

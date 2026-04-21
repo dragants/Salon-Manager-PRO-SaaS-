@@ -1,10 +1,18 @@
 const express = require("express");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const morgan = require("morgan");
 
+const { FRONTEND_URLS } = require("./config/env");
 const paddleWebhook = require("./webhooks/paddle.webhook");
+
+/** Dodatni origini (zarezom), npr. drugi front ili staging — vidi CORS_ORIGINS u .env */
+const CORS_EXTRA_ORIGINS = (process.env.CORS_ORIGINS || "")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
 
 const authRoutes = require("./modules/auth/auth.routes");
 const appointmentRoutes = require("./modules/appointments/appointments.routes");
@@ -29,7 +37,30 @@ const errorHandler = require("./middleware/error.middleware");
 const app = express();
 
 app.use(helmet());
-app.use(cors());
+
+const LAN_ORIGIN_RE =
+  /^https?:\/\/(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3})(:\d+)?$/i;
+
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin) {
+        return callback(null, true);
+      }
+      if (FRONTEND_URLS.includes(origin)) {
+        return callback(null, true);
+      }
+      if (CORS_EXTRA_ORIGINS.includes(origin)) {
+        return callback(null, true);
+      }
+      if (LAN_ORIGIN_RE.test(origin)) {
+        return callback(null, true);
+      }
+      return callback(null, false);
+    },
+    credentials: true,
+  })
+);
 
 app.post(
   "/webhooks/paddle",
@@ -37,12 +68,13 @@ app.post(
   paddleWebhook
 );
 
+app.use(cookieParser());
 app.use(express.json({ limit: "12mb" }));
 
 app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 100,
+    max: 500,
     standardHeaders: true,
     legacyHeaders: false,
     skip: (req) =>
@@ -53,7 +85,9 @@ app.use(
   })
 );
 
-app.use(morgan("dev"));
+app.use(
+  morgan(process.env.NODE_ENV === "production" ? "combined" : "dev")
+);
 
 app.get("/health", (req, res) => {
   res.json({ ok: true });

@@ -188,7 +188,7 @@ export default function PublicBookingPage() {
     return (
       <div
         id="main-content"
-        className="flex min-h-dvh items-center justify-center bg-[#f8fafc] px-4 py-16 dark:bg-slate-950"
+        className="flex min-h-dvh items-center justify-center bg-background px-4 py-16"
       >
         <SurfaceCard
           padding="md"
@@ -204,13 +204,13 @@ export default function PublicBookingPage() {
     return (
       <div
         id="main-content"
-        className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-[#f8fafc] dark:bg-slate-950"
+        className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-background"
       >
         <div
           className="size-10 animate-pulse rounded-2xl bg-sky-200/80 dark:bg-sky-900/50"
           aria-hidden
         />
-        <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+        <p className="text-sm font-medium text-muted-foreground">
           Učitavanje…
         </p>
       </div>
@@ -269,7 +269,7 @@ export default function PublicBookingPage() {
   return (
     <div
       id="main-content"
-      className="min-h-dvh touch-manipulation bg-gradient-to-b from-sky-50/80 to-[#f8fafc] px-4 py-10 pb-[max(2.5rem,env(safe-area-inset-bottom,0px)+1rem)] pt-[max(2.5rem,env(safe-area-inset-top,0px)+0.5rem)] dark:from-slate-900 dark:to-slate-950"
+      className="min-h-dvh touch-manipulation bg-gradient-to-b from-primary/10 via-background to-background px-4 py-10 pb-[max(2.5rem,env(safe-area-inset-bottom,0px)+1rem)] pt-[max(2.5rem,env(safe-area-inset-top,0px)+0.5rem)]"
     >
       <div className="mx-auto flex max-w-lg flex-col gap-6">
         <header className="space-y-1 text-center">

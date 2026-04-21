@@ -9,11 +9,13 @@ import {
   Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { sr } from "@/lib/i18n/sr";
+
 const dockItems = [
-  { href: "/dashboard", label: "Početna", icon: LayoutDashboard },
-  { href: "/calendar", label: "Kalendar", icon: CalendarDays },
-  { href: "/clients", label: "Klijenti", icon: Users },
-  { href: "/settings", label: "Podeš.", icon: Settings },
+  { href: "/dashboard", label: sr.nav.dock.home, icon: LayoutDashboard },
+  { href: "/calendar", label: sr.nav.dock.calendar, icon: CalendarDays },
+  { href: "/clients", label: sr.nav.dock.clients, icon: Users },
+  { href: "/settings", label: sr.nav.dock.settings, icon: Settings },
 ] as const;
 
 export function MobileDock() {
@@ -35,16 +37,14 @@ export function MobileDock() {
                 className={cn(
                   "flex min-h-12 touch-manipulation flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1 text-[10px] font-medium transition-colors",
                   active
-                    ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                    : "text-zinc-600 active:bg-zinc-100 dark:text-zinc-400 dark:active:bg-zinc-800"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground active:bg-muted"
                 )}
               >
                 <Icon
                   className={cn(
                     "size-5 shrink-0",
-                    active
-                      ? "text-white dark:text-zinc-900"
-                      : "text-zinc-500 dark:text-zinc-500"
+                    active ? "text-primary-foreground" : "text-muted-foreground"
                   )}
                   aria-hidden
                 />

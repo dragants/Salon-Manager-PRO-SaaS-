@@ -1,5 +1,5 @@
 /**
- * SSE hub za `/appointments/stream` (token u ?token=).
+ * SSE hub za `/appointments/stream` (JWT u httpOnly kolačiću + CORS credentials).
  * Poruke: `{ type: "appointments", event, payload? }` — vidi emit u appointments/booking kontrolerima.
  */
 /** @type {Map<number, Set<import('http').ServerResponse>>} */
