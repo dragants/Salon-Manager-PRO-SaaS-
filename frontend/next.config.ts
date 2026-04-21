@@ -6,6 +6,11 @@ import type { NextConfig } from "next";
 const frontendDir = path.dirname(fileURLToPath(import.meta.url));
 
 const nextConfig: NextConfig = {
+  /** View Transitions API (cross-fade između ruta, gde browser podržava). */
+  experimental: {
+    viewTransition: true,
+  },
+
   /**
    * Bez ovoga Next uzima pogrešan „workspace root“ (roditeljski package-lock) i u dev-u
    * može da pukne serviranje `/_next/static/css/*.css` (500) pri pristupu preko LAN IP.
