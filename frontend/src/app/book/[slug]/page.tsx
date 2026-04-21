@@ -235,12 +235,12 @@ export default function PublicBookingPage() {
       <div
         id="main-content"
         style={bookingThemeStyle}
-        className="min-h-dvh touch-manipulation bg-gradient-to-b from-emerald-50/90 to-[#f8fafc] px-4 py-10 pb-[max(2.5rem,env(safe-area-inset-bottom,0px)+1rem)] pt-[max(2.5rem,env(safe-area-inset-top,0px)+0.5rem)] dark:from-emerald-950/40 dark:to-slate-950"
+        className="min-h-dvh touch-manipulation bg-gradient-to-b from-emerald-50/90 to-background px-4 py-10 pb-[max(2.5rem,env(safe-area-inset-bottom,0px)+1rem)] pt-[max(2.5rem,env(safe-area-inset-top,0px)+0.5rem)] dark:from-emerald-950/40"
       >
         <div className="mx-auto flex max-w-lg flex-col gap-6">
           <SurfaceCard
             padding="lg"
-            className="space-y-5 border-emerald-200/80 bg-white/95 text-center dark:border-emerald-900 dark:bg-slate-900"
+            className="space-y-5 border-emerald-200/80 bg-card/95 text-center dark:border-emerald-900"
           >
             <div className="flex justify-center" aria-hidden>
               <CircleCheck
@@ -249,13 +249,13 @@ export default function PublicBookingPage() {
               />
             </div>
             <div className="space-y-1">
-              <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground">
                 Termin zakazan
               </h1>
-              <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              <p className="text-sm text-muted-foreground">
                 {success.summary}
               </p>
-              <p className="text-xs text-zinc-500 dark:text-zinc-500">
+              <p className="text-xs text-muted-foreground">
                 {success.notifyHint}
               </p>
             </div>
@@ -268,7 +268,7 @@ export default function PublicBookingPage() {
               Zakaži još jedan termin
             </Button>
           </SurfaceCard>
-          <p className="text-center text-xs text-zinc-400">
+          <p className="text-center text-xs text-muted-foreground/70">
             Hvala što koristite {salon.name}.
           </p>
         </div>
@@ -388,16 +388,16 @@ export default function PublicBookingPage() {
 
         {step === 1 ? (
           <SurfaceCard padding="md" className="space-y-4">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+            <h2 className="text-sm font-semibold text-foreground">
               Izaberi uslugu
             </h2>
             {services.length === 0 ? (
-              <p className="text-sm text-zinc-500">
+              <p className="text-sm text-muted-foreground">
                 Ovaj salon još nema javnih usluga za rezervaciju.
               </p>
             ) : (
               <select
-                className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm dark:border-zinc-600 dark:bg-slate-900 dark:text-slate-100"
+                className="w-full rounded-xl border border-border bg-card px-3 py-2.5 text-sm text-foreground"
                 value={serviceId === "" ? "" : String(serviceId)}
                 onChange={(e) => {
                   const v = e.target.value;
@@ -425,7 +425,7 @@ export default function PublicBookingPage() {
 
         {step === 2 ? (
           <SurfaceCard padding="md" className="space-y-4">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+            <h2 className="text-sm font-semibold text-foreground">
               Izaberi datum
             </h2>
             <div className="flex flex-wrap gap-2">
@@ -458,7 +458,7 @@ export default function PublicBookingPage() {
               min={todayYmdLocal()}
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="border-zinc-200 bg-white"
+              className="border-border bg-card"
             />
             <div className="flex gap-2">
               <Button
@@ -483,7 +483,7 @@ export default function PublicBookingPage() {
 
         {step === 3 ? (
           <SurfaceCard padding="md" className="space-y-4">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+            <h2 className="text-sm font-semibold text-foreground">
               Slobodni termini
             </h2>
             {slotsLoading ? (
@@ -492,7 +492,7 @@ export default function PublicBookingPage() {
                   className="size-9 animate-pulse rounded-full bg-sky-200/90 dark:bg-sky-900/60"
                   aria-hidden
                 />
-                <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+                <p className="text-sm font-medium text-muted-foreground">
                   Učitavanje termina…
                 </p>
               </div>
@@ -501,7 +501,7 @@ export default function PublicBookingPage() {
                 {slotsError}
               </p>
             ) : slots.length === 0 ? (
-              <p className="text-sm text-zinc-500">
+              <p className="text-sm text-muted-foreground">
                 Nema slobodnih termina za ovaj dan. Izaberi drugi datum ili
                 proveri radno vreme u podešavanjima salona.
               </p>
@@ -530,7 +530,7 @@ export default function PublicBookingPage() {
                           selectedSlot?.start === slot.start &&
                             selectedSlot?.employee_id === slot.employee_id
                             ? "text-white/90"
-                            : "text-zinc-500 dark:text-zinc-400"
+                            : "text-muted-foreground"
                         )}
                       >
                         {slot.employee_name}
@@ -564,12 +564,12 @@ export default function PublicBookingPage() {
 
         {step === 4 ? (
           <SurfaceCard padding="md" className="space-y-4">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+            <h2 className="text-sm font-semibold text-foreground">
               Vaši podaci
             </h2>
             {selectedService && selectedSlot ? (
-              <div className="rounded-xl border border-zinc-100 bg-zinc-50/80 px-3 py-2 text-xs text-zinc-600 dark:border-zinc-700 dark:bg-slate-800/50 dark:text-zinc-300">
-                <p className="font-medium text-zinc-800 dark:text-zinc-200">
+              <div className="rounded-xl border border-border bg-muted/80 px-3 py-2 text-xs text-muted-foreground">
+                <p className="font-medium text-foreground">
                   {selectedService.name}
                 </p>
                 <p>
@@ -587,7 +587,7 @@ export default function PublicBookingPage() {
                   id="pb-name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="border-zinc-200 bg-white"
+                  className="border-border bg-card"
                   autoComplete="name"
                 />
               </div>
@@ -598,7 +598,7 @@ export default function PublicBookingPage() {
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="border-zinc-200 bg-white"
+                  className="border-border bg-card"
                   autoComplete="tel"
                   placeholder="+381…"
                 />
@@ -612,7 +612,7 @@ export default function PublicBookingPage() {
                       *
                     </span>
                   ) : (
-                    <span className="font-normal text-zinc-500">
+                    <span className="font-normal text-muted-foreground">
                       {" "}
                       (opciono)
                     </span>
@@ -623,13 +623,13 @@ export default function PublicBookingPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="border-zinc-200 bg-white"
+                  className="border-border bg-card"
                   autoComplete="email"
                   placeholder="ime@primer.com"
                   required={emailRequired}
                 />
                 {!emailRequired ? (
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  <p className="text-xs text-muted-foreground">
                     Ako ga uneseš, salon ga može koristiti za e-mail potvrdu i
                     podsetnike (ako su uključeni).
                   </p>
@@ -669,7 +669,7 @@ export default function PublicBookingPage() {
           </SurfaceCard>
         ) : null}
 
-        <p className="text-center text-xs text-zinc-400">
+        <p className="text-center text-xs text-muted-foreground/70">
           Zakazivanje u vremenskoj zoni salona ({salonTz}). Adresa otvara mape,
           telefon poziv.
         </p>

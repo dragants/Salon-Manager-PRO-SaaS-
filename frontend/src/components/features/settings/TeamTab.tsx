@@ -174,7 +174,7 @@ export function TeamTab({
             : "Samo administrator vidi formu za dodavanje. Ti si trenutno kao radnik — obrati se adminu salona."
         }
       >
-        <ul className="list-inside list-disc space-y-1 text-sm text-zinc-600">
+        <ul className="list-inside list-disc space-y-1 text-sm text-muted-foreground">
           <li>
             <strong>Administrator</strong> — pun pristup (podešavanja, tim, svi
             moduli po pravilima sistema).
@@ -206,7 +206,7 @@ export function TeamTab({
                 autoComplete="off"
                 value={displayNameNew}
                 onChange={(e) => setDisplayNameNew(e.target.value)}
-                className="border-zinc-200"
+                className="border-border"
                 placeholder="npr. Ana"
               />
             </div>
@@ -218,7 +218,7 @@ export function TeamTab({
                 autoComplete="off"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="border-zinc-200"
+                className="border-border"
               />
             </div>
             <div className="space-y-2">
@@ -229,7 +229,7 @@ export function TeamTab({
                 autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="border-zinc-200"
+                className="border-border"
                 minLength={8}
               />
             </div>
@@ -241,7 +241,7 @@ export function TeamTab({
                 onChange={(e) =>
                   setRole(e.target.value === "admin" ? "admin" : "worker")
                 }
-                className="flex h-10 w-full rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-900"
+                className="flex h-10 w-full rounded-md border border-border bg-card px-3 text-sm text-foreground"
               >
                 <option value="worker">Radnik</option>
                 <option value="admin">Administrator</option>
@@ -249,7 +249,7 @@ export function TeamTab({
             </div>
             <Button
               type="submit"
-              className="bg-zinc-900 text-white hover:bg-zinc-800"
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
               disabled={saving}
             >
               {saving ? "Čuvam…" : "Dodaj u tim"}
@@ -260,24 +260,24 @@ export function TeamTab({
 
       <SettingsCard title="Članovi" description="Svi nalozi u tvom salonu.">
         {teamLoading ? (
-          <p className="text-sm text-zinc-500">Učitavanje tima…</p>
+          <p className="text-sm text-muted-foreground">Učitavanje tima…</p>
         ) : team.length === 0 ? (
-          <p className="text-sm text-zinc-500">Nema prikazanih članova.</p>
+          <p className="text-sm text-muted-foreground">Nema prikazanih članova.</p>
         ) : (
-          <div className="divide-y divide-zinc-100 rounded-lg border border-zinc-200/90">
+          <div className="divide-y divide-border/50 rounded-lg border border-border/90">
             {team.map((m) => (
               <div
                 key={m.id}
                 className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div className="min-w-0">
-                  <span className="block text-sm font-medium text-zinc-900">
+                  <span className="block text-sm font-medium text-foreground">
                     {displayMemberName(m)}
                   </span>
-                  <span className="block truncate text-xs text-zinc-500">
+                  <span className="block truncate text-xs text-muted-foreground">
                     {m.email}
                   </span>
-                  <span className="mt-0.5 block text-xs font-medium uppercase tracking-wide text-zinc-500">
+                  <span className="mt-0.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
                     {roleLabel(m.role)}
                   </span>
                 </div>
@@ -287,7 +287,7 @@ export function TeamTab({
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="border-zinc-200"
+                      className="border-border"
                       onClick={() => openEdit(m)}
                     >
                       Izmeni
@@ -314,11 +314,11 @@ export function TeamTab({
 
       {isAdmin && editing ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-zinc-200 bg-white p-6 shadow-lg">
-            <h3 className="text-lg font-semibold text-zinc-900">
+          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-border bg-card p-6 shadow-lg">
+            <h3 className="text-lg font-semibold text-foreground">
               Izmeni člana
             </h3>
-            <p className="mt-1 text-sm text-zinc-500">{editing.email}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{editing.email}</p>
             <form onSubmit={(e) => void onSaveEdit(e)} className="mt-4 space-y-4">
               {editError ? (
                 <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
@@ -331,7 +331,7 @@ export function TeamTab({
                   id="ed-name"
                   value={editDisplayName}
                   onChange={(e) => setEditDisplayName(e.target.value)}
-                  className="border-zinc-200"
+                  className="border-border"
                 />
               </div>
               <div className="space-y-2">
@@ -342,7 +342,7 @@ export function TeamTab({
                   onChange={(e) =>
                     setEditRole(e.target.value === "admin" ? "admin" : "worker")
                   }
-                  className="flex h-10 w-full rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-900"
+                  className="flex h-10 w-full rounded-md border border-border bg-card px-3 text-sm text-foreground"
                 >
                   <option value="worker">Radnik</option>
                   <option value="admin">Administrator</option>
@@ -351,17 +351,17 @@ export function TeamTab({
               {services.length > 0 ? (
                 <div className="space-y-2">
                   <Label>Usluge koje radi (opciono)</Label>
-                  <div className="max-h-40 space-y-2 overflow-y-auto rounded-md border border-zinc-100 p-3">
+                  <div className="max-h-40 space-y-2 overflow-y-auto rounded-md border border-border/50 p-3">
                     {services.map((s) => (
                       <label
                         key={s.id}
-                        className="flex cursor-pointer items-center gap-2 text-sm text-zinc-700"
+                        className="flex cursor-pointer items-center gap-2 text-sm text-foreground"
                       >
                         <input
                           type="checkbox"
                           checked={editServiceIds.includes(s.id)}
                           onChange={() => toggleServiceId(s.id)}
-                          className="rounded border-zinc-300"
+                          className="rounded border-border"
                         />
                         {s.name}
                       </label>
@@ -372,7 +372,7 @@ export function TeamTab({
               <div className="flex flex-wrap gap-2 pt-2">
                 <Button
                   type="submit"
-                  className="bg-zinc-900 text-white hover:bg-zinc-800"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
                   disabled={editSaving}
                 >
                   {editSaving ? "Čuvam…" : "Sačuvaj"}
@@ -380,7 +380,7 @@ export function TeamTab({
                 <Button
                   type="button"
                   variant="outline"
-                  className="border-zinc-200"
+                  className="border-border"
                   onClick={closeEdit}
                 >
                   Otkaži

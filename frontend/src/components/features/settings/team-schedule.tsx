@@ -116,7 +116,7 @@ export function TeamScheduleTab({
 
   if (teamLoading) {
     return (
-      <p className="text-sm text-slate-500 dark:text-slate-400">
+      <p className="text-sm text-muted-foreground">
         Učitavanje tima…
       </p>
     );
@@ -124,7 +124,7 @@ export function TeamScheduleTab({
 
   if (members.length === 0) {
     return (
-      <p className="text-sm text-slate-500 dark:text-slate-400">
+      <p className="text-sm text-muted-foreground">
         Nema članova tima. Dodaj zaposlene u kartici „Tim“.
       </p>
     );
@@ -133,10 +133,10 @@ export function TeamScheduleTab({
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-50">
+        <h2 className="text-lg font-semibold text-foreground">
           Raspored zaposlenih
         </h2>
-        <p className="text-sm text-slate-600 dark:text-slate-400">
+        <p className="text-sm text-muted-foreground">
           Postavi radno vreme po danima za svakog člana. Koristi se u kalendaru
           pri izboru radnika za termin (samo oni koji rade tog dana).
         </p>
@@ -172,10 +172,10 @@ export function TeamScheduleTab({
             >
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <h3 className="font-semibold text-slate-900 dark:text-slate-50">
+                  <h3 className="font-semibold text-foreground">
                     {label}
                   </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                  <p className="text-xs text-muted-foreground">
                     {m.email}
                     {m.role === "admin" ? " · Administrator" : " · Radnik"}
                   </p>
@@ -221,11 +221,11 @@ export function TeamScheduleTab({
                       className={cn(
                         "space-y-2 rounded-xl border p-3",
                         row.enabled
-                          ? "border-slate-200 bg-slate-50/90 dark:border-slate-600 dark:bg-slate-800/40"
-                          : "border-dashed border-slate-200 bg-slate-50/40 opacity-90 dark:border-slate-600 dark:bg-slate-900/30"
+                          ? "border-border bg-muted/90  dark:bg-card/40"
+                          : "border-dashed border-border bg-muted/40 opacity-90"
                       )}
                     >
-                      <label className="flex cursor-pointer items-center gap-2 text-xs font-semibold text-slate-800 dark:text-slate-200">
+                      <label className="flex cursor-pointer items-center gap-2 text-xs font-semibold text-foreground ">
                         <input
                           type="checkbox"
                           checked={row.enabled}
@@ -236,14 +236,14 @@ export function TeamScheduleTab({
                               patchDay(rows, id, { enabled: e.target.checked })
                             )
                           }
-                          className="rounded border-slate-300"
+                          className="rounded border-border"
                         />
                         {short}
                       </label>
                       {row.enabled ? (
                         <>
                           <div>
-                            <span className="mb-0.5 block text-[10px] uppercase tracking-wide text-slate-500">
+                            <span className="mb-0.5 block text-[10px] uppercase tracking-wide text-muted-foreground">
                               Od
                             </span>
                             <input
@@ -256,11 +256,11 @@ export function TeamScheduleTab({
                                   patchDay(rows, id, { open: e.target.value })
                                 )
                               }
-                              className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
+                              className="w-full rounded-lg border border-border bg-card px-2 py-1.5 text-xs text-foreground  "
                             />
                           </div>
                           <div>
-                            <span className="mb-0.5 block text-[10px] uppercase tracking-wide text-slate-500">
+                            <span className="mb-0.5 block text-[10px] uppercase tracking-wide text-muted-foreground">
                               Do
                             </span>
                             <input
@@ -275,12 +275,12 @@ export function TeamScheduleTab({
                                   })
                                 )
                               }
-                              className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
+                              className="w-full rounded-lg border border-border bg-card px-2 py-1.5 text-xs text-foreground  "
                             />
                           </div>
                         </>
                       ) : (
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                        <p className="text-[11px] text-muted-foreground">
                           Neradni dan
                         </p>
                       )}
@@ -289,10 +289,10 @@ export function TeamScheduleTab({
                 })}
               </div>
 
-              <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+              <p className="mt-3 text-xs text-muted-foreground">
                 Ovo je nedeljni raspored radnika (ko radi koji dan). Konkretne
                 dnevne smene za kalendar i rezervacije čuvaju se na stranici{" "}
-                <strong className="font-medium text-slate-600 dark:text-slate-300">
+                <strong className="font-medium text-muted-foreground ">
                   Smena
                 </strong>{" "}
                 — tamo klikni „Sačuvaj smene“ (možeš početi od predloga iz ovog

@@ -63,7 +63,7 @@ export default function AnalyticsPage() {
 
   if (authLoading || !user) {
     return (
-      <p className="text-sm text-slate-600 dark:text-slate-400">Učitavanje…</p>
+      <p className="text-sm text-muted-foreground">Učitavanje…</p>
     );
   }
 
@@ -84,7 +84,7 @@ export default function AnalyticsPage() {
             href="/dashboard"
             className={cn(
               buttonVariants({ variant: "outline", size: "sm" }),
-              "inline-flex items-center gap-2 rounded-xl border-slate-200"
+              "inline-flex items-center gap-2 rounded-xl border-border"
             )}
           >
             <ChevronLeft className="size-4" aria-hidden />
@@ -94,7 +94,7 @@ export default function AnalyticsPage() {
       />
 
       {loading ? (
-        <p className="text-sm text-slate-600 dark:text-slate-400">
+        <p className="text-sm text-muted-foreground">
           Učitavanje analitike…
         </p>
       ) : error ? (
@@ -108,17 +108,17 @@ export default function AnalyticsPage() {
         <>
           <SurfaceCard padding="md" className="min-w-0">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-50">
+              <h2 className="text-sm font-semibold text-foreground ">
                 Termini i prihod po danu
               </h2>
-              <div className="flex rounded-xl border border-slate-200 bg-slate-50 p-0.5 dark:border-slate-600 dark:bg-slate-800/80">
+              <div className="flex rounded-xl border border-border bg-muted p-0.5">
                 <button
                   type="button"
                   className={cn(
                     "rounded-lg px-3 py-1.5 text-xs font-medium transition",
                     range === 7
-                      ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white"
-                      : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                      ? "bg-white text-foreground shadow-sm  dark:text-white"
+                      : "text-muted-foreground hover:text-foreground dark:text-muted-foreground/70 dark:hover:text-white"
                   )}
                   onClick={() => setRange(7)}
                 >
@@ -129,8 +129,8 @@ export default function AnalyticsPage() {
                   className={cn(
                     "rounded-lg px-3 py-1.5 text-xs font-medium transition",
                     range === 30
-                      ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white"
-                      : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                      ? "bg-white text-foreground shadow-sm  dark:text-white"
+                      : "text-muted-foreground hover:text-foreground dark:text-muted-foreground/70 dark:hover:text-white"
                   )}
                   onClick={() => setRange(30)}
                 >
@@ -148,26 +148,26 @@ export default function AnalyticsPage() {
 
           <div className="grid gap-6 lg:grid-cols-2">
             <SurfaceCard padding="md">
-              <h2 className="mb-3 text-sm font-semibold text-slate-900 dark:text-slate-50">
+              <h2 className="mb-3 text-sm font-semibold text-foreground ">
                 Top usluge
               </h2>
               {data.top_services.length === 0 ? (
-                <p className="text-sm text-slate-500">Nema podataka.</p>
+                <p className="text-sm text-muted-foreground">Nema podataka.</p>
               ) : (
                 <ul className="space-y-2">
                   {data.top_services.map((s, i) => (
                     <li
                       key={s.id}
-                      className="flex items-center justify-between gap-2 border-b border-slate-100 py-2 text-sm last:border-0"
+                      className="flex items-center justify-between gap-2 border-b border-border/50 py-2 text-sm last:border-0"
                     >
-                      <span className="font-medium text-slate-800">
+                      <span className="font-medium text-foreground">
                         {i + 1}. {s.name}
                       </span>
-                      <span className="tabular-nums text-slate-600">
+                      <span className="tabular-nums text-muted-foreground">
                         {showFinancials ? (
                           <>
                             {formatRsd(s.revenue)}{" "}
-                            <span className="text-slate-400">
+                            <span className="text-muted-foreground/70">
                               · {s.booking_count} term.
                             </span>
                           </>
@@ -182,26 +182,26 @@ export default function AnalyticsPage() {
             </SurfaceCard>
 
             <SurfaceCard padding="md">
-              <h2 className="mb-3 text-sm font-semibold text-slate-900 dark:text-slate-50">
+              <h2 className="mb-3 text-sm font-semibold text-foreground ">
                 Top klijenti
               </h2>
               {data.top_clients.length === 0 ? (
-                <p className="text-sm text-slate-500">Nema podataka.</p>
+                <p className="text-sm text-muted-foreground">Nema podataka.</p>
               ) : (
                 <ul className="space-y-2">
                   {data.top_clients.map((c, i) => (
                     <li
                       key={c.id}
-                      className="flex items-center justify-between gap-2 border-b border-slate-100 py-2 text-sm last:border-0"
+                      className="flex items-center justify-between gap-2 border-b border-border/50 py-2 text-sm last:border-0"
                     >
-                      <span className="font-medium text-slate-800">
+                      <span className="font-medium text-foreground">
                         {i + 1}. {c.name}
                       </span>
-                      <span className="tabular-nums text-slate-600">
+                      <span className="tabular-nums text-muted-foreground">
                         {showFinancials ? (
                           <>
                             {formatRsd(c.revenue)}{" "}
-                            <span className="text-slate-400">
+                            <span className="text-muted-foreground/70">
                               · {c.visits} poseta
                             </span>
                           </>
@@ -221,7 +221,7 @@ export default function AnalyticsPage() {
               href="/services"
               className={cn(
                 buttonVariants({ variant: "outline", size: "default" }),
-                "rounded-xl border-slate-200 dark:border-slate-600"
+                "rounded-xl border-border"
               )}
             >
               Upravljaj uslugama

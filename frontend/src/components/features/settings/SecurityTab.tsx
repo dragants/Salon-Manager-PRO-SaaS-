@@ -30,18 +30,18 @@ export function SecurityTab({
             napuštanja taba.
           </p>
         ) : null}
-        <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-zinc-200/90 bg-white p-4">
+        <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-border/90 bg-card p-4">
           <input
             type="checkbox"
-            className="mt-1 size-4 rounded border-zinc-300 text-zinc-900"
+            className="mt-1 size-4 rounded border-border text-foreground"
             checked={workerCanDelete}
             onChange={(e) => onWorkerCanDeleteChange(e.target.checked)}
           />
-          <span className="text-sm leading-relaxed text-zinc-800">
-            <span className="font-medium text-zinc-900">
+          <span className="text-sm leading-relaxed text-foreground">
+            <span className="font-medium text-foreground">
               Radnik može brisati klijente i zakazane termine
             </span>
-            <span className="mt-1 block text-zinc-600">
+            <span className="mt-1 block text-muted-foreground">
               Isključeno: dugmad za brisanje se ne prikazuju i API vraća grešku.
               Administrator uvek može da briše.
             </span>
@@ -50,7 +50,7 @@ export function SecurityTab({
         <div className="mt-4">
           <Button
             type="button"
-            className="bg-zinc-900 text-white hover:bg-zinc-800"
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
             disabled={saving}
             onClick={onSaveWorkerPermissions}
           >
@@ -63,7 +63,7 @@ export function SecurityTab({
         title="Sigurnost naloga"
         description="Kontrola pristupa i sesija."
       >
-        <ul className="list-inside list-disc space-y-2 text-sm leading-relaxed text-zinc-600">
+        <ul className="list-inside list-disc space-y-2 text-sm leading-relaxed text-muted-foreground">
           <li>
             Promena lozinke: bočna traka → <strong>Moj nalog</strong> (važi za
             sve članove tima). Posle promene moraš se ponovo prijaviti na svim

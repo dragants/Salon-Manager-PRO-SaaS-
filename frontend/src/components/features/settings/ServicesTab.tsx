@@ -11,7 +11,7 @@ export function ServicesTab() {
       >
         <Link
           href="/services"
-          className="inline-flex items-center gap-2 rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800"
+          className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
         >
           Otvori upravljanje uslugama
           <ExternalLink className="size-4 opacity-80" aria-hidden />

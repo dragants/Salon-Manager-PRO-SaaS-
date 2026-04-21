@@ -98,7 +98,7 @@ export function SetupBanner() {
             href="/settings?tab=services"
             className={cn(
               buttonVariants({ variant: "outline", size: "sm" }),
-              "rounded-lg border-amber-300 bg-white/80 no-underline dark:border-amber-800 dark:bg-zinc-900"
+              "rounded-lg border-amber-300 bg-white/80 no-underline dark:border-amber-800"
             )}
           >
             Podešavanja

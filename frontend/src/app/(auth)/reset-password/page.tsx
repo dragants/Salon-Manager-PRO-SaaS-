@@ -64,10 +64,10 @@ function ResetPasswordForm() {
     return (
       <SurfaceCard padding="lg" className="w-full max-w-md shadow-lg">
         <div className="space-y-4 text-center sm:text-left">
-          <h1 className="font-heading text-2xl font-medium text-slate-900 dark:text-slate-50">
+          <h1 className="font-heading text-2xl font-medium text-foreground ">
             Nevažeći link
           </h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400">
+          <p className="text-sm text-muted-foreground">
             Otvori ponovo link iz mejla ili zatraži novi reset sa stranice za
             zaboravljenu lozinku.
           </p>
@@ -89,10 +89,10 @@ function ResetPasswordForm() {
     <SurfaceCard padding="lg" className="w-full max-w-md shadow-lg">
       <form onSubmit={onSubmit} className="space-y-6">
           <div className="space-y-2 text-center sm:text-left">
-            <h1 className="font-heading text-2xl font-medium tracking-tight text-slate-900 dark:text-slate-50">
+            <h1 className="font-heading text-2xl font-medium tracking-tight text-foreground ">
               Nova lozinka
             </h1>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
+            <p className="text-sm text-muted-foreground">
               Unesi novu lozinku (min. 8 karaktera).
             </p>
           </div>
@@ -137,7 +137,7 @@ function ResetPasswordForm() {
             {loading ? "Čuvam…" : "Sačuvaj lozinku"}
           </Button>
 
-          <p className="text-center text-sm text-slate-500">
+          <p className="text-center text-sm text-muted-foreground">
             <Link
               href="/login"
               className="font-medium text-sky-700 underline dark:text-sky-400"
@@ -152,10 +152,10 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-gradient-to-b from-sky-50/50 to-[#f8fafc] px-4 py-12 dark:from-slate-900 dark:to-slate-950 sm:px-6">
+    <div className="flex min-h-dvh items-center justify-center bg-gradient-to-b from-sky-50/50 to-background px-4 py-12 dark:from-slate-900 sm:px-6">
       <Suspense
         fallback={
-          <p className="text-sm text-slate-600 dark:text-slate-400">
+          <p className="text-sm text-muted-foreground">
             Učitavanje…
           </p>
         }

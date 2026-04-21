@@ -12,13 +12,13 @@ export function SettingsCard({
   children,
 }: SettingsCardProps) {
   return (
-    <section className="rounded-2xl border border-zinc-200/90 bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.04)] dark:border-zinc-800 dark:bg-zinc-950/60">
+    <section className="rounded-2xl border border-border bg-card p-6 shadow-[0_4px_20px_rgba(0,0,0,0.04)] dark:border-border">
       <div className="mb-5">
-        <h3 className="font-heading text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+        <h3 className="font-heading text-base font-semibold tracking-tight text-foreground">
           {title}
         </h3>
         {description ? (
-          <p className="mt-1 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
             {description}
           </p>
         ) : null}

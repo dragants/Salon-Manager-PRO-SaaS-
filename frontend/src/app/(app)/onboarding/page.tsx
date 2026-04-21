@@ -423,41 +423,41 @@ export default function OnboardingPage() {
             <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200 sm:mx-0">
               <Check className="size-7" aria-hidden />
             </div>
-            <h2 className="font-heading text-xl font-medium text-slate-900 dark:text-slate-50">
+            <h2 className="font-heading text-xl font-medium text-foreground ">
               Dobrodošli, {displaySalon}
             </h2>
-            <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+            <p className="text-sm leading-relaxed text-muted-foreground">
               Spremni ste za rad.{" "}
-              <kbd className="rounded border border-slate-300 bg-slate-100 px-1.5 py-0.5 font-mono text-[11px] dark:border-slate-600 dark:bg-slate-800">
+              <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[11px]  dark:bg-card">
                 Ctrl+K
               </kbd>{" "}
               otvara komandnu paletu — kao u Linearu.
             </p>
-            <div className="rounded-2xl border border-slate-200/90 bg-gradient-to-br from-sky-50/80 to-white p-4 dark:border-slate-700 dark:from-sky-950/30 dark:to-zinc-950">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            <div className="rounded-2xl border border-border/90 bg-gradient-to-br from-sky-50/80 to-white p-4  dark:from-sky-950/30 dark:to-zinc-950">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                 Pregled (primer)
               </p>
               <div className="mt-3 grid grid-cols-3 gap-2 text-center sm:text-left">
-                <div className="rounded-xl bg-white/90 px-2 py-3 shadow-sm dark:bg-zinc-900/80">
+                <div className="rounded-xl bg-card/90 px-2 py-3 shadow-sm /80">
                   <TrendingUp className="mx-auto mb-1 size-4 text-sky-600 sm:mx-0" aria-hidden />
-                  <p className="text-lg font-bold tabular-nums text-slate-900 dark:text-slate-50">
+                  <p className="text-lg font-bold tabular-nums text-foreground ">
                     12,4k
                   </p>
-                  <p className="text-[10px] text-slate-500">RSD danas</p>
+                  <p className="text-[10px] text-muted-foreground">RSD danas</p>
                 </div>
-                <div className="rounded-xl bg-white/90 px-2 py-3 shadow-sm dark:bg-zinc-900/80">
+                <div className="rounded-xl bg-card/90 px-2 py-3 shadow-sm /80">
                   <Users className="mx-auto mb-1 size-4 text-violet-600 sm:mx-0" aria-hidden />
-                  <p className="text-lg font-bold tabular-nums text-slate-900 dark:text-slate-50">
+                  <p className="text-lg font-bold tabular-nums text-foreground ">
                     8
                   </p>
-                  <p className="text-[10px] text-slate-500">Termina</p>
+                  <p className="text-[10px] text-muted-foreground">Termina</p>
                 </div>
-                <div className="rounded-xl bg-white/90 px-2 py-3 shadow-sm dark:bg-zinc-900/80">
+                <div className="rounded-xl bg-card/90 px-2 py-3 shadow-sm /80">
                   <Sparkles className="mx-auto mb-1 size-4 text-amber-600 sm:mx-0" aria-hidden />
-                  <p className="text-lg font-bold tabular-nums text-slate-900 dark:text-slate-50">
+                  <p className="text-lg font-bold tabular-nums text-foreground ">
                     96%
                   </p>
-                  <p className="text-[10px] text-slate-500">Zadovoljstvo</p>
+                  <p className="text-[10px] text-muted-foreground">Zadovoljstvo</p>
                 </div>
               </div>
             </div>

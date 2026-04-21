@@ -149,7 +149,7 @@ export function AuditLogPanel() {
     >
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
         <div className="space-y-1.5">
-          <Label htmlFor="audit-filter" className="text-zinc-700">
+          <Label htmlFor="audit-filter" className="text-foreground">
             Filter
           </Label>
           <select
@@ -157,7 +157,7 @@ export function AuditLogPanel() {
             value={actionFilter}
             onChange={(e) => setActionFilter(e.target.value)}
             disabled={loading}
-            className="flex h-10 min-w-[200px] rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-900"
+            className="flex h-10 min-w-[200px] rounded-md border border-border bg-card px-3 text-sm text-foreground"
           >
             {FILTER_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>
@@ -170,7 +170,7 @@ export function AuditLogPanel() {
           type="button"
           variant="outline"
           size="sm"
-          className="border-zinc-300"
+          className="border-border"
           disabled={loading || exporting}
           onClick={() => void onExportCsv()}
         >
@@ -185,35 +185,35 @@ export function AuditLogPanel() {
       ) : null}
 
       {loading ? (
-        <p className="text-sm text-zinc-500">Učitavanje…</p>
+        <p className="text-sm text-muted-foreground">Učitavanje…</p>
       ) : !error && rows && rows.length === 0 ? (
-        <p className="text-sm text-zinc-500">Nema zapisa za ovaj filter.</p>
+        <p className="text-sm text-muted-foreground">Nema zapisa za ovaj filter.</p>
       ) : null}
 
       {!loading && rows && rows.length > 0 ? (
-        <div className="overflow-x-auto rounded-lg border border-zinc-200/90">
+        <div className="overflow-x-auto rounded-lg border border-border/90">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-zinc-200 bg-zinc-50/80 text-xs uppercase tracking-wide text-zinc-600">
+              <tr className="border-b border-border bg-muted/80 text-xs uppercase tracking-wide text-muted-foreground">
                 <th className="px-3 py-2 font-medium">Vreme</th>
                 <th className="px-3 py-2 font-medium">Radnja</th>
                 <th className="px-3 py-2 font-medium">Ko</th>
                 <th className="px-3 py-2 font-medium">Detalj</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-100">
+            <tbody className="divide-y divide-border/50">
               {rows.map((r) => (
-                <tr key={r.id} className="bg-white">
-                  <td className="whitespace-nowrap px-3 py-2 tabular-nums text-zinc-700">
+                <tr key={r.id} className="bg-card">
+                  <td className="whitespace-nowrap px-3 py-2 tabular-nums text-foreground">
                     {formatTime(r.created_at)}
                   </td>
-                  <td className="px-3 py-2 text-zinc-900">
+                  <td className="px-3 py-2 text-foreground">
                     {ACTION_LABEL[r.action] ?? r.action}
                   </td>
-                  <td className="max-w-[140px] truncate px-3 py-2 text-zinc-700">
+                  <td className="max-w-[140px] truncate px-3 py-2 text-foreground">
                     {r.actor_email ?? "—"}
                   </td>
-                  <td className="max-w-[200px] truncate px-3 py-2 text-xs text-zinc-600">
+                  <td className="max-w-[200px] truncate px-3 py-2 text-xs text-muted-foreground">
                     {r.entity_type && r.entity_id != null
                       ? `${r.entity_type} #${r.entity_id}`
                       : "—"}

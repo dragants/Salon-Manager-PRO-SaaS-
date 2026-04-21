@@ -24,14 +24,14 @@ export default function Home() {
   return (
     <div
       id="main-content"
-      className="flex min-h-dvh flex-1 flex-col items-center justify-center bg-[#f8fafc] dark:bg-slate-950"
+      className="flex min-h-dvh flex-1 flex-col items-center justify-center bg-[#f8fafc]"
     >
       <div className="flex flex-col items-center gap-4">
         <div
           className="size-10 animate-pulse rounded-2xl bg-sky-200/80 dark:bg-sky-900/50"
           aria-hidden
         />
-        <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+        <p className="text-sm font-medium text-muted-foreground">
           Učitavanje…
         </p>
       </div>

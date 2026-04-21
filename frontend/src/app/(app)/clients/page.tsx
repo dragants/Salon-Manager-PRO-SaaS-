@@ -398,17 +398,17 @@ function ClientsPageContent() {
             "flex flex-wrap items-center justify-between gap-2 rounded-2xl border px-4 py-3 text-sm",
             clientLimits.at_limit
               ? "border-amber-200/90 bg-amber-50/90 dark:border-amber-900/50 dark:bg-amber-950/30"
-              : "border-zinc-200/90 bg-zinc-50/80 dark:border-zinc-800 dark:bg-zinc-900/40"
+              : "border-border/90 bg-muted/80 dark:bg-card/40"
           )}
         >
-          <span className="text-zinc-700 dark:text-zinc-300">
+          <span className="text-foreground">
             {clientLimits.plan === "pro"
               ? "Pro plan"
               : clientLimits.plan === "basic"
                 ? "Basic plan"
                 : "Besplatan plan"}{" "}
             ·{" "}
-            <span className="tabular-nums font-semibold text-zinc-900 dark:text-zinc-100">
+            <span className="tabular-nums font-semibold text-foreground">
               {clientLimits.current_clients}/{clientLimits.max_clients}
             </span>{" "}
             klijenata
@@ -451,7 +451,7 @@ function ClientsPageContent() {
           </div>
         </SurfaceCard>
       ) : rows.length === 0 ? (
-        <SurfaceCard padding="lg" className="border-dashed text-center text-sm text-zinc-600 dark:text-zinc-400">
+        <SurfaceCard padding="lg" className="border-dashed text-center text-sm text-muted-foreground">
           Još nema klijenata. Klikni „+ Novi klijent“.
         </SurfaceCard>
       ) : (
@@ -461,7 +461,7 @@ function ClientsPageContent() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Pretraga: ime, telefon, e-mail, beleška…"
-              className="max-w-lg rounded-xl border-zinc-200 bg-white text-base dark:border-zinc-700 dark:bg-zinc-950"
+              className="max-w-lg rounded-xl border-border bg-card text-base"
               aria-label="Pretraga klijenata"
             />
             <p className="shrink-0 text-sm font-medium text-muted-foreground">
@@ -513,7 +513,7 @@ function ClientsPageContent() {
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
-          className="border-zinc-200 sm:max-w-md dark:border-zinc-800"
+          className="border-border sm:max-w-md "
           showCloseButton
         >
           <form onSubmit={onCreate}>
@@ -592,7 +592,7 @@ function ClientsPageContent() {
         }}
       >
         <DialogContent
-          className="flex max-h-[92vh] flex-col border-zinc-200 sm:max-w-4xl lg:max-w-5xl dark:border-zinc-800"
+          className="flex max-h-[92vh] flex-col border-border sm:max-w-4xl lg:max-w-5xl "
           showCloseButton
         >
           <DialogHeader>
@@ -608,14 +608,14 @@ function ClientsPageContent() {
           ) : null}
 
           {detailLoading && !detail ? (
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="text-sm text-muted-foreground">
               Učitavanje kartice…
             </p>
           ) : null}
 
           {detail ? (
             <>
-              <div className="flex gap-1 overflow-x-auto border-b border-zinc-200/90 pb-2 dark:border-zinc-800">
+              <div className="flex gap-1 overflow-x-auto border-b border-border/90 pb-2 ">
                 {tabs.map((t) => (
                   <button
                     key={t.id}
@@ -624,8 +624,8 @@ function ClientsPageContent() {
                     className={cn(
                       "shrink-0 rounded-xl px-3 py-2 text-xs font-medium transition-colors sm:text-sm",
                       cardTab === t.id
-                        ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                        : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                        ? "bg-foreground text-background"
+                        : "text-muted-foreground hover:bg-muted dark:text-muted-foreground/70 dark:hover:bg-muted"
                     )}
                   >
                     {t.label}
@@ -642,12 +642,12 @@ function ClientsPageContent() {
                         {detail.loyalty_balances.map((b) => (
                           <li
                             key={b.program_id}
-                            className="rounded-xl border border-zinc-200 bg-zinc-50/80 px-4 py-3 dark:border-zinc-700 dark:bg-zinc-900/40"
+                            className="rounded-xl border border-border bg-muted/80 px-4 py-3 dark:bg-card/40"
                           >
-                            <p className="font-medium text-zinc-900 dark:text-zinc-50">
+                            <p className="font-medium text-foreground">
                               {b.program_name}
                             </p>
-                            <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                            <p className="text-xs text-muted-foreground">
                               {b.service_name} · cilj {b.visits_required}{" "}
                               završenih poseta
                             </p>
@@ -669,7 +669,7 @@ function ClientsPageContent() {
                         ))}
                       </ul>
                     ) : (
-                      <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                      <p className="text-sm text-muted-foreground">
                         Nema aktivnog loyalty programa ili još nema stanja za
                         ovog klijenta. Podesi program u{" "}
                         <strong>Podešavanja → Loyalty</strong>.
@@ -680,53 +680,53 @@ function ClientsPageContent() {
 
                 {cardTab === "osnovno" ? (
                   <div className="grid gap-6 py-2 lg:grid-cols-10 lg:gap-8">
-                    <aside className="space-y-4 rounded-2xl border border-zinc-200/90 bg-gradient-to-b from-violet-50/90 via-white to-zinc-50/80 p-4 dark:border-zinc-800 dark:from-violet-950/30 dark:via-zinc-950/40 dark:to-zinc-950/60 lg:col-span-3">
+                    <aside className="space-y-4 rounded-2xl border border-border/90 bg-gradient-to-b from-violet-50/90 via-white to-muted/80 p-4  dark:from-violet-950/30 dark:via-background/40 dark:to-background/60 lg:col-span-3">
                       {detail ? (
                         (() => {
                           const ins = clientInsights(detail);
                           return (
                             <>
                               <div>
-                                <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                                   Status terapije
                                 </p>
-                                <p className="mt-1 text-sm font-semibold leading-snug text-zinc-900 dark:text-zinc-50">
+                                <p className="mt-1 text-sm font-semibold leading-snug text-foreground">
                                   {ins.therapyStatus}
                                 </p>
                               </div>
                               <div>
-                                <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                                   Poslednja poseta
                                 </p>
-                                <p className="mt-1 text-sm text-zinc-800 dark:text-zinc-200">
+                                <p className="mt-1 text-sm text-foreground">
                                   {ins.lastDone
                                     ? `${formatDt(ins.lastDone.date)} · ${ins.lastDone.service_name}`
                                     : "—"}
                                 </p>
                               </div>
                               <div>
-                                <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                                   Sledeći termin
                                 </p>
-                                <p className="mt-1 text-sm text-zinc-800 dark:text-zinc-200">
+                                <p className="mt-1 text-sm text-foreground">
                                   {ins.next
                                     ? `${formatDt(ins.next.date)} · ${ins.next.service_name}`
                                     : "Nema zakazanog"}
                                 </p>
                               </div>
                               <div>
-                                <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                                   Tip problema / cilj
                                 </p>
-                                <p className="mt-1 line-clamp-4 text-sm text-zinc-800 dark:text-zinc-200">
+                                <p className="mt-1 line-clamp-4 text-sm text-foreground">
                                   {ins.problemLine}
                                 </p>
                               </div>
                               <div>
-                                <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                                   Terapeutske napomene
                                 </p>
-                                <p className="mt-1 line-clamp-5 whitespace-pre-wrap text-sm text-zinc-700 dark:text-zinc-300">
+                                <p className="mt-1 line-clamp-5 whitespace-pre-wrap text-sm text-foreground">
                                   {ins.therapistNotes}
                                 </p>
                               </div>
@@ -770,7 +770,7 @@ function ClientsPageContent() {
                         value={editNotes}
                         onChange={(e) => setEditNotes(e.target.value)}
                         rows={4}
-                        className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-950"
+                        className="w-full rounded-xl border border-border bg-card px-3 py-2 text-sm"
                       />
                     </div>
                     <div className="flex flex-wrap items-center gap-3">
@@ -822,7 +822,7 @@ function ClientsPageContent() {
                           )}
                         </>
                       ) : (
-                        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                        <p className="text-sm text-muted-foreground">
                           {user?.role === "worker"
                             ? "Brisanje klijenata nije dozvoljeno za tvoj nalog. Administrator može da uključi dozvolu u Podešavanja → Sigurnost."
                             : "Brisanje nije dostupno."}
@@ -835,11 +835,11 @@ function ClientsPageContent() {
 
                 {cardTab === "istorija" ? (
                   <div className="space-y-3 py-2">
-                    <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                    <p className="text-sm text-muted-foreground">
                       Zakazivanja iz kalendara za ovog klijenta.
                     </p>
                     {detail.appointments.length === 0 ? (
-                      <p className="text-sm text-zinc-500 dark:text-zinc-500">
+                      <p className="text-sm text-muted-foreground">
                         Nema zapisa.
                       </p>
                     ) : (
@@ -847,12 +847,12 @@ function ClientsPageContent() {
                         {detail.appointments.map((a) => (
                           <li
                             key={a.id}
-                            className="rounded-xl border border-zinc-200/90 bg-zinc-50/80 px-3 py-2 text-sm dark:border-zinc-800 dark:bg-zinc-900/50"
+                            className="rounded-xl border border-border/90 bg-muted/80 px-3 py-2 text-sm dark:bg-card/50"
                           >
-                            <div className="font-medium text-zinc-900 dark:text-zinc-50">
+                            <div className="font-medium text-foreground">
                               {a.service_name}
                             </div>
-                            <div className="text-zinc-600 dark:text-zinc-400">
+                            <div className="text-muted-foreground">
                               {formatDt(a.date)} · {a.duration} min ·{" "}
                               {statusSr(a.status)}
                               {appointmentStaffLabel(a)
@@ -870,9 +870,9 @@ function ClientsPageContent() {
                   <div className="space-y-6 py-2">
                     <form
                       onSubmit={onSaveKarton}
-                      className="space-y-3 rounded-2xl border border-zinc-200/90 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950/40"
+                      className="space-y-3 rounded-2xl border border-border/90 bg-card p-4"
                     >
-                      <h3 className="font-heading text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+                      <h3 className="font-heading text-sm font-semibold text-foreground">
                         Nov unos u karton
                       </h3>
                       {kError ? (
@@ -894,7 +894,7 @@ function ClientsPageContent() {
                             id="kv-appt"
                             value={kApptId}
                             onChange={(e) => setKApptId(e.target.value)}
-                            className="flex h-10 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm dark:border-zinc-700 dark:bg-zinc-950"
+                            className="flex h-10 w-full rounded-xl border border-border bg-card px-3 text-sm"
                           >
                             <option value="">— bez veze —</option>
                             {detail.appointments.map((a) => (
@@ -924,7 +924,7 @@ function ClientsPageContent() {
                           value={kNotes}
                           onChange={(e) => setKNotes(e.target.value)}
                           rows={4}
-                          className="w-full rounded-xl border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-950"
+                          className="w-full rounded-xl border border-border px-3 py-2 text-sm"
                           placeholder="Šta je urađeno, napomene posle tretmana…"
                         />
                       </div>
@@ -946,11 +946,11 @@ function ClientsPageContent() {
                     </form>
 
                     <div>
-                      <h3 className="font-heading mb-2 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+                      <h3 className="font-heading mb-2 text-sm font-semibold text-foreground">
                         Istorija kartona
                       </h3>
                       {detail.chart_entries.length === 0 ? (
-                        <p className="text-sm text-zinc-500 dark:text-zinc-500">
+                        <p className="text-sm text-muted-foreground">
                           Još nema unosa u karton.
                         </p>
                       ) : (
@@ -958,19 +958,19 @@ function ClientsPageContent() {
                           {detail.chart_entries.map((e) => (
                             <li
                               key={e.id}
-                              className="rounded-xl border border-zinc-200/90 bg-zinc-50/60 p-3 text-sm dark:border-zinc-800 dark:bg-zinc-900/40"
+                              className="rounded-xl border border-border/90 bg-muted/60 p-3 text-sm dark:bg-card/40"
                             >
-                              <div className="font-medium text-zinc-900 dark:text-zinc-50">
+                              <div className="font-medium text-foreground">
                                 {e.title || "Bez naslova"}
                               </div>
-                              <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                              <div className="text-xs text-muted-foreground">
                                 {formatDt(e.visit_at)}
                                 {e.appointment_id
                                   ? ` · termin #${e.appointment_id}`
                                   : ""}
                               </div>
                               {e.notes ? (
-                                <p className="mt-2 whitespace-pre-wrap text-zinc-800 dark:text-zinc-200">
+                                <p className="mt-2 whitespace-pre-wrap text-foreground">
                                   {e.notes}
                                 </p>
                               ) : null}
@@ -980,7 +980,7 @@ function ClientsPageContent() {
                                     <li key={f.id}>
                                       <button
                                         type="button"
-                                        className="text-left text-zinc-700 underline hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-100"
+                                        className="text-left text-foreground underline hover:text-foreground"
                                         onClick={() =>
                                           void onDownloadFile(e, f.id)
                                         }

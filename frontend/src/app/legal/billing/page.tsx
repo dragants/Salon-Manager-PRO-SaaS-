@@ -9,13 +9,13 @@ export const metadata: Metadata = {
 
 export default function BillingLegalPage() {
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10 text-zinc-800 dark:text-zinc-200">
-      <h1 className="mb-6 text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+    <div className="mx-auto max-w-3xl px-4 py-10 text-foreground">
+      <h1 className="mb-6 text-2xl font-bold tracking-tight text-foreground">
         Pretplata, naplata i povraćaj
       </h1>
       <div className="space-y-6 text-sm leading-relaxed">
         <section className="space-y-3">
-          <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+          <h2 className="text-base font-semibold text-foreground">
             Pretplata i plaćanje
           </h2>
           <p>
@@ -33,7 +33,7 @@ export default function BillingLegalPage() {
         </section>
 
         <section className="space-y-3">
-          <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+          <h2 className="text-base font-semibold text-foreground">
             Obnova i otkazivanje
           </h2>
           <p>
@@ -47,7 +47,7 @@ export default function BillingLegalPage() {
         </section>
 
         <section className="space-y-3">
-          <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+          <h2 className="text-base font-semibold text-foreground">
             Povraćaj sredstava (refund)
           </h2>
           <p>
@@ -64,7 +64,7 @@ export default function BillingLegalPage() {
         </section>
 
         <section className="space-y-3">
-          <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+          <h2 className="text-base font-semibold text-foreground">
             Izmene cena i uslova
           </h2>
           <p>
@@ -75,7 +75,7 @@ export default function BillingLegalPage() {
           </p>
         </section>
 
-        <p className="text-xs text-zinc-500 dark:text-zinc-500">
+        <p className="text-xs text-muted-foreground">
           Ovaj tekst je informativan i treba ga uskladiti sa stvarnim procesom
           naplate (Paddle, ugovor, jurisdikcija). Za obavezujuće formulacije
           konsultujte pravnika.

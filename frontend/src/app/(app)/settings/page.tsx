@@ -526,7 +526,7 @@ function SettingsPageContent() {
   if (loading || !settings) {
     return (
       <div className="mx-auto w-full max-w-7xl space-y-6 px-1 pb-10">
-        <div className="space-y-3 border-b border-zinc-200/90 pb-6 dark:border-zinc-800">
+        <div className="space-y-3 border-b border-border pb-6">
           <Skeleton className="h-9 w-48 rounded-lg sm:h-10" />
           <Skeleton className="h-4 w-full max-w-xl rounded-md" />
           <div className="flex flex-wrap gap-2 pt-2">
@@ -548,13 +548,13 @@ function SettingsPageContent() {
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6 pb-10 pt-0 sm:space-y-8">
       <div
-        className="sticky top-0 z-30 -mx-1 space-y-4 border-b border-zinc-200/90 bg-background/95 px-1 pb-4 pt-1 backdrop-blur-md supports-[backdrop-filter]:bg-background/85 dark:border-zinc-800 dark:bg-background/95"
+        className="sticky top-0 z-30 -mx-1 space-y-4 border-b border-border bg-background/95 px-1 pb-4 pt-1 backdrop-blur-md supports-[backdrop-filter]:bg-background/85 dark:bg-background/95"
       >
         <div className="space-y-1">
-          <h1 className="font-heading text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-3xl">
+          <h1 className="font-heading text-2xl font-semibold tracking-tight text-foreground dark:text-zinc-50 sm:text-3xl">
             Podešavanja
           </h1>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+          <p className="text-sm text-muted-foreground dark:text-muted-foreground/70">
             {isAdmin
               ? "Upravljaj studiom, timom i rezervacijama (lepota, masaža, wellness)."
               : "Pregled članova tima. Za izmene salona i finansija obrati se administratoru."}
@@ -857,7 +857,7 @@ export default function SettingsPage() {
   return (
     <Suspense
       fallback={
-        <div className="mx-auto max-w-7xl px-1 py-2 text-sm text-zinc-500 dark:text-zinc-400">
+        <div className="mx-auto max-w-7xl px-1 py-2 text-sm text-muted-foreground dark:text-muted-foreground/70">
           Učitavanje podešavanja…
         </div>
       }

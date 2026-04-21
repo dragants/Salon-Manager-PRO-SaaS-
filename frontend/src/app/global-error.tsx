@@ -20,17 +20,17 @@ export default function GlobalError({
     <html lang="sr">
       <body
         id="main-content"
-        className="flex min-h-dvh flex-col items-center justify-center bg-[#f8fafc] px-4 antialiased text-slate-900"
+        className="flex min-h-dvh flex-col items-center justify-center bg-[#f8fafc] px-4 antialiased text-foreground"
       >
         <SurfaceCard padding="lg" className="max-w-md text-center">
-          <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-50">
+          <h1 className="text-lg font-semibold text-foreground ">
             Nešto nije u redu
           </h1>
-          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+          <p className="mt-2 text-sm text-muted-foreground">
             Došlo je do greške u aplikaciji. Pokušaj ponovo ili osveži stranicu.
           </p>
           {error.digest ? (
-            <p className="mt-3 font-mono text-[10px] text-slate-400">
+            <p className="mt-3 font-mono text-[10px] text-muted-foreground/70">
               {error.digest}
             </p>
           ) : null}

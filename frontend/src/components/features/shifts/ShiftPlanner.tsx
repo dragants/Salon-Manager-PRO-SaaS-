@@ -31,7 +31,7 @@ export type ShiftPlannerEmployee = {
 
 const EMPLOYEE_PALETTE = [
   {
-    bar: "bg-sky-500 border-sky-600/80 shadow-sky-900/20",
+    bar: "bg-primary border-primary/80 shadow-primary/20",
     text: "text-white",
   },
   {
@@ -91,9 +91,9 @@ function HourCell({ employeeId, hour, onEmptyClick }: HourCellProps) {
       ref={setNodeRef}
       onClick={() => onEmptyClick(employeeId, hour)}
       className={cn(
-        "relative z-0 min-h-14 min-w-0 flex-1 border-l border-sky-100/90 transition-colors",
-        "hover:bg-sky-50/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-sky-400",
-        isOver && "bg-sky-100/70"
+        "relative z-0 min-h-14 min-w-0 flex-1 border-l border-primary/10 transition-colors",
+        "hover:bg-primary/10/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary",
+        isOver && "bg-primary/10"
       )}
       aria-label={`Dodaj ili pomeri smenu na ${hour}:00`}
     />
@@ -383,20 +383,20 @@ export default function ShiftPlanner({
     >
       <div
         className={cn(
-          "overflow-hidden rounded-2xl border border-sky-100 bg-white shadow-sm",
+          "overflow-hidden rounded-2xl border border-primary/10 bg-card shadow-sm",
           className
         )}
       >
         {/* Header row */}
-        <div className="flex min-w-0 border-b border-sky-100 bg-sky-50/50">
-          <div className="sticky left-0 z-30 w-36 shrink-0 border-r border-sky-100 bg-sky-50/80 px-3 py-3 text-xs font-semibold uppercase tracking-wide text-sky-700 sm:w-44">
+        <div className="flex min-w-0 border-b border-primary/10 bg-primary/5">
+          <div className="sticky left-0 z-30 w-36 shrink-0 border-r border-primary/10 bg-primary/5 px-3 py-3 text-xs font-semibold uppercase tracking-wide text-primary sm:w-44">
             Zaposleni
           </div>
           <div className="flex min-w-[520px] flex-1">
             {hours.map((h) => (
               <div
                 key={h}
-                className="min-h-10 flex-1 border-l border-sky-100 py-2 text-center text-[11px] font-medium tabular-nums text-sky-700"
+                className="min-h-10 flex-1 border-l border-primary/10 py-2 text-center text-[11px] font-medium tabular-nums text-primary"
               >
                 {String(h).padStart(2, "0")}:00
               </div>
@@ -409,9 +409,9 @@ export default function ShiftPlanner({
           {employees.map((emp) => (
             <div
               key={emp.id}
-              className="flex min-w-0 border-b border-sky-50 last:border-b-0"
+              className="flex min-w-0 border-b border-primary/5 last:border-b-0"
             >
-              <div className="sticky left-0 z-20 w-36 shrink-0 border-r border-sky-100 bg-white px-3 py-3 text-sm font-medium text-sky-950 sm:w-44">
+              <div className="sticky left-0 z-20 w-36 shrink-0 border-r border-primary/10 bg-card px-3 py-3 text-sm font-medium text-sky-950 sm:w-44">
                 <span className="line-clamp-2">{emp.name}</span>
               </div>
               <div
@@ -444,7 +444,7 @@ export default function ShiftPlanner({
           ))}
         </div>
 
-        <p className="border-t border-sky-100 bg-sky-50/30 px-4 py-2 text-[11px] text-sky-700/90">
+        <p className="border-t border-primary/10 bg-primary/5 px-4 py-2 text-[11px] text-primary/90">
           Prevuci blok da pomeriš početak i radnika · uska traka skroz desno
           menja trajanje · prazan sat dodaje smenu ({DEFAULT_NEW_SHIFT_HOURS}h) ·
           dvoklik briše. Obojena širina odgovara tekstu (npr. 09:00–13:00 ide do

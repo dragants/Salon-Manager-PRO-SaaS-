@@ -143,10 +143,10 @@ export function PushNotificationsCard() {
 
   return (
     <SurfaceCard padding="md" className="space-y-3">
-      <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-50">
+      <h2 className="text-sm font-semibold text-foreground dark:text-slate-50">
         Push obaveštenja (PWA)
       </h2>
-      <p className="text-xs text-slate-600 dark:text-slate-400">
+      <p className="text-xs text-muted-foreground">
         Na telefonu dodaj aplikaciju na početni ekran, zatim uključi obaveštenja.
         Radi u Chrome / Edge / Firefoxu; na iPhone-u potreban iOS 16.4+ i
         instalirana PWA. Obaveštenje o novoj online rezervaciji šalje se dodeljenom
@@ -157,14 +157,14 @@ export function PushNotificationsCard() {
           Ovaj pregledač ne podržava Web Push.
         </p>
       ) : vapidKey === undefined ? (
-        <p className="text-xs text-slate-500">Učitavanje…</p>
+        <p className="text-xs text-muted-foreground">Učitavanje…</p>
       ) : vapidKey === null ? (
         <p className="text-xs text-amber-800 dark:text-amber-200">
           {isAdmin ? (
             <>
               Push zahteva VAPID ključeve na serveru. Generiši ih na mašini gde
               radi API (vidi{" "}
-              <code className="rounded bg-slate-100 px-1 dark:bg-slate-800">
+              <code className="rounded bg-muted px-1 dark:bg-card">
                 backend/.env.example
               </code>
               ), zatim restartuj backend.

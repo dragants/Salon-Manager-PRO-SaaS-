@@ -612,8 +612,8 @@ export default function AddAppointmentModal({
             ) : null}
 
             {slotChips.length > 0 ? (
-              <div className="space-y-2 rounded-xl border border-sky-100 bg-sky-50/50 p-3 dark:border-sky-900 dark:bg-sky-950/30">
-                <p className="text-xs font-medium text-sky-900 dark:text-sky-100">
+              <div className="space-y-2 rounded-xl border border-sky-100 bg-primary/10/50 p-3 dark:border-sky-900">
+                <p className="text-xs font-medium text-primary dark:text-sky-100">
                   {availabilityFromShifts
                     ? "Slobodni termini (po smenama)"
                     : "Predloženi termini (radno vreme)"}{" "}
@@ -632,7 +632,7 @@ export default function AddAppointmentModal({
                           ? slot.soon
                             ? "rounded-lg border-amber-300 bg-amber-50 text-amber-950 hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-950/50 dark:text-amber-100"
                             : "rounded-lg border-emerald-200 bg-emerald-50 text-emerald-950 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-100"
-                          : "rounded-lg border-sky-200 bg-white dark:border-sky-800 dark:bg-slate-900",
+                          : "rounded-lg border-border bg-white dark:bg-slate-900",
                         formStart ===
                           isoToDatetimeLocalValue(slot.startIso) &&
                           "ring-2 ring-sky-500"
@@ -722,7 +722,7 @@ export default function AddAppointmentModal({
             </Button>
             <Button
               type="submit"
-              className="bg-sky-600 hover:bg-sky-700"
+              className="bg-primary hover:bg-sky-700"
               disabled={saving}
             >
               {saving ? "Čuvam…" : "Sačuvaj"}

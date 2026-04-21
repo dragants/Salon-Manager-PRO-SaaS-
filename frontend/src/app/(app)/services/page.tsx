@@ -277,7 +277,7 @@ function ServicesPageContent() {
       ) : rows.length === 0 ? (
         <SurfaceCard
           padding="lg"
-          className="border-dashed text-center text-sm text-zinc-600 dark:text-zinc-400"
+          className="border-dashed text-center text-sm text-muted-foreground"
         >
           {canManage
             ? "Nema usluga. Dodaj bar jednu za zakazivanje."
@@ -285,8 +285,8 @@ function ServicesPageContent() {
         </SurfaceCard>
       ) : (
         <SurfaceCard padding="none" className="overflow-hidden">
-          <div className="flex flex-col gap-2 border-b border-zinc-200/90 bg-zinc-50/50 px-4 py-3 dark:border-zinc-800 dark:bg-zinc-900/40 sm:flex-row sm:items-center sm:justify-between sm:px-5">
-            <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+          <div className="flex flex-col gap-2 border-b border-border/90 bg-muted/50 px-4 py-3 dark:bg-card/40 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+            <p className="text-xs font-medium text-muted-foreground">
               {rows.length}{" "}
               {rows.length === 1 ? "usluga" : "usluga"}
               {servicesTv.enabled && rows.length > 0
@@ -307,12 +307,12 @@ function ServicesPageContent() {
               <thead
                 className={cn(
                   appTableHeadClass,
-                  "sticky top-0 z-20 bg-zinc-50/95 backdrop-blur-sm dark:bg-zinc-900/95",
+                  "sticky top-0 z-20 bg-muted/95 backdrop-blur-sm /95",
                   servicesHeadShadow &&
                     "shadow-[0_6px_12px_-4px_rgba(0,0,0,0.12)] dark:shadow-[0_6px_12px_-4px_rgba(0,0,0,0.45)]"
                 )}
               >
-                <tr className="border-b border-zinc-200/90 dark:border-zinc-800">
+                <tr className="border-b border-border/90 ">
                   <th className="px-4 py-3.5 sm:px-5">Naziv</th>
                   <th className="px-4 py-3.5 sm:px-5 text-right">Cena</th>
                   <th className="px-4 py-3.5 sm:px-5 text-right">Trajanje</th>
@@ -457,16 +457,16 @@ function ServicesPageContent() {
                       key={s.id}
                       className={cn(appTableRowClass, "h-[52px]")}
                     >
-                      <td className="max-w-[220px] truncate px-4 py-3 font-medium text-zinc-900 dark:text-zinc-50 sm:px-5">
+                      <td className="max-w-[220px] truncate px-4 py-3 font-medium text-foreground sm:px-5">
                         {s.name}
                       </td>
-                      <td className="px-4 py-3 text-right tabular-nums text-zinc-900 dark:text-zinc-100 sm:px-5">
+                      <td className="px-4 py-3 text-right tabular-nums text-foreground sm:px-5">
                         {formatRsd(s.price)}
                       </td>
-                      <td className="px-4 py-3 text-right tabular-nums text-zinc-700 dark:text-zinc-300 sm:px-5">
+                      <td className="px-4 py-3 text-right tabular-nums text-foreground sm:px-5">
                         {s.duration} min
                       </td>
-                      <td className="px-4 py-3 text-right tabular-nums text-zinc-700 dark:text-zinc-300 sm:px-5">
+                      <td className="px-4 py-3 text-right tabular-nums text-foreground sm:px-5">
                         {s.buffer_minutes ?? 0} min
                       </td>
                       {canManage ? (
@@ -520,7 +520,7 @@ function ServicesPageContent() {
       {canManage ? (
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogContent
-            className="border-zinc-200 sm:max-w-md dark:border-zinc-800"
+            className="border-border sm:max-w-md "
             showCloseButton
           >
             <form onSubmit={onCreate}>

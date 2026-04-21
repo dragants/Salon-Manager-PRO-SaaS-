@@ -63,7 +63,7 @@ export default function AccountPage() {
         title="Moj nalog"
         description={
           <>
-            <span className="block text-slate-600 dark:text-slate-400">
+            <span className="block text-muted-foreground">
               {user?.email ?? "—"}
             </span>
             <span className="mt-2 block">
@@ -77,7 +77,7 @@ export default function AccountPage() {
 
       <SurfaceCard padding="md">
         <form onSubmit={(e) => void onSubmit(e)} className="space-y-4">
-          <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-50">
+          <h2 className="text-sm font-semibold text-foreground">
             Promena lozinke
           </h2>
           {error ? (

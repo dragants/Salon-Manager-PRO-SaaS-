@@ -40,48 +40,48 @@ export function FinanceTab({
               id="cur"
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
-              className="flex h-10 w-full rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-900 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+              className="flex h-10 w-full rounded-md border border-border bg-card px-3 text-sm text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <option value="RSD">RSD</option>
               <option value="EUR">EUR</option>
             </select>
           </div>
-          <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-700">
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-foreground">
             <input
               type="checkbox"
               checked={vatEnabled}
               onChange={(e) => setVatEnabled(e.target.checked)}
-              className="rounded border-zinc-300"
+              className="rounded border-border"
             />
             PDV (prikaz / obračun u toku razvoja)
           </label>
-          <p className="text-xs font-medium uppercase tracking-wide text-zinc-400">
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground/70">
             Način naplate
           </p>
-          <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-700">
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-foreground">
             <input
               type="checkbox"
               checked={acceptCash}
               onChange={(e) => setAcceptCash(e.target.checked)}
-              className="rounded border-zinc-300"
+              className="rounded border-border"
             />
             Gotovina
           </label>
-          <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-700">
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-foreground">
             <input
               type="checkbox"
               checked={acceptCard}
               onChange={(e) => setAcceptCard(e.target.checked)}
-              className="rounded border-zinc-300"
+              className="rounded border-border"
             />
             Kartica
           </label>
         </div>
       </SettingsCard>
-      <div className="flex justify-end border-t border-zinc-100 pt-4">
+      <div className="flex justify-end border-t border-border/50 pt-4">
         <Button
           type="button"
-          className="bg-zinc-900 text-white hover:bg-zinc-800"
+          className="bg-primary text-primary-foreground hover:bg-primary/90"
           disabled={saving}
           onClick={onSave}
         >

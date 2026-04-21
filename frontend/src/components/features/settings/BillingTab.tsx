@@ -106,7 +106,7 @@ export function BillingTab() {
         </p>
       ) : null}
       {portalFlag === "return" ? (
-        <p className="rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-800">
+        <p className="rounded-lg border border-border bg-muted px-4 py-3 text-sm text-foreground">
           Vraćeni ste sa Paddle-a. Klikni „Osveži status“ ako si menjao pretplatu ili
           karticu.
         </p>
@@ -117,16 +117,16 @@ export function BillingTab() {
         description="Mesečna pretplata salona preko Paddle-a. Karticu i pretplatu menjaš na Paddle checkout-u; dugme „Upravljaj pretplatom“ kada postoji aktivna pretplata u sistemu."
       >
         {loading ? (
-          <p className="text-sm text-zinc-500">Učitavanje…</p>
+          <p className="text-sm text-muted-foreground">Učitavanje…</p>
         ) : error ? (
           <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
             {error}
           </p>
         ) : (
           <div className="space-y-4 max-w-lg">
-            <div className="rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm">
-              <p className="font-medium text-zinc-900">Status</p>
-              <p className="mt-1 text-zinc-600">{statusLabel(st)}</p>
+            <div className="rounded-lg border border-border bg-card px-4 py-3 text-sm">
+              <p className="font-medium text-foreground">Status</p>
+              <p className="mt-1 text-muted-foreground">{statusLabel(st)}</p>
               {enforced && !ok ? (
                 <p className="mt-2 text-xs text-amber-800">
                   Uključena je kontrola pretplate: bez aktivnog ili probnog perioda
@@ -142,19 +142,19 @@ export function BillingTab() {
               </p>
             ) : null}
             {ok && hasSubscription ? (
-              <p className="text-sm text-zinc-600">
+              <p className="text-sm text-muted-foreground">
                 Pretplata je aktivna. Za karticu ili izmene koristi Paddle (dugme
                 ispod).
               </p>
             ) : !ok ? (
-              <p className="text-sm text-zinc-600">
+              <p className="text-sm text-muted-foreground">
                 Aktiviraj pretplatu da otvoriš Paddle i uneseš način plaćanja.
               </p>
             ) : null}
             {showCheckout ? (
               <Button
                 type="button"
-                className="bg-zinc-900 text-white hover:bg-zinc-800"
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
                 disabled={checkoutLoading}
                 onClick={() => void onSubscribe()}
               >
@@ -170,7 +170,7 @@ export function BillingTab() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="border-zinc-200"
+                  className="border-border"
                   disabled={portalLoading}
                   onClick={() => void onOpenPortal()}
                 >
@@ -186,7 +186,7 @@ export function BillingTab() {
             <Button
               type="button"
               variant="outline"
-              className="border-zinc-200"
+              className="border-border"
               onClick={() => void load()}
             >
               Osveži status

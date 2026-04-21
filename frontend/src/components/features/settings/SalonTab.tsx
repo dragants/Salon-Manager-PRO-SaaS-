@@ -82,7 +82,7 @@ export function SalonTab({
               id="org-name"
               value={orgName}
               onChange={(e) => setOrgName(e.target.value)}
-              className="border-zinc-200 bg-white"
+              className="border-border bg-card"
             />
           </div>
           <div className="space-y-2 sm:col-span-2">
@@ -91,7 +91,7 @@ export function SalonTab({
               id="disp-name"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              className="border-zinc-200 bg-white"
+              className="border-border bg-card"
               placeholder="Kako klijenti vide salon"
             />
           </div>
@@ -101,7 +101,7 @@ export function SalonTab({
               id="phone"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className="border-zinc-200 bg-white"
+              className="border-border bg-card"
             />
           </div>
           <div className="space-y-2 sm:col-span-2">
@@ -110,7 +110,7 @@ export function SalonTab({
               id="address"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              className="border-zinc-200 bg-white"
+              className="border-border bg-card"
             />
           </div>
         </div>
@@ -127,7 +127,7 @@ export function SalonTab({
               id="logo"
               value={logoUrl}
               onChange={(e) => setLogoUrl(e.target.value)}
-              className="border-zinc-200 bg-white"
+              className="border-border bg-card"
               placeholder="https://…"
             />
           </div>
@@ -137,7 +137,7 @@ export function SalonTab({
               id="ig"
               value={instagram}
               onChange={(e) => setInstagram(e.target.value)}
-              className="border-zinc-200 bg-white"
+              className="border-border bg-card"
               placeholder="@salon ili puna adresa"
             />
           </div>
@@ -149,13 +149,13 @@ export function SalonTab({
                 type="color"
                 value={themeColor}
                 onChange={(e) => setThemeColor(e.target.value)}
-                className="h-10 w-14 cursor-pointer rounded-md border border-zinc-200 bg-white"
+                className="h-10 w-14 cursor-pointer rounded-md border border-border bg-card"
                 aria-label="Izbor boje"
               />
               <Input
                 value={themeColor}
                 onChange={(e) => setThemeColor(e.target.value)}
-                className="max-w-[10rem] border-zinc-200 bg-white font-mono text-sm"
+                className="max-w-[10rem] border-border bg-card font-mono text-sm"
               />
             </div>
           </div>
@@ -173,7 +173,7 @@ export function SalonTab({
               id="booking-slug"
               value={bookingSlug}
               onChange={(e) => setBookingSlug(e.target.value.toLowerCase())}
-              className="border-zinc-200 bg-white font-mono text-sm"
+              className="border-border bg-card font-mono text-sm"
               placeholder="npr. salon-saric"
               autoComplete="off"
             />
@@ -186,12 +186,12 @@ export function SalonTab({
               id="public-site-url"
               value={publicSiteUrl}
               onChange={(e) => setPublicSiteUrl(e.target.value)}
-              className="border-zinc-200 bg-white font-mono text-sm"
+              className="border-border bg-card font-mono text-sm"
               placeholder="https://tvoj-domen.com"
               autoComplete="off"
               inputMode="url"
             />
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-muted-foreground">
               Na lokalu može ostati prazno. Kada aplikacija bude na internetu,
               unesi punu adresu (npr.{" "}
               <span className="font-mono">https://app.tvoj-sajt.rs</span>) bez
@@ -200,9 +200,9 @@ export function SalonTab({
             </p>
           </div>
           <div className="space-y-2 sm:col-span-2">
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-muted-foreground">
               Stranica za deljenje:{" "}
-              <span className="break-all font-mono text-zinc-700">
+              <span className="break-all font-mono text-foreground">
                 {bookingSlug.trim() && bookingBaseUrl(publicSiteUrl)
                   ? `${bookingBaseUrl(publicSiteUrl)}/book/${bookingSlug.trim()}`
                   : bookingSlug.trim()
@@ -218,7 +218,7 @@ export function SalonTab({
               <span className="font-mono"> ipconfig</span> → IPv4. Otvori portove
               3000 i 5000 u firewall-u za privatnu mrežu.
             </p>
-            <p className="text-xs leading-relaxed text-zinc-600">
+            <p className="text-xs leading-relaxed text-muted-foreground">
               <strong>Internet (mobilni podaci):</strong> lokalni PC nije
               dostupan — potreban je javni hosting (npr. VPS, Vercel + API) ili
               tunel (ngrok).
@@ -234,7 +234,7 @@ export function SalonTab({
         <Button
           type="button"
           variant="outline"
-          className="border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900"
+          className="border-border bg-card  "
           onClick={() => {
             if (typeof window !== "undefined") {
               sessionStorage.setItem("salon_onboarding_pending", "1");
@@ -257,7 +257,7 @@ export function SalonTab({
             list="tz-list-settings"
             value={timezone}
             onChange={(e) => setTimezone(e.target.value)}
-            className="border-zinc-200 bg-white"
+            className="border-border bg-card"
           />
           <datalist id="tz-list-settings">
             {TIMEZONE_OPTIONS.map((z) => (
@@ -267,10 +267,10 @@ export function SalonTab({
         </div>
       </SettingsCard>
 
-      <div className="flex justify-end border-t border-zinc-100 pt-4">
+      <div className="flex justify-end border-t border-border/50 pt-4">
         <Button
           type="button"
-          className="bg-zinc-900 text-white hover:bg-zinc-800"
+          className="bg-primary text-primary-foreground hover:bg-primary/90"
           disabled={saving || !orgName.trim()}
           onClick={onSave}
         >

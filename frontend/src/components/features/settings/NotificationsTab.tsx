@@ -119,21 +119,21 @@ export function NotificationsTab({
         description="Šta šaljemo pre termina i u koje vreme. SMS i WhatsApp koriste Twilio / Meta iz backend .env ili Twilio ispod; e-mail koristi SMTP iz sekcije online rezervacije."
       >
         <div className="space-y-3">
-          <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-700">
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-foreground">
             <input
               type="checkbox"
               checked={dayBefore}
               onChange={(e) => setDayBefore(e.target.checked)}
-              className="rounded border-zinc-300"
+              className="rounded border-border"
             />
             Podsetnik dan pre termina
           </label>
-          <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-700">
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-foreground">
             <input
               type="checkbox"
               checked={twoHoursBefore}
               onChange={(e) => setTwoHoursBefore(e.target.checked)}
-              className="rounded border-zinc-300"
+              className="rounded border-border"
             />
             Podsetnik ~2 h pre termina
           </label>
@@ -148,7 +148,7 @@ export function NotificationsTab({
               onChange={(e) =>
                 setDayBeforeHour(Number.parseInt(e.target.value, 10) || 0)
               }
-              className="border-zinc-200 bg-white"
+              className="border-border bg-card"
             />
           </div>
           <div className="max-w-sm space-y-2">
@@ -159,7 +159,7 @@ export function NotificationsTab({
               onChange={(e) =>
                 setCustomReminderHours(Number.parseInt(e.target.value, 10) || 0)
               }
-              className="flex h-10 w-full rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-900 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+              className="flex h-10 w-full rounded-md border border-border bg-card px-3 text-sm text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <option value={0}>Isključeno</option>
               <option value={3}>3 h pre</option>
@@ -167,48 +167,48 @@ export function NotificationsTab({
               <option value={12}>12 h pre</option>
               <option value={24}>24 h pre</option>
             </select>
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-muted-foreground">
               Za „24 h pre“ sistem šalje poruku u prozoru oko tačno 24 sata pre
               termina. Aktiviraj bar jedan kanal ispod; za e-mail uključi SMTP i
               e-mail na kartici klijenta.
             </p>
           </div>
-          <p className="pt-2 text-xs font-medium uppercase tracking-wide text-zinc-400">
+          <p className="pt-2 text-xs font-medium uppercase tracking-wide text-muted-foreground/70">
             Kanali
           </p>
-          <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-700">
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-foreground">
             <input
               type="checkbox"
               checked={channelSms}
               onChange={(e) => setChannelSms(e.target.checked)}
-              className="rounded border-zinc-300"
+              className="rounded border-border"
             />
             SMS (Twilio)
           </label>
-          <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-700">
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-foreground">
             <input
               type="checkbox"
               checked={channelWhatsApp}
               onChange={(e) => setChannelWhatsApp(e.target.checked)}
-              className="rounded border-zinc-300"
+              className="rounded border-border"
             />
             WhatsApp (Meta Cloud API, .env)
           </label>
-          <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-700">
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-foreground">
             <input
               type="checkbox"
               checked={channelEmail}
               onChange={(e) => setChannelEmail(e.target.checked)}
-              className="rounded border-zinc-300"
+              className="rounded border-border"
             />
             E-mail podsetnik (SMTP ispod)
           </label>
-          <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-700">
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-foreground">
             <input
               type="checkbox"
               checked={noShowFollowup}
               onChange={(e) => setNoShowFollowup(e.target.checked)}
-              className="rounded border-zinc-300"
+              className="rounded border-border"
             />
             Poruka nakon no-show (follow-up)
           </label>
@@ -220,41 +220,41 @@ export function NotificationsTab({
         description="Šta se šalje klijentu odmah posle zakazivanja preko javnog linka. Podsetnici koriste podešavanja iznad (SMS / WhatsApp / e-mail)."
       >
         <div className="space-y-3">
-          <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-700">
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-foreground">
             <input
               type="checkbox"
               checked={publicBookingSms}
               onChange={(e) => setPublicBookingSms(e.target.checked)}
-              className="rounded border-zinc-300"
+              className="rounded border-border"
             />
             Pošalji SMS potvrdu (Twilio)
           </label>
-          <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-700">
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-foreground">
             <input
               type="checkbox"
               checked={publicBookingEmail}
               onChange={(e) => setPublicBookingEmail(e.target.checked)}
-              className="rounded border-zinc-300"
+              className="rounded border-border"
             />
             Pošalji e-mail potvrdu (SMTP ispod)
           </label>
-          <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-700">
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-foreground">
             <input
               type="checkbox"
               checked={publicBookingWhatsApp}
               onChange={(e) => setPublicBookingWhatsApp(e.target.checked)}
-              className="rounded border-zinc-300"
+              className="rounded border-border"
             />
             Pošalji WhatsApp potvrdu (Meta{" "}
-            <code className="rounded bg-zinc-100 px-1">WA_TOKEN</code> /{" "}
-            <code className="rounded bg-zinc-100 px-1">WA_PHONE_ID</code> u .env)
+            <code className="rounded bg-muted px-1">WA_TOKEN</code> /{" "}
+            <code className="rounded bg-muted px-1">WA_PHONE_ID</code> u .env)
           </label>
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-muted-foreground">
             Ako ne popuniš Twilio ispod, koriste se{" "}
-            <code className="rounded bg-zinc-100 px-1">TWILIO_*</code> iz backend
+            <code className="rounded bg-muted px-1">TWILIO_*</code> iz backend
             .env. Za e-mail obavezno SMTP i adresa klijenta na formi za zakazivanje.
           </p>
-          <p className="pt-2 text-xs font-medium uppercase tracking-wide text-zinc-400">
+          <p className="pt-2 text-xs font-medium uppercase tracking-wide text-muted-foreground/70">
             Twilio (opciono, po salonu)
           </p>
           <div className="grid max-w-lg gap-3 sm:grid-cols-1">
@@ -264,7 +264,7 @@ export function NotificationsTab({
                 id="bn-tw-sid"
                 value={twilioSid}
                 onChange={(e) => setTwilioSid(e.target.value)}
-                className="border-zinc-200 bg-white"
+                className="border-border bg-card"
                 autoComplete="off"
               />
             </div>
@@ -272,7 +272,7 @@ export function NotificationsTab({
               <Label htmlFor="bn-tw-token">
                 Auth token
                 {twilioConfigured ? (
-                  <span className="ml-2 font-normal text-zinc-400">
+                  <span className="ml-2 font-normal text-muted-foreground/70">
                     (ostavi prazno da zadržiš postojeći)
                   </span>
                 ) : null}
@@ -282,7 +282,7 @@ export function NotificationsTab({
                 type="password"
                 value={twilioToken}
                 onChange={(e) => setTwilioToken(e.target.value)}
-                className="border-zinc-200 bg-white"
+                className="border-border bg-card"
                 autoComplete="new-password"
               />
             </div>
@@ -292,12 +292,12 @@ export function NotificationsTab({
                 id="bn-tw-from"
                 value={twilioFrom}
                 onChange={(e) => setTwilioFrom(e.target.value)}
-                className="border-zinc-200 bg-white"
+                className="border-border bg-card"
                 placeholder="+1…"
               />
             </div>
           </div>
-          <p className="pt-2 text-xs font-medium uppercase tracking-wide text-zinc-400">
+          <p className="pt-2 text-xs font-medium uppercase tracking-wide text-muted-foreground/70">
             SMTP (e-mail potvrda)
           </p>
           <div className="grid max-w-lg gap-3">
@@ -307,7 +307,7 @@ export function NotificationsTab({
                 id="smtp-host"
                 value={smtpHost}
                 onChange={(e) => setSmtpHost(e.target.value)}
-                className="border-zinc-200 bg-white"
+                className="border-border bg-card"
                 placeholder="smtp.example.com"
               />
             </div>
@@ -323,15 +323,15 @@ export function NotificationsTab({
                   onChange={(e) =>
                     setSmtpPort(Number.parseInt(e.target.value, 10) || 587)
                   }
-                  className="border-zinc-200 bg-white"
+                  className="border-border bg-card"
                 />
               </div>
-              <label className="flex cursor-pointer items-end gap-2 pb-2 text-sm text-zinc-700">
+              <label className="flex cursor-pointer items-end gap-2 pb-2 text-sm text-foreground">
                 <input
                   type="checkbox"
                   checked={smtpSecure}
                   onChange={(e) => setSmtpSecure(e.target.checked)}
-                  className="rounded border-zinc-300"
+                  className="rounded border-border"
                 />
                 TLS (npr. port 465)
               </label>
@@ -342,7 +342,7 @@ export function NotificationsTab({
                 id="smtp-user"
                 value={smtpUser}
                 onChange={(e) => setSmtpUser(e.target.value)}
-                className="border-zinc-200 bg-white"
+                className="border-border bg-card"
                 autoComplete="off"
               />
             </div>
@@ -350,7 +350,7 @@ export function NotificationsTab({
               <Label htmlFor="smtp-pass">
                 Lozinka
                 {smtpPasswordConfigured ? (
-                  <span className="ml-2 font-normal text-zinc-400">
+                  <span className="ml-2 font-normal text-muted-foreground/70">
                     (ostavi prazno da zadržiš postojeću)
                   </span>
                 ) : null}
@@ -360,7 +360,7 @@ export function NotificationsTab({
                 type="password"
                 value={smtpPassword}
                 onChange={(e) => setSmtpPassword(e.target.value)}
-                className="border-zinc-200 bg-white"
+                className="border-border bg-card"
                 autoComplete="new-password"
               />
             </div>
@@ -371,7 +371,7 @@ export function NotificationsTab({
                 type="email"
                 value={smtpFromEmail}
                 onChange={(e) => setSmtpFromEmail(e.target.value)}
-                className="border-zinc-200 bg-white"
+                className="border-border bg-card"
               />
             </div>
             <div className="space-y-1.5">
@@ -380,7 +380,7 @@ export function NotificationsTab({
                 id="smtp-from-name"
                 value={smtpFromName}
                 onChange={(e) => setSmtpFromName(e.target.value)}
-                className="border-zinc-200 bg-white"
+                className="border-border bg-card"
               />
             </div>
           </div>
@@ -392,12 +392,12 @@ export function NotificationsTab({
         description="Poruke pri zakazivanju i nakon nedolaska — kad provajder to podrži."
       >
         <div className="space-y-4">
-          <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-700">
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-foreground">
             <input
               type="checkbox"
               checked={autoConfirm}
               onChange={(e) => setAutoConfirm(e.target.checked)}
-              className="rounded border-zinc-300"
+              className="rounded border-border"
             />
             Auto-potvrda novog zakazivanja
           </label>
@@ -408,26 +408,26 @@ export function NotificationsTab({
               value={reminderTemplate}
               onChange={(e) => setReminderTemplate(e.target.value)}
               rows={3}
-              className="w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+              className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               placeholder="Zdravo {ime}, sutra u {vreme} imate termin za {usluga} ({datum}). Sat za „dan pre“: {sat}."
             />
           </div>
-          <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-700">
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-foreground">
             <input
               type="checkbox"
               checked={noShowOffer}
               onChange={(e) => setNoShowOffer(e.target.checked)}
-              className="rounded border-zinc-300"
+              className="rounded border-border"
             />
             Predloži novi termin ako klijent ne dođe
           </label>
         </div>
       </SettingsCard>
 
-      <div className="flex justify-end border-t border-zinc-100 pt-4">
+      <div className="flex justify-end border-t border-border/50 pt-4">
         <Button
           type="button"
-          className="bg-zinc-900 text-white hover:bg-zinc-800"
+          className="bg-primary text-primary-foreground hover:bg-primary/90"
           disabled={saving}
           onClick={onSave}
         >

@@ -190,14 +190,14 @@ export default function ShiftsPage() {
 
   if (authLoading) {
     return (
-      <p className="text-sm text-sky-700/80">Učitavanje…</p>
+      <p className="text-sm text-primary/80">Učitavanje…</p>
     );
   }
 
   if (user?.role === "worker") {
     return (
       <SurfaceCard className="p-6">
-        <p className="text-sm text-sky-800">
+        <p className="text-sm text-primary">
           Raspored smena mogu da uređuju samo administratori. Obrati se
           vlasniku naloga.
         </p>
@@ -213,23 +213,23 @@ export default function ShiftsPage() {
       />
 
       <div className="flex flex-wrap items-end gap-4">
-        <label className="flex flex-col gap-1 text-sm text-sky-800">
-          <span className="font-medium text-sky-900">Datum</span>
+        <label className="flex flex-col gap-1 text-sm text-primary">
+          <span className="font-medium text-primary">Datum</span>
           <input
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="rounded-xl border border-sky-200 bg-white px-3 py-2 text-sky-950 shadow-sm"
+            className="rounded-xl border border-border bg-white px-3 py-2 text-foreground shadow-sm"
           />
         </label>
         {orgTz ? (
-          <p className="text-xs text-sky-600">
+          <p className="text-xs text-primary">
             Vremenska zona salona: {orgTz}
           </p>
         ) : null}
         <Button
           type="button"
-          className="gap-2 bg-sky-600 hover:bg-sky-700"
+          className="gap-2 bg-primary hover:bg-primary/90"
           onClick={() => void saveToServer()}
           disabled={saving || loadingShifts}
         >
@@ -240,7 +240,7 @@ export default function ShiftsPage() {
           type="button"
           variant="outline"
           size="sm"
-          className="gap-2 border-sky-200"
+          className="gap-2 border-border"
           onClick={copyPayload}
           disabled={apiPreview.length === 0}
         >
@@ -251,7 +251,7 @@ export default function ShiftsPage() {
           type="button"
           variant="outline"
           size="sm"
-          className="gap-2 border-sky-200"
+          className="gap-2 border-border"
           onClick={reapplyWeeklySuggestion}
           disabled={loadingTeam || team.length === 0}
         >
@@ -277,7 +277,7 @@ export default function ShiftsPage() {
       ) : null}
 
       {loadingTeam ? (
-        <p className="text-sm text-sky-700/80">Učitavanje tima…</p>
+        <p className="text-sm text-primary/80">Učitavanje tima…</p>
       ) : (
         <ShiftPlanner
           date={date}

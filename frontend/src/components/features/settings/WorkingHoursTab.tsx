@@ -26,10 +26,10 @@ export function WorkingHoursTab({
       >
         <WorkingHoursEditor value={dayRows} onChange={setDayRows} />
       </SettingsCard>
-      <div className="flex justify-end border-t border-zinc-100 pt-4">
+      <div className="flex justify-end border-t border-border/50 pt-4">
         <Button
           type="button"
-          className="bg-zinc-900 text-white hover:bg-zinc-800"
+          className="bg-primary text-primary-foreground hover:bg-primary/90"
           disabled={saving}
           onClick={onSave}
         >

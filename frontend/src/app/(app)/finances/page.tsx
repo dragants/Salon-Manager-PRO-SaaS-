@@ -149,7 +149,7 @@ function txnStatus(a: AppointmentRow): { label: string; badgeClass: string } {
   return {
     label: "Otkazano",
     badgeClass:
-      "border-zinc-200 bg-zinc-100 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200",
+      "border-border bg-muted text-foreground   ",
   };
 }
 
@@ -510,7 +510,7 @@ export default function FinancesPage() {
 
   if (authLoading || !user) {
     return (
-      <p className="text-sm text-slate-600 dark:text-slate-400">Učitavanje…</p>
+      <p className="text-sm text-muted-foreground">Učitavanje…</p>
     );
   }
 
@@ -520,7 +520,7 @@ export default function FinancesPage() {
         <SectionHeader title="Finansije" />
         <SurfaceCard
           padding="lg"
-          className="text-center text-sm text-slate-600 dark:text-slate-400"
+          className="text-center text-sm text-muted-foreground"
         >
           <p>Ovaj odeljak je dostupan samo administratoru salona.</p>
           <Link
@@ -548,12 +548,12 @@ export default function FinancesPage() {
       ) : null}
 
       {loading ? (
-        <p className="text-sm text-slate-600 dark:text-slate-400">Učitavanje…</p>
+        <p className="text-sm text-muted-foreground">Učitavanje…</p>
       ) : (
         <>
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
             <div
-              className="inline-flex rounded-xl border border-zinc-200/90 bg-zinc-50/80 p-1 dark:border-zinc-800 dark:bg-zinc-900/50"
+              className="inline-flex rounded-xl border border-border/90 bg-muted/80 p-1 dark:bg-card/50"
               role="group"
               aria-label="Period prikaza"
             >
@@ -571,8 +571,8 @@ export default function FinancesPage() {
                   className={cn(
                     "rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors",
                     period === key
-                      ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-800 dark:text-zinc-50"
-                      : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+                      ? "bg-card text-foreground shadow-sm  "
+                      : "text-muted-foreground hover:text-foreground dark:text-muted-foreground/70 dark:hover:text-zinc-100"
                   )}
                 >
                   {label}
@@ -620,21 +620,21 @@ export default function FinancesPage() {
           <SurfaceCard padding="lg" className="border-dashed border-sky-200/80 dark:border-sky-900/50">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-50">
+                <h2 className="text-sm font-semibold text-foreground ">
                   Profit (mesec)
                 </h2>
-                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                <p className="mt-1 text-xs text-muted-foreground">
                   Prihod minus troškovi tekućeg meseca. Unosi se kroz stavke u
                   bazi; ako nema stavki, koristi se okvirna procena u
                   podešavanjima.
                 </p>
               </div>
               <div className="grid w-full gap-3 sm:grid-cols-3 lg:max-w-2xl lg:flex-1">
-                <div className="rounded-xl border border-slate-100 bg-slate-50/80 px-4 py-3 dark:border-slate-800 dark:bg-slate-900/40">
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                <div className="rounded-xl border border-slate-100 bg-muted/80 px-4 py-3  dark:bg-card/40">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                     Prihod
                   </p>
-                  <p className="mt-1 text-lg font-bold tabular-nums text-slate-900 dark:text-slate-50">
+                  <p className="mt-1 text-lg font-bold tabular-nums text-foreground ">
                     {formatRsd(revenueMonth)}
                   </p>
                   {revenuePrevMonth > 0 ? (
@@ -662,34 +662,34 @@ export default function FinancesPage() {
                       })()}
                     </p>
                   ) : revenueMonth > 0 ? (
-                    <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                    <p className="mt-1 text-[11px] text-muted-foreground">
                       Nema podataka za prethodni mesec
                     </p>
                   ) : null}
                 </div>
                 <button
                   type="button"
-                  className="rounded-xl border border-slate-100 bg-amber-50/60 px-4 py-3 text-left transition hover:bg-amber-50 dark:border-slate-800 dark:bg-amber-950/30 dark:hover:bg-amber-950/50"
+                  className="rounded-xl border border-slate-100 bg-amber-50/60 px-4 py-3 text-left transition hover:bg-amber-50  dark:bg-amber-950/30 dark:hover:bg-amber-950/50"
                   onClick={() => {
                     setOverheadDraft(String(overheadRsd));
                     setOverheadOpen(true);
                   }}
                 >
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                     Troškovi (mes.)
                   </p>
-                  <p className="mt-1 flex items-center gap-1 text-lg font-bold tabular-nums text-slate-900 dark:text-slate-50">
+                  <p className="mt-1 flex items-center gap-1 text-lg font-bold tabular-nums text-foreground ">
                     <Wallet className="size-4 text-amber-700 dark:text-amber-400" aria-hidden />
                     {formatRsd(effectiveCost)}
                   </p>
-                  <p className="mt-0.5 text-[10px] text-slate-600 dark:text-slate-400">
+                  <p className="mt-0.5 text-[10px] text-muted-foreground">
                     {expensesMonthSum > 0
                       ? `${expenseRows.length} stavki u bazi`
                       : "Okvirna procena →"}
                   </p>
                 </button>
                 <div className="rounded-xl border border-emerald-100 bg-emerald-50/70 px-4 py-3 dark:border-emerald-900/50 dark:bg-emerald-950/30">
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                     Profit
                   </p>
                   <p className="mt-1 text-lg font-bold tabular-nums text-emerald-900 dark:text-emerald-100">
@@ -701,19 +701,19 @@ export default function FinancesPage() {
           </SurfaceCard>
 
           <SurfaceCard padding="none" className="overflow-hidden">
-            <div className="flex flex-col gap-3 border-b border-slate-100 px-5 py-4 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-3 border-b border-slate-100 px-5 py-4  sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-50">
+                <h2 className="text-sm font-semibold text-foreground ">
                   Troškovi (baza)
                 </h2>
-                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                <p className="mt-1 text-xs text-muted-foreground">
                   Tekući mesec ({monthRange.from} — {monthRange.to}). Stavke se
                   čuvaju u PostgreSQL-u po organizaciji.
                 </p>
               </div>
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
                 {!expensesLoading && expenseRows.length > 0 ? (
-                  <p className="order-last shrink-0 text-xs font-medium text-slate-500 dark:text-slate-400 sm:order-first sm:ml-auto">
+                  <p className="order-last shrink-0 text-xs font-medium text-muted-foreground sm:order-first sm:ml-auto">
                     {expenseRows.length}{" "}
                     {expenseRows.length === 1 ? "stavka" : "stavki"}
                     {expensesTv.enabled
@@ -750,12 +750,12 @@ export default function FinancesPage() {
                 <thead
                   className={cn(
                     appTableHeadClass,
-                    "sticky top-0 z-20 bg-white/95 backdrop-blur-sm dark:bg-zinc-950/95",
+                    "sticky top-0 z-20 bg-card/95 backdrop-blur-sm /95",
                     expensesHeadShadow &&
                       "shadow-[0_6px_12px_-4px_rgba(0,0,0,0.12)] dark:shadow-[0_6px_12px_-4px_rgba(0,0,0,0.45)]"
                   )}
                 >
-                  <tr className="border-b border-slate-200/90 dark:border-slate-800">
+                  <tr className="border-b border-border/90 ">
                     <th className="px-5 py-3.5">Datum</th>
                     <th className="px-5 py-3.5">Opis</th>
                     <th className="px-5 py-3.5">Kategorija</th>
@@ -767,7 +767,7 @@ export default function FinancesPage() {
                   {expensesLoading ? (
                     <tr className={appTableRowClass}>
                       <td
-                        className="px-5 py-8 text-center text-slate-500 dark:text-slate-400"
+                        className="px-5 py-8 text-center text-muted-foreground"
                         colSpan={5}
                       >
                         Učitavanje troškova…
@@ -776,7 +776,7 @@ export default function FinancesPage() {
                   ) : expenseRows.length === 0 ? (
                     <tr className={appTableRowClass}>
                       <td
-                        className="px-5 py-8 text-center text-slate-500 dark:text-slate-400"
+                        className="px-5 py-8 text-center text-muted-foreground"
                         colSpan={5}
                       >
                         Nema unetih troškova za ovaj mesec. Koristi „Evidentiraj
@@ -802,16 +802,16 @@ export default function FinancesPage() {
                           key={ex.id}
                           className={cn(appTableRowClass, "h-[52px]")}
                         >
-                          <td className="px-5 py-3 tabular-nums text-slate-700 dark:text-slate-300">
+                          <td className="px-5 py-3 tabular-nums text-foreground">
                             {ex.spent_at}
                           </td>
-                          <td className="max-w-[200px] truncate px-5 py-3 font-medium text-slate-900 dark:text-slate-50">
+                          <td className="max-w-[200px] truncate px-5 py-3 font-medium text-foreground ">
                             {ex.title}
                           </td>
-                          <td className="px-5 py-3 text-slate-600 dark:text-slate-400">
+                          <td className="px-5 py-3 text-muted-foreground">
                             {ex.category?.trim() ? ex.category : "—"}
                           </td>
-                          <td className="px-5 py-3 text-right tabular-nums text-slate-900 dark:text-slate-50">
+                          <td className="px-5 py-3 text-right tabular-nums text-foreground ">
                             {formatRsd(ex.amount_rsd)}
                           </td>
                           <td className="px-5 py-3 text-right">
@@ -864,20 +864,20 @@ export default function FinancesPage() {
 
           <SurfaceCard padding="lg" className="overflow-hidden">
             <div className="mb-4">
-              <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-50">
+              <h2 className="text-sm font-semibold text-foreground ">
                 Istorija troškova po mesecima
               </h2>
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              <p className="mt-1 text-xs text-muted-foreground">
                 Zbir evidentiranih troškova (poslednjih šest meseci, po
                 kalendarskim mesecima).
               </p>
             </div>
             {expensesLoading && expenseMonthlySorted.length === 0 ? (
-              <p className="text-sm text-slate-500 dark:text-slate-400">
+              <p className="text-sm text-muted-foreground">
                 Učitavanje…
               </p>
             ) : expenseMonthlySorted.length === 0 ? (
-              <p className="text-sm text-slate-500 dark:text-slate-400">
+              <p className="text-sm text-muted-foreground">
                 Još nema unetih troškova u ovom periodu.
               </p>
             ) : (
@@ -889,14 +889,14 @@ export default function FinancesPage() {
                   return (
                     <li key={row.month} className="space-y-1">
                       <div className="flex items-baseline justify-between gap-3 text-sm">
-                        <span className="font-medium text-slate-800 dark:text-slate-200">
+                        <span className="font-medium text-foreground">
                           {formatExpenseMonthLabel(row.month)}
                         </span>
-                        <span className="shrink-0 tabular-nums font-semibold text-slate-900 dark:text-slate-50">
+                        <span className="shrink-0 tabular-nums font-semibold text-foreground ">
                           {formatRsd(row.total_rsd)}
                         </span>
                       </div>
-                      <div className="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                      <div className="h-2 overflow-hidden rounded-full bg-muted dark:bg-card">
                         <div
                           className="h-full rounded-full bg-amber-500/90 dark:bg-amber-600/90"
                           style={{ width: `${w}%` }}
@@ -917,13 +917,13 @@ export default function FinancesPage() {
                     <CalendarRange className="size-5" aria-hidden />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                       Najbolji dan (30 dana)
                     </p>
-                    <p className="mt-1 text-sm font-medium text-slate-900 dark:text-slate-50">
+                    <p className="mt-1 text-sm font-medium text-foreground ">
                       {bestDayInfo.weekday.charAt(0).toUpperCase() +
                         bestDayInfo.weekday.slice(1)}{" "}
-                      <span className="text-slate-500">
+                      <span className="text-muted-foreground">
                         ({formatRsd(bestDayInfo.revenue)})
                       </span>
                     </p>
@@ -936,12 +936,12 @@ export default function FinancesPage() {
                     <Crown className="size-5" aria-hidden />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                       Top klijent
                     </p>
-                    <p className="mt-1 truncate text-sm font-medium text-slate-900 dark:text-slate-50">
+                    <p className="mt-1 truncate text-sm font-medium text-foreground ">
                       {topClient.name}
-                      <span className="text-slate-500">
+                      <span className="text-muted-foreground">
                         {" "}
                         ({formatRsd(topClient.revenue)})
                       </span>
@@ -954,10 +954,10 @@ export default function FinancesPage() {
 
           <SurfaceCard padding="lg" className="min-w-0 overflow-hidden">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-50">
+              <h2 className="text-sm font-semibold text-foreground ">
                 Prihod po danima
               </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-muted-foreground">
                 {period === "day"
                   ? "Današnji dan"
                   : period === "week"
@@ -971,12 +971,12 @@ export default function FinancesPage() {
           </SurfaceCard>
 
           <SurfaceCard padding="none" className="overflow-hidden">
-            <div className="flex flex-col gap-1 border-b border-slate-100 px-5 py-4 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-1 border-b border-slate-100 px-5 py-4  sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-50">
+                <h2 className="text-sm font-semibold text-foreground ">
                   Transakcije
                 </h2>
-                <p className="mt-1 flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
                   <CalendarRange className="size-3.5 shrink-0" aria-hidden />
                   {range.from === range.to
                     ? range.from
@@ -984,7 +984,7 @@ export default function FinancesPage() {
                 </p>
               </div>
               {!rowsLoading && rows.length > 0 ? (
-                <p className="shrink-0 text-xs font-medium text-slate-500 dark:text-slate-400">
+                <p className="shrink-0 text-xs font-medium text-muted-foreground">
                   {rows.length} termina
                   {txTv.enabled
                     ? ` · prikaz ${txTv.from + 1}–${txTv.to}`
@@ -1003,12 +1003,12 @@ export default function FinancesPage() {
                 <thead
                   className={cn(
                     appTableHeadClass,
-                    "sticky top-0 z-20 bg-white/95 backdrop-blur-sm dark:bg-zinc-950/95",
+                    "sticky top-0 z-20 bg-card/95 backdrop-blur-sm /95",
                     txHeadShadow &&
                       "shadow-[0_6px_12px_-4px_rgba(0,0,0,0.12)] dark:shadow-[0_6px_12px_-4px_rgba(0,0,0,0.45)]"
                   )}
                 >
-                  <tr className="border-b border-slate-200/90 dark:border-slate-800">
+                  <tr className="border-b border-border/90 ">
                     <th className="px-5 py-3.5">Datum</th>
                     <th className="px-5 py-3.5">Klijent</th>
                     <th className="px-5 py-3.5">Usluga</th>
@@ -1020,7 +1020,7 @@ export default function FinancesPage() {
                   {rowsLoading ? (
                     <tr className={appTableRowClass}>
                       <td
-                        className="px-5 py-8 text-center text-slate-500 dark:text-slate-400"
+                        className="px-5 py-8 text-center text-muted-foreground"
                         colSpan={5}
                       >
                         Učitavanje termina…
@@ -1029,7 +1029,7 @@ export default function FinancesPage() {
                   ) : rows.length === 0 ? (
                     <tr className={appTableRowClass}>
                       <td
-                        className="px-5 py-8 text-center text-slate-500 dark:text-slate-400"
+                        className="px-5 py-8 text-center text-muted-foreground"
                         colSpan={5}
                       >
                         Nema termina u ovom periodu.
@@ -1053,16 +1053,16 @@ export default function FinancesPage() {
                         const st = txnStatus(a);
                         return (
                           <tr key={a.id} className={appTableRowClass}>
-                            <td className="px-5 py-3.5 text-slate-700 dark:text-slate-300">
+                            <td className="px-5 py-3.5 text-foreground">
                               {formatApptWhen(a.date, tz)}
                             </td>
-                            <td className="px-5 py-3.5 font-medium text-slate-900 dark:text-slate-50">
+                            <td className="px-5 py-3.5 font-medium text-foreground ">
                               {a.client_name ?? `Klijent #${a.client_id}`}
                             </td>
-                            <td className="px-5 py-3.5 text-slate-700 dark:text-slate-300">
+                            <td className="px-5 py-3.5 text-foreground">
                               {a.service_name ?? `Usluga #${a.service_id}`}
                             </td>
-                            <td className="px-5 py-3.5 text-right tabular-nums text-slate-900 dark:text-slate-50">
+                            <td className="px-5 py-3.5 text-right tabular-nums text-foreground ">
                               {formatRsd(apptPrice(a))}
                             </td>
                             <td className="px-5 py-3.5">
@@ -1096,8 +1096,8 @@ export default function FinancesPage() {
           </SurfaceCard>
 
           <SurfaceCard padding="md" className="flex flex-wrap items-center gap-3 border-dashed">
-            <ArrowRightLeft className="size-5 text-slate-400" aria-hidden />
-            <p className="text-sm text-slate-600 dark:text-slate-400">
+            <ArrowRightLeft className="size-5 text-muted-foreground/70" aria-hidden />
+            <p className="text-sm text-muted-foreground">
               Potrebna je detaljnija knjiga uplata? Povezaćemo je sa API-jem u sledećoj
               iteraciji — zbir na dashboardu i ovde ostaje usklađen.
             </p>

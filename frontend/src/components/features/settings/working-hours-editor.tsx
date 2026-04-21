@@ -188,48 +188,48 @@ export function WorkingHoursEditor({
       {value.map((row) => (
         <div
           key={row.id}
-          className="rounded-lg border border-zinc-200/90 bg-zinc-50/60 px-3 py-3 sm:px-4"
+          className="rounded-lg border border-border/90 bg-muted/60 px-3 py-3 sm:px-4"
         >
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-zinc-900">
+            <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-foreground">
               <input
                 type="checkbox"
                 checked={row.enabled}
                 onChange={(e) =>
                   patchRow(row.id, { enabled: e.target.checked })
                 }
-                className="rounded border-zinc-300"
+                className="rounded border-border"
               />
               {row.label}
             </label>
             {row.enabled ? (
               <div className="flex flex-wrap items-center gap-2 text-sm">
-                <span className="text-zinc-500">otvaranje</span>
+                <span className="text-muted-foreground">otvaranje</span>
                 <input
                   type="time"
                   value={row.open}
                   onChange={(e) =>
                     patchRow(row.id, { open: e.target.value })
                   }
-                  className="rounded-md border border-zinc-200 bg-white px-2 py-1 font-mono text-zinc-900"
+                  className="rounded-md border border-border bg-card px-2 py-1 font-mono text-foreground"
                 />
-                <span className="text-zinc-500">—</span>
+                <span className="text-muted-foreground">—</span>
                 <input
                   type="time"
                   value={row.close}
                   onChange={(e) =>
                     patchRow(row.id, { close: e.target.value })
                   }
-                  className="rounded-md border border-zinc-200 bg-white px-2 py-1 font-mono text-zinc-900"
+                  className="rounded-md border border-border bg-card px-2 py-1 font-mono text-foreground"
                 />
               </div>
             ) : (
-              <p className="text-xs text-zinc-500">Ne radite ovog dana</p>
+              <p className="text-xs text-muted-foreground">Ne radite ovog dana</p>
             )}
           </div>
           {row.enabled ? (
-            <div className="mt-3 flex flex-col gap-2 border-t border-zinc-200/80 pt-3 sm:flex-row sm:flex-wrap sm:items-center">
-              <span className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+            <div className="mt-3 flex flex-col gap-2 border-t border-border/80 pt-3 sm:flex-row sm:flex-wrap sm:items-center">
+              <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 Pauza
               </span>
               <div className="flex flex-wrap items-center gap-2 text-sm">
@@ -239,21 +239,21 @@ export function WorkingHoursEditor({
                   onChange={(e) =>
                     patchRow(row.id, { breakStart: e.target.value })
                   }
-                  className="rounded-md border border-zinc-200 bg-white px-2 py-1 font-mono text-zinc-900"
+                  className="rounded-md border border-border bg-card px-2 py-1 font-mono text-foreground"
                   aria-label={`${row.label} početak pauze`}
                 />
-                <span className="text-zinc-400">do</span>
+                <span className="text-muted-foreground/70">do</span>
                 <input
                   type="time"
                   value={row.breakEnd}
                   onChange={(e) =>
                     patchRow(row.id, { breakEnd: e.target.value })
                   }
-                  className="rounded-md border border-zinc-200 bg-white px-2 py-1 font-mono text-zinc-900"
+                  className="rounded-md border border-border bg-card px-2 py-1 font-mono text-foreground"
                   aria-label={`${row.label} kraj pauze`}
                 />
               </div>
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-muted-foreground">
                 Ostavi prazno ako nema pauze u smeni.
               </p>
             </div>

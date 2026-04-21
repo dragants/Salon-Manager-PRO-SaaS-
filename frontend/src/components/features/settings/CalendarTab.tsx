@@ -48,7 +48,7 @@ export function CalendarTab({
               onChange={(e) =>
                 setMinGap(Number.parseInt(e.target.value, 10) || 0)
               }
-              className="border-zinc-200 bg-white"
+              className="border-border bg-card"
             />
           </div>
           <div className="space-y-2">
@@ -62,7 +62,7 @@ export function CalendarTab({
               onChange={(e) =>
                 setMaxClients(Number.parseInt(e.target.value, 10) || 1)
               }
-              className="border-zinc-200 bg-white"
+              className="border-border bg-card"
             />
           </div>
           <div className="space-y-2 sm:col-span-2">
@@ -76,24 +76,24 @@ export function CalendarTab({
               onChange={(e) =>
                 setBufferBetween(Number.parseInt(e.target.value, 10) || 0)
               }
-              className="border-zinc-200 bg-white"
+              className="border-border bg-card"
             />
           </div>
-          <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-700 sm:col-span-2">
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-foreground sm:col-span-2">
             <input
               type="checkbox"
               checked={allowOverlap}
               onChange={(e) => setAllowOverlap(e.target.checked)}
-              className="rounded border-zinc-300"
+              className="rounded border-border"
             />
             Dozvoli preklapanje termina (više stolica / radnika)
           </label>
         </div>
       </SettingsCard>
-      <div className="flex justify-end border-t border-zinc-100 pt-4">
+      <div className="flex justify-end border-t border-border/50 pt-4">
         <Button
           type="button"
-          className="bg-zinc-900 text-white hover:bg-zinc-800"
+          className="bg-primary text-primary-foreground hover:bg-primary/90"
           disabled={saving}
           onClick={onSave}
         >

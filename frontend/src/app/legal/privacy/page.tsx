@@ -8,8 +8,8 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10 text-zinc-800 dark:text-zinc-200">
-      <h1 className="mb-6 text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+    <div className="mx-auto max-w-3xl px-4 py-10 text-zinc-800">
+      <h1 className="mb-6 text-2xl font-bold tracking-tight text-foreground dark:text-zinc-50">
         Politika privatnosti
       </h1>
       <div className="space-y-4 text-sm leading-relaxed">
@@ -33,7 +33,7 @@ export default function PrivacyPage() {
           zahteva drugačije. Korisnici salona mogu tražiti ispravku ili brisanje
           u granicama zakona i tehničkih mogućnosti.
         </p>
-        <p className="text-xs text-zinc-500 dark:text-zinc-500">
+        <p className="text-xs text-muted-foreground dark:text-muted-foreground">
           Za EU/EEA i slične režime (npr. GDPR) uskladite ovaj dokument sa
           obradom kod vas i sa podobrascima obrade — konsultujte stručnjaka.
         </p>

@@ -21,21 +21,21 @@ export default function GlobalError({
   return (
     <div
       id="main-content"
-      className="flex min-h-[50vh] flex-col items-center justify-center bg-[#f8fafc] px-4 py-12 dark:bg-slate-950"
+      className="flex min-h-[50vh] flex-col items-center justify-center bg-[#f8fafc] px-4 py-12"
     >
       <SurfaceCard padding="lg" className="max-w-md text-center">
         <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-2xl bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-200">
           <AlertTriangle className="size-6" aria-hidden />
         </div>
-        <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-50">
+        <h1 className="text-lg font-semibold text-foreground ">
           Nešto nije u redu
         </h1>
-        <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+        <p className="mt-2 text-sm text-muted-foreground">
           Aplikacija je naišla na grešku. Možeš pokušati ponovo ili se vratiti
           na početak.
         </p>
         {error.digest ? (
-          <p className="mt-2 font-mono text-[10px] text-slate-400">
+          <p className="mt-2 font-mono text-[10px] text-muted-foreground/70">
             {error.digest}
           </p>
         ) : null}

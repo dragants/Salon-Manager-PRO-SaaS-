@@ -55,7 +55,7 @@ export default function SubscribePage() {
   if (loading) {
     return (
       <SurfaceCard padding="lg" className="mx-auto max-w-lg text-center">
-        <p className="text-sm text-slate-600 dark:text-slate-400">Učitavanje…</p>
+        <p className="text-sm text-muted-foreground">Učitavanje…</p>
       </SurfaceCard>
     );
   }
@@ -111,7 +111,7 @@ export default function SubscribePage() {
               "mb-4 rounded-xl border px-3 py-2 text-left text-sm",
               status.client_limits.at_limit
                 ? "border-amber-200 bg-amber-50 text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/35 dark:text-amber-100"
-                : "border-slate-200 bg-slate-50 text-slate-800 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-200"
+                : "border-border bg-muted text-foreground  dark:bg-card/50 "
             )}
           >
             <span className="font-semibold">Klijenti:</span>{" "}
@@ -131,7 +131,7 @@ export default function SubscribePage() {
               "mb-4 rounded-xl border px-3 py-2 text-left text-sm",
               status.appointment_limits.at_limit
                 ? "border-amber-200 bg-amber-50 text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/35 dark:text-amber-100"
-                : "border-slate-200 bg-slate-50 text-slate-800 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-200"
+                : "border-border bg-muted text-foreground  dark:bg-card/50 "
             )}
           >
             <span className="font-semibold">Termini (ovaj mesec):</span>{" "}
@@ -153,7 +153,7 @@ export default function SubscribePage() {
         >
           {checkoutLoading ? "Otvaranje plaćanja…" : "Aktiviraj pretplatu"}
         </Button>
-        <p className="mt-4 text-xs text-slate-500 dark:text-slate-400">
+        <p className="mt-4 text-xs text-muted-foreground">
           Naplata ide preko Paddle-a. Možeš i da podesiš karticu u podešavanjima.
         </p>
       </SurfaceCard>

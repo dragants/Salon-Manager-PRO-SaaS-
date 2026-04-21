@@ -38,18 +38,18 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-gradient-to-b from-sky-50/50 to-[#f8fafc] px-4 py-12 dark:from-slate-900 dark:to-slate-950 sm:px-6">
+    <div className="flex min-h-dvh items-center justify-center bg-gradient-to-b from-sky-50/50 to-background px-4 py-12 dark:from-slate-900 sm:px-6">
       <SurfaceCard padding="lg" className="w-full max-w-md shadow-lg">
         {sent ? (
           <div className="space-y-4 text-center sm:text-left">
-            <h1 className="font-heading text-2xl font-medium tracking-tight text-slate-900 dark:text-slate-50">
+            <h1 className="font-heading text-2xl font-medium tracking-tight text-foreground ">
               Proveri e-poštu
             </h1>
-            <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+            <p className="text-sm leading-relaxed text-muted-foreground">
               Ako nalog postoji za tu adresu, poslali smo uputstvo za reset
               lozinke. Link važi oko jednog sata. Proveri i folder „Spam“.
             </p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-muted-foreground">
               Bez podešenog APP_SMTP_* na serveru, link se u razvoju može videti
               u konzoli backend-a.
             </p>
@@ -74,10 +74,10 @@ export default function ForgotPasswordPage() {
                   ← Nazad na prijavu
                 </Link>
               </p>
-              <h1 className="font-heading text-2xl font-medium tracking-tight text-slate-900 dark:text-slate-50">
+              <h1 className="font-heading text-2xl font-medium tracking-tight text-foreground ">
                 Zaboravljena lozinka
               </h1>
-              <p className="text-sm text-slate-600 dark:text-slate-400">
+              <p className="text-sm text-muted-foreground">
                 Unesi e-adresu naloga — poslaćemo link za novu lozinku.
               </p>
             </div>
@@ -109,7 +109,7 @@ export default function ForgotPasswordPage() {
               {loading ? "Šaljem…" : "Pošalji link"}
             </Button>
 
-            <p className="text-center text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-center text-xs text-muted-foreground">
               Administrator tima i dalje može menjati lozinke u{" "}
               <Link
                 href="/settings"
