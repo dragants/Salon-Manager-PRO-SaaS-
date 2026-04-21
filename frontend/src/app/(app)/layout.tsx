@@ -26,7 +26,9 @@ export default function AppLayout({
             id="main-content"
             className="min-w-0 flex-1 overflow-auto bg-background px-4 py-5 pb-[max(5.5rem,env(safe-area-inset-bottom,0px)+4.5rem)] sm:px-6 md:px-8 md:py-8 md:pb-[max(1.25rem,env(safe-area-inset-bottom,0px))]"
           >
-            <div className="mx-auto w-full max-w-7xl">{children}</div>
+            <div className="app-shell-container mx-auto w-full max-w-[1200px]">
+              {children}
+            </div>
             </main>
           </div>
           <MobileDock />

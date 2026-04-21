@@ -315,7 +315,7 @@ async function getSettingsBundle(orgId) {
     theme_color:
       settings.theme_color ||
       settings.primary_color ||
-      "#38766a",
+      "#6366F1",
     logo: org.logo ?? null,
     timezone: settings.timezone ?? null,
     reminders: settings.reminders ?? {},

@@ -1,5 +1,9 @@
 /* eslint-disable no-restricted-globals */
-const CACHE_STATIC = "smp-static-v3";
+/**
+ * Ne keširaj /_next/*: chunk imena se menjaju (HMR, rebuild) — SW keš
+ * povećava 404 + „MIME text/plain” u konzoli na LAN/telefonu.
+ */
+const CACHE_STATIC = "smp-static-v4";
 
 self.addEventListener("install", () => {
   self.skipWaiting();
@@ -23,8 +27,8 @@ self.addEventListener("fetch", (event) => {
   if (req.method !== "GET") return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
+  if (url.pathname.startsWith("/_next/")) return;
   if (
-    url.pathname.startsWith("/_next/static/") ||
     url.pathname.startsWith("/icons/") ||
     url.pathname === "/manifest.webmanifest"
   ) {

@@ -12,8 +12,7 @@
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     "Liberation Mono", "Courier New", monospace;
-  --font-heading: var(--font-fraunces), ui-serif, Georgia, "Times New Roman",
-    serif;
+  --font-heading: var(--font-sans);
 
   --color-background: var(--lux-bg);
   --color-foreground: var(--lux-text);
@@ -38,10 +37,10 @@
   --color-warning: rgb(var(--warning));
 
   --color-chart-1: var(--lux-accent);
-  --color-chart-2: var(--lux-gold-mid);
+  --color-chart-2: rgb(14 165 233);
   --color-chart-3: var(--lux-text-muted);
-  --color-chart-4: rgb(100 116 139);
-  --color-chart-5: rgb(71 85 105);
+  --color-chart-4: rgb(148 163 184);
+  --color-chart-5: rgb(100 116 139);
 
   --color-sidebar: var(--lux-sidebar);
   --color-sidebar-foreground: var(--lux-sidebar-fg);
@@ -65,41 +64,62 @@
   --shadow-hover: var(--lux-shadow-hover);
 }
 
-/* ☀️ LIGHT — spa / wellness: krem-sage pozadina, meki sidebar, teal akcent (bez „narandžastog“ CTA) */
+/* ☀️ LIGHT — SaaS PRO: indigo akcije, neutral 80% UI, success/warn/danger status */
 :root {
-  /* Primarni akcent: prigušeni juniper teal (CTA, KPI „sky“, fokus) */
-  --primary: 56 118 106;
-  --primary-hover: 72 138 124;
-  --primary-foreground: 250 252 251;
+  /* Documented design tokens (8px grid + type scale) */
+  --ds-text-xs: 0.75rem;
+  --ds-text-sm: 0.875rem;
+  --ds-text-base: 1rem;
+  --ds-text-lg: 1.125rem;
+  --ds-text-xl: 1.25rem;
+  --ds-text-2xl: 1.5rem;
+  --ds-text-3xl: 1.875rem;
+  --ds-space-1: 0.25rem;
+  --ds-space-2: 0.5rem;
+  --ds-space-3: 0.75rem;
+  --ds-space-4: 1rem;
+  --ds-space-5: 1.25rem;
+  --ds-space-6: 1.5rem;
+  --ds-space-8: 2rem;
+  --ds-space-10: 2.5rem;
+  /* Legacy hex aliases (dokumentacija / JS) */
+  --primary-500: #6366f1;
+  --primary-600: #4f46e5;
+  --primary-100: #e0e7ff;
+  --secondary-500: #0ea5e9;
 
-  /* Sekundarni zlatno-sage tonovi (grafici, naglašavanja) — ne žuta narandžasta */
-  --gold-mid: 108 138 128;
-  --gold-light: 168 192 184;
-  --gold-pale: 228 236 232;
+  /* Primary — dugmad, linkovi, fokus (indigo) */
+  --primary: 99 102 241;
+  --primary-hover: 79 70 229;
+  --primary-foreground: 255 255 255;
 
-  --bg: 244 246 242;
+  /* Sekundarni naglasak (sky) + grafički tercijeri */
+  --gold-mid: 14 165 233;
+  --gold-light: 56 189 248;
+  --gold-pale: 224 231 255;
+
+  --bg: 249 250 251;
   --card: 255 255 255;
-  --text: 28 38 34;
-  --text-muted: 100 114 108;
-  --border: 216 224 218;
+  --text: 17 24 39;
+  --text-muted: 107 114 128;
+  --border: 229 231 235;
 
-  --muted: 236 240 236;
-  --secondary: 249 251 249;
-  --secondary-foreground: 28 38 34;
+  --muted: 243 244 246;
+  --secondary: 243 244 246;
+  --secondary-foreground: 17 24 39;
 
   --input-bg: 255 255 255;
-  /* Sidebar: svetla sage ploča (ne tamno braon) */
-  --sidebar: 232 237 233;
-  --sidebar-border: 208 218 212;
+  --sidebar: 248 250 252;
+  --sidebar-border: 229 231 235;
 
-  --sidebar-fg: 45 58 52;
-  --sidebar-hover-fg: 28 38 34;
-  --sidebar-active: 56 118 106;
-  --sidebar-muted-fg: 108 122 116;
+  --sidebar-fg: 55 65 81;
+  --sidebar-hover-fg: 17 24 39;
+  --sidebar-active: 99 102 241;
+  --sidebar-muted-fg: 107 114 128;
 
-  --success: 45 122 74;
-  --warning: 212 163 17;
-  --danger: 168 48 48;
+  --success: 34 197 94;
+  --warning: 245 158 11;
+  --danger: 239 68 68;
 
   /* Most za postojeće komponente + shadcn */
   --lux-bg: rgb(var(--bg));
@@ -143,41 +163,41 @@
   --lux-radius-lg: 16px;
   --lux-radius-xl: 20px;
 
-  --lux-text-h1: 40px;
-  --lux-text-h2: 28px;
-  --lux-text-h3: 20px;
-  --lux-text-body: 14px;
+  --lux-text-h1: 2.5rem;
+  --lux-text-h2: 1.75rem;
+  --lux-text-h3: 1.25rem;
+  --lux-text-body: 16px;
   --lux-text-small: 12px;
 }
 
-/* 🌙 DARK — spa tamni mod: ugljenasto-sage, mint akcent */
+/* 🌙 DARK — slate + indigo akcent */
 .dark {
-  --primary: 120 188 174;
-  --primary-hover: 154 210 196;
-  --primary-foreground: 24 32 28;
+  --primary: 129 140 248;
+  --primary-hover: 165 180 252;
+  --primary-foreground: 15 23 42;
 
-  --gold-mid: 100 150 138;
-  --gold-light: 140 188 176;
-  --gold-pale: 200 224 216;
+  --gold-mid: 56 189 248;
+  --gold-light: 125 211 252;
+  --gold-pale: 49 46 129;
 
-  --bg: 26 32 29;
-  --card: 34 42 38;
-  --text: 236 242 238;
-  --text-muted: 154 168 160;
-  --border: 56 66 60;
+  --bg: 15 23 42;
+  --card: 30 41 59;
+  --text: 248 250 252;
+  --text-muted: 148 163 184;
+  --border: 51 65 85;
 
-  --muted: 40 48 44;
-  --secondary: 46 54 50;
-  --secondary-foreground: 236 242 238;
+  --muted: 30 41 59;
+  --secondary: 51 65 85;
+  --secondary-foreground: 248 250 252;
 
-  --input-bg: 38 46 42;
-  --sidebar: 30 38 34;
-  --sidebar-border: 48 58 52;
+  --input-bg: 30 41 59;
+  --sidebar: 15 23 42;
+  --sidebar-border: 51 65 85;
 
-  --sidebar-fg: 196 208 202;
-  --sidebar-hover-fg: 236 242 238;
-  --sidebar-active: 120 188 174;
-  --sidebar-muted-fg: 140 158 150;
+  --sidebar-fg: 203 213 225;
+  --sidebar-hover-fg: 248 250 252;
+  --sidebar-active: 129 140 248;
+  --sidebar-muted-fg: 148 163 184;
 
   --success: 74 222 128;
   --warning: 250 204 21;
@@ -214,7 +234,11 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/40;
+    @apply border-border;
+  }
+  *:focus-visible {
+    outline: 2px solid rgb(var(--primary) / 0.45);
+    outline-offset: 2px;
   }
   :root {
     color-scheme: light;
@@ -229,6 +253,7 @@
     background-color: rgb(var(--bg));
     color: rgb(var(--text));
     position: relative;
+    line-height: 1.5;
     @apply antialiased;
     -webkit-tap-highlight-color: rgb(var(--primary) / 0.12);
   }
@@ -241,12 +266,12 @@
     z-index: 0;
     background: radial-gradient(
         ellipse 120% 80% at 100% -20%,
-        rgb(120 188 174 / 0.07),
+        rgb(99 102 241 / 0.09),
         transparent 55%
       ),
       radial-gradient(
         ellipse 90% 60% at -10% 100%,
-        rgb(56 118 106 / 0.06),
+        rgb(14 165 233 / 0.06),
         transparent 50%
       );
   }
@@ -257,10 +282,10 @@
     inset: 0;
     pointer-events: none;
     z-index: 0;
-    opacity: 0.035;
+    opacity: 0.04;
     background-image: repeating-radial-gradient(
       circle at 20% 30%,
-      rgb(255 255 255 / 0.06) 0,
+      rgb(255 255 255 / 0.05) 0,
       transparent 1px
     );
     background-size: 3px 3px;
@@ -275,7 +300,7 @@
   h2,
   h3,
   .font-heading {
-    font-family: var(--font-heading);
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
     font-optical-sizing: auto;
   }
 }
@@ -284,9 +309,9 @@
   .card {
     background: rgb(var(--card));
     border: 1px solid rgb(var(--border));
-    border-radius: var(--lux-radius-lg);
-    padding: 20px;
-    box-shadow: var(--lux-shadow-soft);
+    border-radius: 16px;
+    padding: var(--ds-space-5);
+    box-shadow: 0 10px 30px rgb(0 0 0 / 0.05);
     transition:
       transform 0.2s ease,
       box-shadow 0.2s ease,
@@ -294,8 +319,11 @@
   }
   .card:hover {
     transform: translateY(-2px);
-    box-shadow: var(--lux-shadow-hover);
-    border-color: rgb(var(--primary) / 0.28);
+    box-shadow: 0 10px 30px rgb(0 0 0 / 0.08);
+    border-color: rgb(var(--primary) / 0.25);
+  }
+  .dark .card:hover {
+    box-shadow: 0 12px 36px rgb(0 0 0 / 0.35);
   }
 
   .card-stripe {
@@ -309,44 +337,69 @@
   .btn-primary,
   .btn-primary-premium {
     height: 44px;
-    padding: 0 16px;
-    border-radius: var(--lux-radius-md);
+    padding: 10px 16px;
+    border-radius: 10px;
     background: rgb(var(--primary));
     color: rgb(var(--primary-foreground));
-    font-size: var(--lux-text-body);
-    font-weight: 600;
+    font-size: var(--ds-text-sm);
+    font-weight: 500;
     transition:
-      transform 0.15s ease,
-      background 0.15s ease,
-      box-shadow 0.15s ease;
-    box-shadow: var(--lux-shadow-soft);
+      transform 0.2s ease,
+      background 0.2s ease,
+      box-shadow 0.2s ease;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
   }
   .btn-primary:hover,
   .btn-primary-premium:hover {
     background: rgb(var(--primary-hover));
-    transform: scale(1.02);
+    transform: translateY(-1px);
   }
   .btn-primary:active,
   .btn-primary-premium:active {
-    transform: scale(0.98);
+    transform: translateY(0);
+  }
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 10px 16px;
+    border-radius: 10px;
+    background: transparent;
+    color: rgb(var(--primary));
+    font-size: var(--ds-text-sm);
+    font-weight: 500;
+    border: 1px solid transparent;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+  .btn-ghost:hover {
+    background: rgb(var(--primary) / 0.08);
+  }
+  .btn-ghost:focus-visible {
+    outline: 2px solid rgb(var(--primary) / 0.4);
+    outline-offset: 2px;
   }
 
   .btn-secondary-ui {
     height: 44px;
-    padding: 0 16px;
-    border-radius: var(--lux-radius-md);
-    background: transparent;
-    border: 1px solid rgb(var(--border));
+    padding: 10px 16px;
+    border-radius: 10px;
+    background: rgb(243 244 246);
+    border: 1px solid transparent;
     color: rgb(var(--text));
-    font-size: var(--lux-text-body);
+    font-size: var(--ds-text-sm);
     font-weight: 500;
     transition:
-      transform 0.15s ease,
-      background 0.15s ease;
+      transform 0.2s ease,
+      background 0.2s ease;
+  }
+  .dark .btn-secondary-ui {
+    background: rgb(51 65 85);
+    color: rgb(var(--text));
   }
   .btn-secondary-ui:hover {
-    background: rgb(var(--text) / 0.05);
-    transform: scale(1.02);
+    background: rgb(var(--muted));
+    transform: translateY(-1px);
   }
 
   .lux-badge {

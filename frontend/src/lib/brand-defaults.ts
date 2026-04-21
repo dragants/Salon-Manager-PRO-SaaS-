@@ -1,4 +1,4 @@
 /**
- * Usklađeno sa PWA / globals (sage) — vrednost pre učitavanja sa servera i kao fallback.
+ * Podrazumevani salon akcent (indigo) — u skladu sa DS tokenima; server može overridovati.
  */
-export const DEFAULT_THEME_COLOR_HEX = "#38766a";
+export const DEFAULT_THEME_COLOR_HEX = "#6366F1";
