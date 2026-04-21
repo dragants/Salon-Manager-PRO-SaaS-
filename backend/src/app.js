@@ -32,6 +32,7 @@ const expensesRoutes = require("./modules/expenses/expenses.routes");
 const suppliesRoutes = require("./modules/supplies/supplies.routes");
 const loyaltyRoutes = require("./modules/loyalty/loyalty.routes");
 
+const { GLOBAL_MAX, GLOBAL_WINDOW_MS } = require("./config/rate-limits");
 const errorHandler = require("./middleware/error.middleware");
 
 const app = express();
@@ -73,15 +74,17 @@ app.use(express.json({ limit: "12mb" }));
 
 app.use(
   rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 500,
+    windowMs: GLOBAL_WINDOW_MS,
+    max: GLOBAL_MAX,
     standardHeaders: true,
     legacyHeaders: false,
+    /* /auth ima sopstvene, strože limitere — ne mešati sa 500/15m za API. */
     skip: (req) =>
       req.path === "/health" ||
       req.path === "/webhooks/paddle" ||
       req.path.startsWith("/public") ||
-      req.path === "/appointments/stream",
+      req.path === "/appointments/stream" ||
+      req.path.startsWith("/auth"),
   })
 );
 

@@ -563,6 +563,11 @@ async function bookAppointment({
 function publicSalonPayload(org) {
   const tz = orgTimeZone(org);
   const bn = org.settings?.booking_notifications || {};
+  const s = org.settings || {};
+  const theme =
+    (typeof s.theme_color === "string" && s.theme_color.trim()) ||
+    (typeof s.primary_color === "string" && s.primary_color.trim()) ||
+    null;
   return {
     salon: {
       name: org.name,
@@ -570,6 +575,7 @@ function publicSalonPayload(org) {
       address: org.address ?? null,
       logo: org.logo ?? null,
       timezone: tz,
+      theme_color: theme,
     },
     booking_notify: {
       public_booking_sms: bn.public_booking_sms !== false,

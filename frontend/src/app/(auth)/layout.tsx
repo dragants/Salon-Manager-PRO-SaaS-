@@ -1,3 +1,5 @@
+import { SiteFooter } from "@/components/layout/site-footer";
+
 export default function AuthLayout({
   children,
 }: {
@@ -8,7 +10,8 @@ export default function AuthLayout({
       id="main-content"
       className="relative z-[1] flex min-h-dvh min-w-0 flex-1 flex-col bg-background text-foreground"
     >
-      {children}
+      <div className="flex flex-1 flex-col">{children}</div>
+      <SiteFooter />
     </div>
   );
 }

@@ -9,11 +9,16 @@ const {
 } = require("./auth.validation");
 const validate = require("../../middleware/validate.middleware");
 const asyncHandler = require("../../utils/asyncHandler");
+const {
+  AUTH_WINDOW_MS,
+  AUTH_LOGIN_MAX_FAILED,
+  AUTH_OTHER_MAX,
+} = require("../../config/rate-limits");
 
-/** Stroži limit od globalnog (brute-force / credential stuffing). */
+/** Register, forgot, reset — sprečava zloupotrebu bez mučenja uobičajenih korisnika. */
 const authRouteLimit = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 40,
+  windowMs: AUTH_WINDOW_MS,
+  max: AUTH_OTHER_MAX,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -22,16 +27,16 @@ const authRouteLimit = rateLimit({
   },
 });
 
-/** Brute-force: najviše 10 pokušaja prijave u minuti (po IP). */
+/** Neuspešne prijave / IP; uspeh ne troši kvotu. */
 const loginRouteLimit = rateLimit({
-  windowMs: 60 * 1000,
-  max: 10,
+  windowMs: AUTH_WINDOW_MS,
+  max: AUTH_LOGIN_MAX_FAILED,
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: true,
   message: {
     error:
-      "Previše neuspešnih prijava sa ove adrese. Pokušajte ponovo za minut.",
+      "Previše neuspešnih prijava sa ove adrese. Pokušajte ponovo za nekoliko minuta.",
   },
 });
 

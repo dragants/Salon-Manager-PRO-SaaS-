@@ -3,6 +3,7 @@ import {
   CalendarDays,
   BarChart3,
   Bell,
+  ChevronDown,
   Clock,
   Globe,
   Package,
@@ -11,7 +12,9 @@ import {
   Users,
   Zap,
 } from "lucide-react";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { buttonVariants } from "@/components/ui/button";
+import { sr } from "@/lib/i18n/sr";
 import { cn } from "@/lib/utils";
 
 const HERO_SRC =
@@ -457,6 +460,40 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* ── FAQ (sr.landing) ───────────────────────────────── */}
+        <section
+          className="border-t border-border bg-muted/20 py-16 sm:py-24"
+          aria-labelledby="landing-faq-heading"
+        >
+          <div className="mx-auto max-w-3xl px-4 sm:px-6">
+            <h2
+              id="landing-faq-heading"
+              className="text-center font-heading text-3xl font-bold tracking-tight sm:text-4xl"
+            >
+              {sr.landing.faqTitle}
+            </h2>
+            <div className="mt-10 space-y-2">
+              {sr.landing.faq.map((item, i) => (
+                <details
+                  key={i}
+                  className="group rounded-2xl border border-border bg-card shadow-[var(--lux-shadow-soft)] transition-colors open:border-primary/20 open:shadow-[var(--lux-shadow-hover)]"
+                >
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 text-left text-sm font-semibold text-foreground [&::-webkit-details-marker]:hidden">
+                    <span>{item.q}</span>
+                    <ChevronDown
+                      className="size-5 shrink-0 text-muted-foreground transition-transform duration-200 group-open:rotate-180"
+                      aria-hidden
+                    />
+                  </summary>
+                  <p className="border-t border-border px-5 pb-4 pt-3 text-sm leading-relaxed text-muted-foreground">
+                    {item.a}
+                  </p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* ── Final CTA ────────────────────────────────────────── */}
         <section className="border-t border-border bg-muted/30 py-16 sm:py-24">
           <div className="mx-auto max-w-3xl px-4 text-center sm:px-6">
@@ -490,6 +527,8 @@ export default function LandingPage() {
           </div>
         </section>
       </main>
+
+      <SiteFooter />
     </div>
   );
 }

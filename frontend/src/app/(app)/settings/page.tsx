@@ -10,6 +10,7 @@ import {
 } from "react";
 import { useSearchParams } from "next/navigation";
 import { getOrgTeam, getServices } from "@/lib/api";
+import { DEFAULT_THEME_COLOR_HEX } from "@/lib/brand-defaults";
 import { getApiErrorMessage } from "@/lib/api/errors";
 import { CalendarTab } from "@/components/features/settings/CalendarTab";
 import { FinanceTab } from "@/components/features/settings/FinanceTab";
@@ -57,7 +58,7 @@ function SettingsPageContent() {
   const [address, setAddress] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
   const [instagram, setInstagram] = useState("");
-  const [themeColor, setThemeColor] = useState("#3B82F6");
+  const [themeColor, setThemeColor] = useState(DEFAULT_THEME_COLOR_HEX);
   const [timezone, setTimezone] = useState("Europe/Belgrade");
   const [bookingSlug, setBookingSlug] = useState("");
   const [publicSiteUrl, setPublicSiteUrl] = useState("");
@@ -141,7 +142,7 @@ function SettingsPageContent() {
     setInstagram(
       typeof branding.instagram === "string" ? branding.instagram : ""
     );
-    setThemeColor(settings.theme_color ?? "#3B82F6");
+    setThemeColor(settings.theme_color ?? DEFAULT_THEME_COLOR_HEX);
     setTimezone(settings.timezone ?? "Europe/Belgrade");
     setBookingSlug(
       typeof settings.booking_slug === "string" ? settings.booking_slug : ""
@@ -456,7 +457,8 @@ function SettingsPageContent() {
           ? settings.branding.instagram
           : ""
         ).trim() ||
-      themeColor.trim() !== (settings.theme_color ?? "#3B82F6").trim() ||
+      themeColor.trim() !==
+        (settings.theme_color ?? DEFAULT_THEME_COLOR_HEX).trim() ||
       timezone.trim() !== (settings.timezone ?? "Europe/Belgrade").trim() ||
       bookingSlug.trim() !==
         (typeof settings.booking_slug === "string" ? settings.booking_slug : "") ||

@@ -7,6 +7,8 @@ export type PublicSalonPayload = {
     address: string | null;
     logo: string | null;
     timezone: string;
+    /** Hex iz podešavanja salona (#rrggbb); za dinamički akcent na javnoj stranici. */
+    theme_color?: string | null;
   };
   booking_notify?: {
     public_booking_sms: boolean;

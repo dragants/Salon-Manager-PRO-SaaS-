@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
 import { addDays, formatYyyyMmDd, todayLocal } from "@/lib/dateLocal";
 import { browserTimeZone } from "@/components/features/calendar/calendar-utils";
 import { Button } from "@/components/ui/button";
@@ -15,9 +15,10 @@ import {
   type PublicSalonPayload,
   type PublicSlot,
 } from "@/lib/api/public-booking";
+import { hexToRgbSpaceSeparated } from "@/lib/color-hex";
 import { mapsSearchUrl, telHref } from "@/lib/contact-links";
 import { cn } from "@/lib/utils";
-import { CircleCheck } from "lucide-react";
+import { CircleCheck, MapPin, Phone } from "lucide-react";
 
 const STEP_LABELS = ["Usluga", "Datum", "Termin", "Podaci"] as const;
 
@@ -53,6 +54,14 @@ export default function PublicBookingPage() {
 
   const clientTz = useMemo(() => browserTimeZone(), []);
   const salonTz = salonData?.salon.timezone ?? clientTz;
+
+  const bookingThemeStyle = useMemo((): CSSProperties | undefined => {
+    const hex = salonData?.salon.theme_color?.trim();
+    if (!hex) return undefined;
+    const rgb = hexToRgbSpaceSeparated(hex);
+    if (!rgb) return undefined;
+    return { ["--primary" as string]: rgb } as CSSProperties;
+  }, [salonData?.salon.theme_color]);
 
   const selectedService = useMemo(() => {
     if (!salonData || serviceId === "") return null;
@@ -225,6 +234,7 @@ export default function PublicBookingPage() {
     return (
       <div
         id="main-content"
+        style={bookingThemeStyle}
         className="min-h-dvh touch-manipulation bg-gradient-to-b from-emerald-50/90 to-[#f8fafc] px-4 py-10 pb-[max(2.5rem,env(safe-area-inset-bottom,0px)+1rem)] pt-[max(2.5rem,env(safe-area-inset-top,0px)+0.5rem)] dark:from-emerald-950/40 dark:to-slate-950"
       >
         <div className="mx-auto flex max-w-lg flex-col gap-6">
@@ -269,43 +279,68 @@ export default function PublicBookingPage() {
   return (
     <div
       id="main-content"
+      style={bookingThemeStyle}
       className="min-h-dvh touch-manipulation bg-gradient-to-b from-primary/10 via-background to-background px-4 py-10 pb-[max(2.5rem,env(safe-area-inset-bottom,0px)+1rem)] pt-[max(2.5rem,env(safe-area-inset-top,0px)+0.5rem)]"
     >
       <div className="mx-auto flex max-w-lg flex-col gap-6">
-        <header className="space-y-1 text-center">
-          {salon.logo ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={salon.logo}
-              alt=""
-              className="mx-auto h-16 w-16 rounded-2xl object-cover ring-1 ring-zinc-200"
-            />
-          ) : null}
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">
-            {salon.name}
-          </h1>
+        <header className="overflow-hidden rounded-3xl border border-border/80 bg-gradient-to-br from-primary/15 via-card to-background p-6 text-center shadow-[var(--lux-shadow-soft)] ring-1 ring-primary/10">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+            Online rezervacija
+          </p>
+          <div className="mt-4 flex flex-col items-center gap-3">
+            {salon.logo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={salon.logo}
+                alt=""
+                className="h-20 w-20 rounded-3xl object-cover shadow-md ring-2 ring-primary/15"
+              />
+            ) : (
+              <div
+                className="flex h-20 w-20 items-center justify-center rounded-3xl bg-primary/15 font-heading text-2xl font-bold text-primary shadow-inner"
+                aria-hidden
+              >
+                {salon.name.slice(0, 2).toUpperCase()}
+              </div>
+            )}
+            <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+              {salon.name}
+            </h1>
+          </div>
           {salon.address ? (
-            <p className="text-sm text-zinc-600">
-              {mapsSearchUrl(salon.address) ? (
-                <a
-                  href={mapsSearchUrl(salon.address)!}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-medium text-sky-700 underline decoration-sky-300 underline-offset-2 hover:text-sky-900"
-                >
-                  {salon.address}
-                </a>
-              ) : (
-                salon.address
-              )}
+            <p className="mt-4 flex items-start justify-center gap-2 text-sm text-muted-foreground">
+              <MapPin
+                className="mt-0.5 size-4 shrink-0 text-primary"
+                aria-hidden
+              />
+              <span>
+                {mapsSearchUrl(salon.address) ? (
+                  <a
+                    href={mapsSearchUrl(salon.address)!}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-primary underline decoration-primary/40 underline-offset-2 hover:text-primary/90"
+                  >
+                    {salon.address}
+                  </a>
+                ) : (
+                  salon.address
+                )}
+                {mapsSearchUrl(salon.address) ? (
+                  <span className="mt-1 block text-xs text-muted-foreground">
+                    Otvara Google mape
+                  </span>
+                ) : null}
+              </span>
             </p>
           ) : null}
           {salon.phone ? (
-            <p className="text-sm text-zinc-600">
+            <p className="mt-2 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+              <Phone className="size-4 shrink-0 text-primary" aria-hidden />
               {telHref(salon.phone) ? (
                 <a
                   href={telHref(salon.phone)!}
-                  className="font-medium text-sky-700 underline decoration-sky-300 underline-offset-2 hover:text-sky-900"
+                  className="font-medium text-primary underline decoration-primary/40 underline-offset-2 hover:text-primary/90"
                 >
                   {salon.phone}
                 </a>
@@ -323,22 +358,24 @@ export default function PublicBookingPage() {
               const done = step > n;
               const active = step === n;
               return (
-                <div key={label} className="flex-1 space-y-1">
+                <div key={label} className="flex-1 space-y-1.5">
                   <div
                     title={label}
                     className={cn(
-                      "h-1.5 rounded-full transition-colors",
+                      "h-1.5 rounded-full transition-all duration-500 ease-out",
                       done || active
-                        ? "bg-sky-600"
-                        : "bg-zinc-200 dark:bg-zinc-700"
+                        ? "bg-primary shadow-[0_0_12px_-2px_rgb(var(--primary))]"
+                        : "bg-muted"
                     )}
                   />
                   <p
                     className={cn(
-                      "text-center text-[10px] font-medium uppercase tracking-wide",
+                      "text-center text-[10px] font-medium uppercase tracking-wide transition-colors duration-300",
                       active
-                        ? "text-sky-700 dark:text-sky-400"
-                        : "text-zinc-400 dark:text-zinc-500"
+                        ? "text-primary"
+                        : done
+                          ? "text-muted-foreground"
+                          : "text-muted-foreground/70"
                     )}
                   >
                     {label}
@@ -407,8 +444,8 @@ export default function PublicBookingPage() {
                     onClick={() => setDate(ymd)}
                     className={`rounded-xl border px-3 py-2 text-sm font-medium transition ${
                       date === ymd
-                        ? "border-sky-600 bg-sky-600 text-white"
-                        : "border-zinc-200 bg-zinc-50 text-zinc-800 hover:border-zinc-300 dark:border-zinc-600 dark:bg-slate-800 dark:text-slate-100"
+                        ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                        : "border-border bg-muted/40 text-foreground hover:border-primary/35 dark:bg-muted/25"
                     }`}
                   >
                     {label}
@@ -479,8 +516,8 @@ export default function PublicBookingPage() {
                       "flex flex-col gap-0.5 rounded-xl border px-2 py-2.5 text-center transition-colors",
                       selectedSlot?.start === slot.start &&
                         selectedSlot?.employee_id === slot.employee_id
-                        ? "border-sky-600 bg-sky-600 text-white shadow-sm"
-                        : "border-zinc-200 bg-white text-zinc-900 hover:border-sky-300 hover:bg-sky-50/80 dark:border-zinc-600 dark:bg-slate-900 dark:text-slate-100"
+                        ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                        : "border-border bg-card text-foreground hover:border-primary/35 hover:bg-primary/5 dark:bg-card"
                     )}
                   >
                     <span className="text-sm font-semibold tabular-nums">

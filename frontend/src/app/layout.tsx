@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Inter } from "next/font/google";
-import { SiteFooter } from "@/components/layout/site-footer";
 import { AppProviders } from "@/providers/app-providers";
 import "./globals.css";
 
@@ -75,10 +74,7 @@ export default function RootLayout({
           Preskoči na sadržaj
         </a>
         <AppProviders>
-          <div className="flex min-h-dvh flex-1 flex-col">
-            {children}
-            <SiteFooter />
-          </div>
+          <div className="flex min-h-dvh flex-1 flex-col">{children}</div>
         </AppProviders>
       </body>
     </html>

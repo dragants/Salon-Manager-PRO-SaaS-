@@ -1,4 +1,5 @@
 import type { PatchOrgSettingsBody } from "@/lib/api";
+import { DEFAULT_THEME_COLOR_HEX } from "@/lib/brand-defaults";
 import type { OrganizationSettings } from "@/types/organization";
 
 function deepMergeSection<T extends Record<string, unknown>>(
@@ -52,7 +53,10 @@ export function mergeOrgSettingsPreview(
     next = { ...next, logo: patch.logo };
   }
   if (patch.theme_color !== undefined) {
-    next = { ...next, theme_color: patch.theme_color ?? "#3B82F6" };
+    next = {
+      ...next,
+      theme_color: patch.theme_color ?? DEFAULT_THEME_COLOR_HEX,
+    };
   }
   if (patch.timezone !== undefined) {
     next = { ...next, timezone: patch.timezone };

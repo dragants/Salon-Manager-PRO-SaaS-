@@ -6,20 +6,17 @@ import Link from "next/link";
 import {
   ArrowRightLeft,
   CalendarRange,
-  CreditCard,
   Crown,
   Download,
-  PiggyBank,
   Plus,
   Trash2,
   TrendingDown,
   TrendingUp,
-  Users,
   Wallet,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AnalyticsChartSkeleton } from "@/components/features/dashboard/analytics-chart-skeleton";
-import { DashboardKpiCard } from "@/components/features/dashboard/dashboard-kpi-card";
+import { FinancesKpiCards } from "@/components/features/finances/finances-kpi-cards";
 import {
   Dialog,
   DialogContent,
@@ -611,43 +608,14 @@ export default function FinancesPage() {
             </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <DashboardKpiCard
-              title="Današnji prihod"
-              value={formatRsd(revenueToday)}
-              icon={<PiggyBank className="size-5" />}
-              accent="emerald"
-              dominant
-              hint="Završeni termini i uplate za danas"
-            />
-            <DashboardKpiCard
-              title="Mesečni prihod"
-              value={formatRsd(revenueMonth)}
-              icon={
-                revenuePrevMonth > 0 && revenueMonth < revenuePrevMonth ? (
-                  <TrendingDown className="size-5" />
-                ) : (
-                  <TrendingUp className="size-5" />
-                )
-              }
-              accent="sky"
-              hint={revenueTrendHint}
-            />
-            <DashboardKpiCard
-              title="Broj klijenata"
-              value={clientCount}
-              icon={<Users className="size-5" />}
-              accent="violet"
-              hint="Ukupno u organizaciji"
-            />
-            <DashboardKpiCard
-              title="Prosečna vrednost"
-              value={avgValue > 0 ? formatRsd(avgValue) : "—"}
-              icon={<CreditCard className="size-5" />}
-              accent="amber"
-              hint="Mesec ÷ broj klijenata (orientaciono)"
-            />
-          </div>
+          <FinancesKpiCards
+            revenueToday={revenueToday}
+            revenueMonth={revenueMonth}
+            revenuePrevMonth={revenuePrevMonth}
+            clientCount={clientCount}
+            avgValue={avgValue}
+            revenueTrendHint={revenueTrendHint}
+          />
 
           <SurfaceCard padding="lg" className="border-dashed border-sky-200/80 dark:border-sky-900/50">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
