@@ -20,7 +20,10 @@ import { useModal } from "@/components/providers/ModalProvider";
 import { getApiErrorCode, getApiErrorMessage } from "@/lib/api/errors";
 import { isPlanLimitClientCode } from "@/lib/plan-paywall";
 import { Button } from "@/components/ui/button";
-import { ClientsGrid } from "@/components/features/clients/clients-grid";
+import {
+  ClientDirectoryTiles,
+  ClientsKpiStats,
+} from "@/components/features/clients/client-directory";
 import { SectionHeader } from "@/components/ui/section-header";
 import { SurfaceCard } from "@/components/ui/surface-card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -33,7 +36,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { formatRsd } from "@/lib/formatMoney";
 import {
   clientInsights,
   fileToBase64Part,
@@ -444,9 +446,9 @@ function ClientsPageContent() {
             <Skeleton className="h-11 w-full max-w-md rounded-xl" />
             <Skeleton className="h-4 w-28 rounded-md" />
           </div>
-          <div className="clients-grid-skeleton">
+          <div className="cl-skeletons">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="clients-card-skeleton" />
+              <div key={i} className="cl-skeletons__item" />
             ))}
           </div>
         </SurfaceCard>
@@ -472,39 +474,21 @@ function ClientsPageContent() {
             </p>
           </div>
 
-          <div className="clients-stats-bar" aria-label="Brzi pregled salona">
-            <div>
-              👥{" "}
-              <span className="tabular-nums">
-                {analytics?.clients ?? rows.length}
-              </span>{" "}
-              klijenata
-            </div>
-            <div>
-              📅{" "}
-              <span className="tabular-nums">
-                {analytics?.appointments_today ?? "—"}
-              </span>{" "}
-              termina danas
-            </div>
-            {showFinancialKpi ? (
-              <div>
-                💰{" "}
-                <span className="tabular-nums">
-                  {formatRsd(analytics?.revenue_today)}
-                </span>
-              </div>
-            ) : null}
-          </div>
+          <ClientsKpiStats
+            clientsCount={analytics?.clients ?? rows.length}
+            appointmentsToday={analytics?.appointments_today ?? 0}
+            revenueToday={analytics?.revenue_today ?? 0}
+            showFinancial={showFinancialKpi}
+          />
 
           {filteredRows.length === 0 ? (
             <p className="py-12 text-center text-sm text-muted-foreground">
               Nema rezultata za „{search.trim()}“.
             </p>
           ) : (
-            <ClientsGrid
+            <ClientDirectoryTiles
               clients={filteredRows}
-              onOpen={(c) => void openCard(c.id)}
+              onOpenCard={(id) => void openCard(id)}
               calendarHref="/calendar"
             />
           )}
@@ -1019,9 +1003,9 @@ export default function ClientsPage() {
           />
           <SurfaceCard padding="md">
             <Skeleton className="mb-5 h-11 w-full max-w-md rounded-xl" />
-            <div className="clients-grid-skeleton">
+            <div className="cl-skeletons">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="clients-card-skeleton" />
+                <div key={i} className="cl-skeletons__item" />
               ))}
             </div>
           </SurfaceCard>
