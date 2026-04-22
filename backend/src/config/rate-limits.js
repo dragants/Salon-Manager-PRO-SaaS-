@@ -18,10 +18,27 @@ const AUTH_OTHER_MAX = 25;
 const GLOBAL_WINDOW_MS = 15 * 60 * 1000;
 const GLOBAL_MAX = 500;
 
+/**
+ * Public booking (/public) — zaštita od spama i agresivnog polling-a.
+ * Ključevi se kombinuju IP + slug (vidi middleware).
+ */
+const PUBLIC_READ_WINDOW_MS = 15 * 60 * 1000;
+const PUBLIC_READ_MAX = 120;
+const PUBLIC_SLOTS_WINDOW_MS = 10 * 60 * 1000;
+const PUBLIC_SLOTS_MAX = 80;
+const PUBLIC_BOOK_WINDOW_MS = 15 * 60 * 1000;
+const PUBLIC_BOOK_MAX = 12;
+
 module.exports = {
   AUTH_WINDOW_MS,
   AUTH_LOGIN_MAX_FAILED,
   AUTH_OTHER_MAX,
   GLOBAL_WINDOW_MS,
   GLOBAL_MAX,
+  PUBLIC_READ_WINDOW_MS,
+  PUBLIC_READ_MAX,
+  PUBLIC_SLOTS_WINDOW_MS,
+  PUBLIC_SLOTS_MAX,
+  PUBLIC_BOOK_WINDOW_MS,
+  PUBLIC_BOOK_MAX,
 };

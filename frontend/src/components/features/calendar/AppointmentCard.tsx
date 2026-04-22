@@ -32,6 +32,11 @@ export default function AppointmentCard({
   onPatchStaff,
 }: Props) {
   const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const statusOptions: { value: AppointmentStatus; label: string }[] = [
+    { value: "scheduled", label: "Zakazano" },
+    { value: "completed", label: "Završeno" },
+    { value: "no_show", label: "Nije došao" },
+  ];
   return (
     <div
       id={`cal-appt-${row.id}`}
@@ -90,46 +95,70 @@ export default function AppointmentCard({
             </p>
           ) : null}
         </div>
-        <div className="flex flex-wrap gap-1.5 opacity-95 transition group-hover:opacity-100">
-          <Button
-            type="button"
-            size="sm"
-            variant={row.status === "scheduled" ? "default" : "outline"}
-            className={
-              row.status === "scheduled"
-                ? "bg-primary text-primary-foreground hover:brightness-110"
-                : "border-border"
-            }
-            onClick={() => onPatchStatus(row.id, "scheduled")}
-          >
-            Zakazano
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant={row.status === "completed" ? "default" : "outline"}
-            className={
-              row.status === "completed"
-                ? "bg-emerald-600 hover:bg-emerald-700"
-                : "border-emerald-500/40"
-            }
-            onClick={() => onPatchStatus(row.id, "completed")}
-          >
-            Završeno
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant={row.status === "no_show" ? "default" : "outline"}
-            className={
-              row.status === "no_show"
-                ? "bg-red-600 hover:bg-red-700"
-                : "border-red-500/40"
-            }
-            onClick={() => onPatchStatus(row.id, "no_show")}
-          >
-            Nije došao
-          </Button>
+        <div className="flex flex-col items-stretch gap-2 opacity-95 transition group-hover:opacity-100 sm:items-end">
+          {/* Mobile: jedan kontrol (manja visina, bez 3 dugmeta) */}
+          <div className="sm:hidden">
+            <label className="sr-only" htmlFor={`status-${row.id}`}>
+              Status termina
+            </label>
+            <select
+              id={`status-${row.id}`}
+              className="h-10 w-full rounded-xl border border-border bg-[var(--smp-input-bg)] px-3 text-sm font-semibold text-foreground"
+              value={row.status}
+              onChange={(e) =>
+                onPatchStatus(row.id, e.target.value as AppointmentStatus)
+              }
+            >
+              {statusOptions.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Desktop: segmented buttons (brzo klikanje) */}
+          <div className="hidden flex-wrap gap-1.5 sm:flex">
+            <Button
+              type="button"
+              size="sm"
+              variant={row.status === "scheduled" ? "default" : "outline"}
+              className={
+                row.status === "scheduled"
+                  ? "bg-primary text-primary-foreground hover:brightness-110"
+                  : "border-border"
+              }
+              onClick={() => onPatchStatus(row.id, "scheduled")}
+            >
+              Zakazano
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={row.status === "completed" ? "default" : "outline"}
+              className={
+                row.status === "completed"
+                  ? "bg-emerald-600 hover:bg-emerald-700"
+                  : "border-emerald-500/40"
+              }
+              onClick={() => onPatchStatus(row.id, "completed")}
+            >
+              Završeno
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={row.status === "no_show" ? "default" : "outline"}
+              className={
+                row.status === "no_show"
+                  ? "bg-red-600 hover:bg-red-700"
+                  : "border-red-500/40"
+              }
+              onClick={() => onPatchStatus(row.id, "no_show")}
+            >
+              Nije došao
+            </Button>
+          </div>
           {allowDelete && onDelete ? (
             deleteConfirm ? (
               <>

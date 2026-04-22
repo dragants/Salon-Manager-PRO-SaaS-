@@ -15,8 +15,50 @@ const { assertCanAddClient } = require("../../services/plan-limits.service");
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
 
 async function getAll(orgId) {
+  const reg = await pool.query(
+    `SELECT to_regclass('public.client_loyalty_balances') AS reg`
+  );
+  const hasLoyalty = Boolean(reg.rows[0]?.reg);
+
+  const loyaltyJoin = hasLoyalty
+    ? `LEFT JOIN (
+         SELECT client_id,
+                COALESCE(SUM(stamps), 0)::int AS loyalty_stamps,
+                COALESCE(SUM(rewards_available), 0)::int AS loyalty_rewards
+         FROM client_loyalty_balances
+         WHERE organization_id = $1
+         GROUP BY client_id
+       ) loy ON loy.client_id = c.id`
+    : `LEFT JOIN (
+         SELECT NULL::int AS client_id,
+                0::int AS loyalty_stamps,
+                0::int AS loyalty_rewards
+         WHERE FALSE
+       ) loy ON FALSE`;
+
   const res = await pool.query(
-    "SELECT * FROM clients WHERE organization_id = $1 ORDER BY id DESC",
+    `SELECT c.*,
+            agg.last_visit_at,
+            COALESCE(agg.total_spent, 0)::numeric AS total_spent,
+            COALESCE(loy.loyalty_stamps, 0)::int AS loyalty_stamps,
+            COALESCE(loy.loyalty_rewards, 0)::int AS loyalty_rewards
+     FROM clients c
+     LEFT JOIN (
+       SELECT a.client_id,
+              MAX(a.date) FILTER (WHERE a.status = 'completed') AS last_visit_at,
+              COALESCE(
+                SUM(s.price::numeric) FILTER (WHERE a.status = 'completed'),
+                0
+              ) AS total_spent
+       FROM appointments a
+       INNER JOIN services s
+         ON s.id = a.service_id AND s.organization_id = a.organization_id
+       WHERE a.organization_id = $1
+       GROUP BY a.client_id
+     ) agg ON agg.client_id = c.id
+     ${loyaltyJoin}
+     WHERE c.organization_id = $1
+     ORDER BY c.id DESC`,
     [orgId]
   );
   return res.rows;

@@ -97,6 +97,14 @@ function emailLocalPart(email: string | undefined): string {
   return email.split("@")[0]?.trim() ?? "";
 }
 
+function cumulativeSeries(values: number[]): number[] {
+  let sum = 0;
+  return values.map((v) => {
+    sum += v;
+    return sum;
+  });
+}
+
 function formatApptTimeRange(
   iso: string,
   durationMin: number | undefined,
@@ -308,6 +316,27 @@ export default function DashboardPage() {
     ? Math.max(0, maxSlotsPerDay - busyToday)
     : null;
 
+  const series30 = analytics?.series30 ?? [];
+  const apptDailySpark =
+    series30.length > 0
+      ? series30.map((d) => d.appointments)
+      : !analyticsLoading
+        ? [0]
+        : [];
+  const clientsSparkline =
+    apptDailySpark.length > 0
+      ? cumulativeSeries(apptDailySpark)
+      : !analyticsLoading
+        ? [0]
+        : [];
+  const revenueDailySpark = showFinancialKpi
+    ? series30.length > 0
+      ? series30.map((d) => d.revenue)
+      : !analyticsLoading
+        ? [0]
+        : []
+    : null;
+
   return (
     <div className="dashboard-shell pb-16">
       <div className="dash-grid">
@@ -337,8 +366,18 @@ export default function DashboardPage() {
           </div>
         </section>
 
-        {/* Glavni KPI — obojene kartice, business insight odmah */}
+        {/* Glavni KPI — obojene kartice, sparkline, animirani brojevi */}
         <section className="col-span-12 mb-6">
+          <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
+                Pregled poslovanja
+              </p>
+              <p className="mt-0.5 text-sm text-muted-foreground">
+                Ključni pokazatelji za danas i trend (30 dana)
+              </p>
+            </div>
+          </div>
           <DashboardHeroStats
             clientsCount={analytics?.clients ?? dash.clients ?? 0}
             appointmentsToday={appointmentsToday}
@@ -348,8 +387,14 @@ export default function DashboardPage() {
                 : null
             }
             showFinancial={showFinancialKpi}
+            sparklines={{
+              clients: clientsSparkline,
+              appointments: apptDailySpark,
+              revenue: revenueDailySpark,
+            }}
+            sparklinesLoading={analyticsLoading}
           />
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/80 bg-card/80 px-4 py-3 text-sm shadow-sm backdrop-blur-sm">
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/80 bg-card/90 px-4 py-3.5 text-sm shadow-[var(--smp-shadow-soft)] backdrop-blur-sm ring-1 ring-primary/5">
             <div className="flex flex-wrap items-center gap-2 text-muted-foreground">
               <Clock className="size-4 shrink-0 text-primary" aria-hidden />
               <span>

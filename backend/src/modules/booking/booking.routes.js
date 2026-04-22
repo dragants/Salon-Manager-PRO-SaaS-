@@ -1,35 +1,61 @@
 const router = require("express").Router();
-const rateLimit = require("express-rate-limit");
 const controller = require("./booking.controller");
-const validate = require("../../middleware/validate.middleware");
+const validateZod = require("../../middleware/validate-zod.middleware");
+const { makePublicLimiter } = require("../../middleware/public-rate-limit.middleware");
 const asyncHandler = require("../../utils/asyncHandler");
-const { slotsQuerySchema, bookBodySchema } = require("./booking.validation");
+const {
+  publicSlugParamsSchema,
+  slotsQuerySchema,
+  bookBodySchema,
+} = require("./booking.validation");
+const {
+  PUBLIC_READ_WINDOW_MS,
+  PUBLIC_READ_MAX,
+  PUBLIC_SLOTS_WINDOW_MS,
+  PUBLIC_SLOTS_MAX,
+  PUBLIC_BOOK_WINDOW_MS,
+  PUBLIC_BOOK_MAX,
+} = require("../../config/rate-limits");
 
-const publicReadLimit = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 200,
-  standardHeaders: true,
-  legacyHeaders: false,
+// Public read: česte provere termina, ali i dalje sa granicom.
+const publicReadLimit = makePublicLimiter({
+  name: "public_read",
+  windowMs: PUBLIC_READ_WINDOW_MS,
+  max: PUBLIC_READ_MAX,
 });
 
-const bookWriteLimit = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 30,
-  standardHeaders: true,
-  legacyHeaders: false,
+// Public slots: polling ume da bude agresivan (UI refresh) → strože.
+const slotsReadLimit = makePublicLimiter({
+  name: "public_slots",
+  windowMs: PUBLIC_SLOTS_WINDOW_MS,
+  max: PUBLIC_SLOTS_MAX,
+});
+
+// Public book: zaštita od spama (SMS/email) i brute-force.
+const bookWriteLimit = makePublicLimiter({
+  name: "public_book",
+  windowMs: PUBLIC_BOOK_WINDOW_MS,
+  max: PUBLIC_BOOK_MAX,
 });
 
 router.get(
   "/:slug/slots",
-  publicReadLimit,
-  validate(slotsQuerySchema, "query"),
+  slotsReadLimit,
+  validateZod(publicSlugParamsSchema, "params"),
+  validateZod(slotsQuerySchema, "query"),
   asyncHandler(controller.getSlots)
 );
-router.get("/:slug", publicReadLimit, asyncHandler(controller.getSalon));
+router.get(
+  "/:slug",
+  publicReadLimit,
+  validateZod(publicSlugParamsSchema, "params"),
+  asyncHandler(controller.getSalon)
+);
 router.post(
   "/:slug/book",
   bookWriteLimit,
-  validate(bookBodySchema),
+  validateZod(publicSlugParamsSchema, "params"),
+  validateZod(bookBodySchema, "body"),
   asyncHandler(controller.book)
 );
 

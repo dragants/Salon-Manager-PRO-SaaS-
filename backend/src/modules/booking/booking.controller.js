@@ -6,7 +6,8 @@ const {
 const pushService = require("../../services/push.service");
 
 async function getSalon(req, res) {
-  const org = await service.getOrgByBookingSlug(req.params.slug);
+  const slug = req.validatedParams.slug;
+  const org = await service.getOrgByBookingSlug(slug);
   if (!org) {
     return res.status(404).json({
       error:
@@ -20,7 +21,8 @@ async function getSalon(req, res) {
 }
 
 async function getSlots(req, res) {
-  const org = await service.getOrgByBookingSlug(req.params.slug);
+  const slug = req.validatedParams.slug;
+  const org = await service.getOrgByBookingSlug(slug);
   if (!org) {
     return res.status(404).json({
       error:
@@ -42,7 +44,8 @@ async function getSlots(req, res) {
 }
 
 async function book(req, res) {
-  const org = await service.getOrgByBookingSlug(req.params.slug);
+  const slug = req.validatedParams.slug;
+  const org = await service.getOrgByBookingSlug(slug);
   if (!org) {
     return res.status(404).json({
       error:

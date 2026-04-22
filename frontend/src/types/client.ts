@@ -8,6 +8,14 @@ export type Client = {
   email?: string | null;
   notes: string | null;
   created_at: string;
+  /** Poslednji završen termin (ISO), iz liste /clients. */
+  last_visit_at?: string | null;
+  /** Zbir cena završenih termina (RSD). */
+  total_spent?: number | string | null;
+  /** Zbir pečata po loyalty programima. */
+  loyalty_stamps?: number | null;
+  /** Zbir dostupnih nagrada. */
+  loyalty_rewards?: number | null;
 };
 
 export type ClientAppointmentHistory = {

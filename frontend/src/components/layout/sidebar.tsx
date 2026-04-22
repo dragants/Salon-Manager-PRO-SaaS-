@@ -24,18 +24,68 @@ import { clearToken } from "@/lib/auth/token";
 import { useAuth } from "@/providers/auth-provider";
 import { useOrganization } from "@/providers/organization-provider";
 import { Button } from "@/components/ui/button";
+import type React from "react";
 
-const allNav = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/calendar", label: "Termini", icon: CalendarDays },
-  { href: "/shifts", label: "Smena", icon: CalendarClock },
-  { href: "/clients", label: "Klijenti", icon: Users },
-  { href: "/services", label: "Usluge", icon: SpaIcon },
-  { href: "/supplies", label: "Materijal", icon: Package },
-  { href: "/analytics", label: "Analitika", icon: BarChart3 },
-  { href: "/finances", label: "Kasa", icon: CreditCard },
-  { href: "/account", label: "Moj nalog", icon: UserCircle },
-  { href: "/settings", label: "Podešavanja", icon: Settings },
+type NavItem = {
+  href: string;
+  label: string;
+  icon: React.ComponentType<{
+    className?: string;
+    strokeWidth?: number;
+    "aria-hidden"?: boolean;
+  }>;
+  /** Sakrij od radnika (worker). */
+  workerHidden?: boolean;
+};
+
+const NAV_GROUPS: {
+  id: "manage" | "finance" | "settings";
+  label: string;
+  items: NavItem[];
+}[] = [
+  {
+    id: "manage",
+    label: "Upravljanje",
+    items: [
+      { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+      { href: "/calendar", label: "Termini", icon: CalendarDays },
+      {
+        href: "/shifts",
+        label: "Smena",
+        icon: CalendarClock,
+        workerHidden: true,
+      },
+      { href: "/clients", label: "Klijenti", icon: Users },
+      { href: "/services", label: "Usluge", icon: SpaIcon },
+      {
+        href: "/supplies",
+        label: "Materijal",
+        icon: Package,
+        workerHidden: true,
+      },
+    ],
+  },
+  {
+    id: "finance",
+    label: "Finansije",
+    items: [
+      {
+        href: "/finances",
+        label: "Kasa",
+        icon: CreditCard,
+        workerHidden: true,
+      },
+      { href: "/analytics", label: "Analitika", icon: BarChart3 },
+    ],
+  },
+  {
+    id: "settings",
+    label: "Podešavanja",
+    items: [
+      { href: "/account", label: "Moj nalog", icon: UserCircle },
+      { href: "/settings", label: "Podešavanja", icon: Settings },
+    ],
+  },
 ] as const;
 
 export function AppSidebar() {
@@ -45,16 +95,14 @@ export function AppSidebar() {
   const { settings } = useOrganization();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const nav = useMemo(() => {
-    if (user?.role === "worker") {
-      return allNav.filter(
-        (item) =>
-          item.href !== "/finances" &&
-          item.href !== "/shifts" &&
-          item.href !== "/supplies"
-      );
+  const navGroups = useMemo(() => {
+    if (user?.role !== "worker") {
+      return NAV_GROUPS;
     }
-    return [...allNav];
+    return NAV_GROUPS.map((g) => ({
+      ...g,
+      items: g.items.filter((it) => !it.workerHidden),
+    }));
   }, [user?.role]);
 
   useEffect(() => {
@@ -89,12 +137,15 @@ export function AppSidebar() {
         </Button>
         <Link
           href="/dashboard"
-          className="font-heading min-w-0 truncate text-lg font-semibold text-[rgb(var(--sidebar-fg))]"
+          className="font-heading flex min-w-0 items-center gap-2 truncate text-lg font-semibold text-[rgb(var(--sidebar-fg))]"
           onClick={closeMobile}
         >
-          Salon Manager{" "}
-          <span className="font-sans text-xs font-semibold uppercase tracking-wide text-[rgb(var(--sidebar-muted-fg))]">
-            PRO
+          <SpaIcon className="size-5 shrink-0 text-[rgb(var(--sidebar-item-active-fg))]" aria-hidden />
+          <span className="truncate">
+            Salon Manager{" "}
+            <span className="font-sans text-xs font-semibold uppercase tracking-wide text-[rgb(var(--sidebar-muted-fg))]">
+              PRO
+            </span>
           </span>
         </Link>
       </header>
@@ -120,10 +171,11 @@ export function AppSidebar() {
           <div className="min-w-0">
             <Link
               href="/dashboard"
-              className="font-heading text-xl font-semibold leading-tight text-[rgb(var(--sidebar-fg))]"
+              className="font-heading flex items-center gap-2 text-xl font-semibold leading-tight text-[rgb(var(--sidebar-fg))]"
               onClick={closeMobile}
             >
-              Salon Manager
+              <SpaIcon className="size-6 shrink-0 text-[rgb(var(--sidebar-item-active-fg))]" aria-hidden />
+              <span className="truncate">Salon Manager</span>
             </Link>
             <p className="font-sans text-[11px] font-bold uppercase tracking-wider text-[rgb(var(--sidebar-muted-fg))]">
               PRO
@@ -140,33 +192,49 @@ export function AppSidebar() {
             <X className="size-5" aria-hidden />
           </Button>
         </div>
-        <nav className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto overscroll-contain px-2 py-1.5">
-          {nav.map(({ href, label, icon: Icon }) => {
-            const active = pathname === href || pathname.startsWith(`${href}/`);
-            return (
-              <Link
-                key={href}
-                href={href}
-                onClick={closeMobile}
-                className={cn(
-                  "relative flex min-h-11 items-center gap-2.5 rounded-none px-2.5 py-2 font-sans text-sm font-semibold leading-snug tracking-tight transition-colors duration-150 touch-manipulation md:min-h-12 md:rounded-[10px] md:text-base",
-                  active
-                    ? "font-bold shadow-none before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-[2.5px] before:rounded-r-sm before:bg-[rgb(var(--sidebar-item-active-fg))] bg-[rgb(var(--sidebar-item-active-bg))] text-[rgb(var(--sidebar-item-active-fg))] dark:before:bg-indigo-400/90"
-                    : "text-[rgb(var(--sidebar-fg))] hover:bg-[rgb(var(--sidebar-active)/0.08)] hover:text-[rgb(var(--sidebar-hover-fg))]"
-                )}
-              >
-                <Icon
-                  className={cn(
-                    "size-[1.125rem] shrink-0 md:size-5",
-                    active ? "opacity-100" : "opacity-70"
-                  )}
-                  strokeWidth={active ? 2.25 : 2}
+        <nav className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain px-2 py-3">
+          {navGroups.map((group, gi) => (
+            <div key={group.id} className="space-y-1.5">
+              <p className="px-2.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[rgb(var(--sidebar-muted-fg))]">
+                {group.label}
+              </p>
+              <div className="space-y-0.5">
+                {group.items.map(({ href, label, icon: Icon }) => {
+                  const active =
+                    pathname === href || pathname.startsWith(`${href}/`);
+                  return (
+                    <Link
+                      key={href}
+                      href={href}
+                      onClick={closeMobile}
+                      className={cn(
+                        "relative flex min-h-11 items-center gap-2.5 rounded-none px-2.5 py-2 font-sans text-sm font-semibold leading-snug tracking-tight transition-colors duration-150 touch-manipulation md:min-h-12 md:rounded-[10px] md:text-base",
+                        active
+                          ? "font-bold shadow-none before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-[2.5px] before:rounded-r-sm before:bg-[rgb(var(--sidebar-item-active-fg))] bg-[rgb(var(--sidebar-item-active-bg))] text-[rgb(var(--sidebar-item-active-fg))] dark:before:bg-indigo-400/90"
+                          : "text-[rgb(var(--sidebar-fg))] hover:bg-[rgb(var(--sidebar-active)/0.08)] hover:text-[rgb(var(--sidebar-hover-fg))]"
+                      )}
+                    >
+                      <Icon
+                        className={cn(
+                          "size-[1.125rem] shrink-0 md:size-5",
+                          active ? "opacity-100" : "opacity-70"
+                        )}
+                        strokeWidth={active ? 2.25 : 2}
+                        aria-hidden
+                      />
+                      {label}
+                    </Link>
+                  );
+                })}
+              </div>
+              {gi < navGroups.length - 1 ? (
+                <div
+                  className="mx-2.5 h-px bg-[rgb(var(--sidebar-border))] opacity-70"
                   aria-hidden
                 />
-                {label}
-              </Link>
-            );
-          })}
+              ) : null}
+            </div>
+          ))}
           {settings?.booking_slug ? (
             <a
               href={`/book/${encodeURIComponent(settings.booking_slug)}`}
@@ -174,7 +242,7 @@ export function AppSidebar() {
               rel="noopener noreferrer"
               onClick={closeMobile}
               className={cn(
-                "flex min-h-11 items-center gap-2.5 rounded-[10px] px-2.5 py-2 font-sans text-sm font-semibold leading-snug tracking-tight text-[rgb(var(--sidebar-fg))] opacity-90 transition-colors duration-150 hover:bg-[rgb(var(--sidebar-active)/0.07)] hover:text-[rgb(var(--sidebar-hover-fg))] touch-manipulation md:min-h-12 md:text-base"
+                "mt-1.5 flex min-h-11 items-center gap-2.5 rounded-[10px] px-2.5 py-2 font-sans text-sm font-semibold leading-snug tracking-tight text-[rgb(var(--sidebar-fg))] opacity-90 transition-colors duration-150 hover:bg-[rgb(var(--sidebar-active)/0.07)] hover:text-[rgb(var(--sidebar-hover-fg))] touch-manipulation md:min-h-12 md:text-base"
               )}
             >
               <ExternalLink

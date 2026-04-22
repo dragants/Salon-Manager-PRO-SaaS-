@@ -125,7 +125,11 @@
 }
 
 .dashboard-shell .stat-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 9.25rem;
   padding: 1.25rem 1.35rem;
+  padding-bottom: 1.5rem;
   border-radius: 16px;
   color: #fff;
   font-weight: 600;
@@ -149,10 +153,11 @@
 }
 
 .dashboard-shell .stat-card-value {
-  margin-top: 0.35rem;
-  font-size: 1.65rem;
-  line-height: 1.15;
+  margin-top: 0.4rem;
+  font-size: clamp(1.65rem, 2.8vw, 1.95rem);
+  line-height: 1.12;
   font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 /* KPI: prihod = zlato, klijenti = teal, termini = violet, duguje = crveno */
