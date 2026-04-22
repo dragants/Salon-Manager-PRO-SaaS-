@@ -54,7 +54,40 @@ async function create(req, res) {
 
 async function update(req, res) {
   const { id } = req.validatedParams;
+
+  // Dobavi stari status pre update-a (za detekciju prelaza na completed)
+  let oldStatus = null;
+  if (req.body.status === "completed") {
+    try {
+      const existing = await service.getById(id, req.user.orgId);
+      oldStatus = existing.status;
+    } catch (_) {
+      // pass — getById baca 404 ako ne postoji, update će isto
+    }
+  }
+
   const data = await service.update(id, req.body, req.user.orgId);
+
+  // Automatska potrošnja materijala kada se termin prvi put označi kao završen
+  if (
+    req.body.status === "completed" &&
+    oldStatus !== "completed" &&
+    data.service_id
+  ) {
+    try {
+      const suppliesService = require("../supplies/supplies.service");
+      await suppliesService.autoConsumeForAppointment(
+        req.user.orgId,
+        req.user.userId,
+        data.id,
+        data.service_id
+      );
+    } catch (e) {
+      // Ne blokiraj update ako auto-consume ne uspe
+      console.warn("[auto-consume] Greška pri automatskoj potrošnji:", e.message);
+    }
+  }
+
   emitAppointmentChange(req.user.orgId, {
     type: "appointments",
     event: "UPDATE_APPOINTMENT",

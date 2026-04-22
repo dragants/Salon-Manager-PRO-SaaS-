@@ -1,4 +1,4 @@
-export type AppointmentStatus = "scheduled" | "completed" | "no_show";
+export type AppointmentStatus = "scheduled" | "completed" | "no_show" | "cancelled";
 
 export type AppointmentRow = {
   id: number;

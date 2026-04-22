@@ -4,6 +4,7 @@ export const STATUS_LABEL: Record<AppointmentStatus, string> = {
   scheduled: "Zakazano",
   completed: "Završeno",
   no_show: "Nije došao",
+  cancelled: "Otkazano",
 };
 
 /** Status badge — primary za zakazano; zeleno / crveno za ostale. */
@@ -15,6 +16,8 @@ export function statusBadgeClass(status: AppointmentStatus) {
       return "border-emerald-500/45 bg-emerald-600/22 text-emerald-50 shadow-none";
     case "no_show":
       return "border-red-500/45 bg-red-600/20 text-red-100 shadow-none";
+    case "cancelled":
+      return "border-slate-500/45 bg-slate-600/20 text-slate-200 shadow-none";
     default:
       return "";
   }
@@ -28,6 +31,8 @@ export function statusAccentBorder(status: AppointmentStatus) {
       return "border-l-emerald-500";
     case "no_show":
       return "border-l-red-500";
+    case "cancelled":
+      return "border-l-slate-400";
     default:
       return "border-l-primary/60";
   }

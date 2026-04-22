@@ -611,29 +611,16 @@ export default function LandingPage() {
                       Preporuka
                     </span>
                   ) : null}
-                  <h3 className="text-lg font-semibold text-foreground">
-                    {plan.name}
-                  </h3>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {plan.desc}
-                  </p>
-                  <div className="mt-5 flex items-baseline gap-1">
-                    <span className="text-4xl font-bold tabular-nums text-foreground">
-                      {plan.price}
-                    </span>
-                    <span className="text-sm text-muted-foreground">
-                      RSD / {plan.period}
-                    </span>
+                  <h3 className="text-lg font-bold text-foreground">{plan.name}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{plan.desc}</p>
+                  <div className="mt-6 flex items-baseline gap-1">
+                    <span className="text-4xl font-extrabold tabular-nums text-foreground">{plan.price}</span>
+                    <span className="text-sm text-muted-foreground">RSD / {plan.period}</span>
                   </div>
-                  <ul className="mt-6 space-y-2.5">
+                  <ul className="mt-7 space-y-3">
                     {plan.features.map((f) => (
-                      <li
-                        key={f}
-                        className="flex items-start gap-2 text-sm text-foreground"
-                      >
-                        <span className="mt-0.5 text-primary" aria-hidden>
-                          ✓
-                        </span>
+                      <li key={f} className="flex items-start gap-2.5 text-sm text-foreground">
+                        <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-500" aria-hidden />
                         {f}
                       </li>
                     ))}
@@ -641,14 +628,9 @@ export default function LandingPage() {
                   <Link
                     href="/register"
                     className={cn(
-                      buttonVariants({
-                        variant: plan.ctaVariant,
-                        size: "lg",
-                      }),
+                      buttonVariants({ variant: plan.ctaVariant, size: "lg" }),
                       "mt-8 w-full rounded-xl",
-                      plan.highlight
-                        ? "shadow-[var(--smp-shadow-soft)]"
-                        : "border-border"
+                      plan.highlight ? "" : "border-border"
                     )}
                   >
                     {plan.cta}

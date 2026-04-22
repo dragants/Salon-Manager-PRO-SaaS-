@@ -59,4 +59,55 @@ async function remove(req, res) {
   res.status(204).send();
 }
 
-module.exports = { getAll, getById, create, update, remove };
+module.exports = { getAll, getById, create, update, remove, getCategories, createCategory, updateCategory, removeCategory };
+
+/* ── Categories ── */
+
+async function getCategories(req, res) {
+  const data = await service.getAllCategories(req.user.orgId);
+  res.json(data);
+}
+
+async function createCategory(req, res) {
+  const data = await service.createCategory(req.body, req.user.orgId);
+  await auditService.insertRow({
+    organizationId: req.user.orgId,
+    userId: req.user.userId,
+    action: "service_category_create",
+    entityType: "service_category",
+    entityId: data.id,
+    meta: { name: data.name },
+  });
+  res.status(201).json(data);
+}
+
+async function updateCategory(req, res) {
+  const data = await service.updateCategory(
+    req.validatedParams.id,
+    req.body,
+    req.user.orgId
+  );
+  await auditService.insertRow({
+    organizationId: req.user.orgId,
+    userId: req.user.userId,
+    action: "service_category_update",
+    entityType: "service_category",
+    entityId: data.id,
+    meta: { name: data.name },
+  });
+  res.json(data);
+}
+
+async function removeCategory(req, res) {
+  const id = req.validatedParams.id;
+  await service.removeCategory(id, req.user.orgId);
+  await auditService.insertRow({
+    organizationId: req.user.orgId,
+    userId: req.user.userId,
+    action: "service_category_delete",
+    entityType: "service_category",
+    entityId: id,
+    meta: {},
+  });
+  res.status(204).send();
+}

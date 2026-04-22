@@ -5,6 +5,7 @@ const { makePublicLimiter } = require("../../middleware/public-rate-limit.middle
 const asyncHandler = require("../../utils/asyncHandler");
 const {
   publicSlugParamsSchema,
+  publicCancelParamsSchema,
   slotsQuerySchema,
   bookBodySchema,
 } = require("./booking.validation");
@@ -57,6 +58,13 @@ router.post(
   validateZod(publicSlugParamsSchema, "params"),
   validateZod(bookBodySchema, "body"),
   asyncHandler(controller.book)
+);
+
+router.post(
+  "/:slug/cancel/:token",
+  bookWriteLimit,
+  validateZod(publicCancelParamsSchema, "params"),
+  asyncHandler(controller.cancelByToken)
 );
 
 module.exports = router;

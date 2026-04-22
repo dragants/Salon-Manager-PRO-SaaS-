@@ -536,6 +536,14 @@ async function bookAppointment({
 
   const appointment = apptRes.rows[0];
 
+  // Generiši cancel token za klijenta (link za otkazivanje)
+  let cancelToken = null;
+  try {
+    cancelToken = await generateCancelToken(appointment.id);
+  } catch (e) {
+    console.warn("[booking] Cancel token generation failed:", e.message);
+  }
+
   const s = org.settings || {};
   const bn = s.booking_notifications || {};
   const sendSms = bn.public_booking_sms !== false;
@@ -556,6 +564,7 @@ async function bookAppointment({
   return {
     ok: true,
     appointment_id: appointment.id,
+    cancel_token: cancelToken,
     notify,
   };
 }
@@ -594,4 +603,48 @@ module.exports = {
   bookAppointment,
   publicSalonPayload,
   orgTimeZone,
+  cancelAppointmentByToken,
+  generateCancelToken,
 };
+
+/**
+ * Generise random cancel token za termin.
+ * Pozivati nakon insert-a i sacuvati u bazu.
+ */
+async function generateCancelToken(appointmentId) {
+  const crypto = require("crypto");
+  const token = crypto.randomBytes(24).toString("base64url");
+  try {
+    await pool.query(
+      `UPDATE appointments SET cancel_token = $1 WHERE id = $2`,
+      [token, appointmentId]
+    );
+  } catch (e) {
+    // Kolona mozda ne postoji jos (pre migracije 021)
+    if (e.code !== "42703") throw e;
+    return null;
+  }
+  return token;
+}
+
+/**
+ * Otkazuje termin na osnovu cancel tokena.
+ * Vraca appointment row ili null ako nije pronadjen.
+ */
+async function cancelAppointmentByToken(token) {
+  if (!token) return null;
+  try {
+    const r = await pool.query(
+      `UPDATE appointments
+       SET status = 'cancelled'
+       WHERE cancel_token = $1 AND status = 'scheduled'
+       RETURNING id, organization_id, client_id, service_id, date, status`,
+      [token]
+    );
+    if (r.rowCount === 0) return null;
+    return r.rows[0];
+  } catch (e) {
+    if (e.code === "42703") return null; // kolona ne postoji
+    throw e;
+  }
+}

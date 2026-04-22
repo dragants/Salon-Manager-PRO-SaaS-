@@ -20,6 +20,19 @@ const publicSlugParamsSchema = z.object({
   slug: slugSegment,
 });
 
+/** Javno otkazivanje: slug + cancel token (base64url) */
+const publicCancelParamsSchema = z.object({
+  slug: slugSegment,
+  token: z
+    .string()
+    .min(8, "Token mora imati bar 8 karaktera")
+    .max(256, "Token je predugačak")
+    .regex(
+      /^[A-Za-z0-9_-]+$/,
+      "Token sadrži nedozvoljene karaktere"
+    ),
+});
+
 const slotsQuerySchema = z.object({
   service_id: z.coerce
     .number({ invalid_type_error: "service_id mora biti broj" })
@@ -69,6 +82,7 @@ const bookBodySchema = z.object({
 
 module.exports = {
   publicSlugParamsSchema,
+  publicCancelParamsSchema,
   slotsQuerySchema,
   bookBodySchema,
 };

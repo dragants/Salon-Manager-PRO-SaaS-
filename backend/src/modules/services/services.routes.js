@@ -8,8 +8,36 @@ const {
   idParamSchema,
   createServiceSchema,
   updateServiceSchema,
+  createCategorySchema,
+  updateCategorySchema,
 } = require("./services.validation");
 
+/* ── Categories (before /:id to avoid path clash) ── */
+router.get("/categories", auth, asyncHandler(controller.getCategories));
+router.post(
+  "/categories",
+  auth,
+  requireAdmin,
+  validate(createCategorySchema),
+  asyncHandler(controller.createCategory)
+);
+router.patch(
+  "/categories/:id",
+  auth,
+  requireAdmin,
+  validate(idParamSchema, "params"),
+  validate(updateCategorySchema),
+  asyncHandler(controller.updateCategory)
+);
+router.delete(
+  "/categories/:id",
+  auth,
+  requireAdmin,
+  validate(idParamSchema, "params"),
+  asyncHandler(controller.removeCategory)
+);
+
+/* ── Services ── */
 router.get("/", auth, asyncHandler(controller.getAll));
 router.post(
   "/",

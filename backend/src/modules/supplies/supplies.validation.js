@@ -38,10 +38,26 @@ const createMovementSchema = Joi.object({
   appointment_id: Joi.number().integer().positive().allow(null),
 });
 
+const serviceUsageParamsSchema = Joi.object({
+  serviceId: Joi.number().integer().positive().required(),
+});
+
+const setServiceUsageSchema = Joi.object({
+  supply_item_id: Joi.number().integer().positive().required(),
+  qty_per_use: Joi.number().positive().required(),
+});
+
+const removeServiceUsageSchema = Joi.object({
+  supply_item_id: Joi.number().integer().positive().required(),
+});
+
 module.exports = {
   idParamSchema,
   createItemSchema,
   patchItemSchema,
   movementsQuerySchema,
   createMovementSchema,
+  serviceUsageParamsSchema,
+  setServiceUsageSchema,
+  removeServiceUsageSchema,
 };

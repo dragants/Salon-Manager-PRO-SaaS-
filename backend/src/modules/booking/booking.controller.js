@@ -111,4 +111,24 @@ async function book(req, res) {
   res.status(201).json(result);
 }
 
-module.exports = { getSalon, getSlots, book };
+module.exports = { getSalon, getSlots, book, cancelByToken };
+
+async function cancelByToken(req, res) {
+  const { token } = req.validatedParams;
+  const result = await service.cancelAppointmentByToken(token);
+  if (!result) {
+    return res.status(404).json({
+      error: "Termin nije pronađen ili je već otkazan.",
+    });
+  }
+  emitAppointmentChange(result.organization_id, {
+    type: "appointments",
+    event: "UPDATE_APPOINTMENT",
+    payload: result,
+  });
+  res.json({
+    success: true,
+    message: "Termin je uspešno otkazan.",
+    appointment_id: result.id,
+  });
+}

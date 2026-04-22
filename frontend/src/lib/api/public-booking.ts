@@ -111,3 +111,23 @@ export async function postPublicBook(
     notify: Record<string, string>;
   };
 }
+
+export async function cancelPublicBooking(
+  slug: string,
+  token: string
+): Promise<{ success: boolean; message: string; appointment_id: number }> {
+  const r = await fetch(
+    `${getApiBaseUrl()}/public/${encodeURIComponent(slug)}/cancel/${encodeURIComponent(token)}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    }
+  );
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) {
+    throw new Error(
+      (j as { error?: string }).error || "Otkazivanje nije uspelo."
+    );
+  }
+  return j as { success: boolean; message: string; appointment_id: number };
+}

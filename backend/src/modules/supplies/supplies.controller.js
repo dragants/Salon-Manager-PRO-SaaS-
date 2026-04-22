@@ -60,4 +60,39 @@ module.exports = {
   remove,
   listMovements,
   createMovement,
+  getServiceUsage,
+  setServiceUsage,
+  removeServiceUsage,
 };
+
+/* ── Service → Supply usage mapping ── */
+
+async function getServiceUsage(req, res) {
+  const data = await service.getServiceUsage(
+    req.user.orgId,
+    req.validatedParams.serviceId
+  );
+  res.json(data);
+}
+
+async function setServiceUsage(req, res) {
+  const row = await service.setServiceUsage(
+    req.user.orgId,
+    req.validatedParams.serviceId,
+    req.body.supply_item_id,
+    req.body.qty_per_use
+  );
+  res.status(200).json(row);
+}
+
+async function removeServiceUsage(req, res) {
+  const ok = await service.removeServiceUsage(
+    req.user.orgId,
+    req.validatedParams.serviceId,
+    req.body.supply_item_id
+  );
+  if (!ok) {
+    return res.status(404).json({ error: "Veza usluga-materijal nije pronađena." });
+  }
+  res.status(204).send();
+}

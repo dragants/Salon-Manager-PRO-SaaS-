@@ -10,9 +10,39 @@ const {
   patchItemSchema,
   movementsQuerySchema,
   createMovementSchema,
+  serviceUsageParamsSchema,
+  setServiceUsageSchema,
+  removeServiceUsageSchema,
 } = require("./supplies.validation");
 
+/* ── Service-Supply usage mapping ── */
 router.get(
+  "/service-usage/:serviceId",
+  auth,
+  requireAdmin,
+  validate(serviceUsageParamsSchema, "params"),
+  asyncHandler(controller.getServiceUsage)
+);
+
+router.put(
+  "/service-usage/:serviceId",
+  auth,
+  requireAdmin,
+  validate(serviceUsageParamsSchema, "params"),
+  validate(setServiceUsageSchema),
+  asyncHandler(controller.setServiceUsage)
+);
+
+router.delete(
+  "/service-usage/:serviceId",
+  auth,
+  requireAdmin,
+  validate(serviceUsageParamsSchema, "params"),
+  validate(removeServiceUsageSchema),
+  asyncHandler(controller.removeServiceUsage)
+);
+
+/* ── Movements ── */
   "/movements",
   auth,
   requireAdmin,

@@ -1,13 +1,12 @@
 "use client";
 
 import { useEffect } from "react";
-import Link from "next/link";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Home, RefreshCw, Sparkles } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { SurfaceCard } from "@/components/ui/surface-card";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-export default function GlobalError({
+export default function Error({
   error,
   reset,
 }: {
@@ -15,50 +14,57 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error(error);
+    console.error("[app-error]", error);
   }, [error]);
 
   return (
     <div
       id="main-content"
-      className="flex min-h-[50vh] flex-col items-center justify-center bg-[#f8fafc] px-4 py-12"
+      className="flex min-h-dvh flex-col items-center justify-center bg-background px-4"
     >
-      <SurfaceCard padding="lg" className="max-w-md text-center">
-        <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-2xl bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-200">
-          <AlertTriangle className="size-6" aria-hidden />
+      <div className="mx-auto max-w-md text-center">
+        {/* Icon */}
+        <div className="mx-auto mb-6 flex size-14 items-center justify-center rounded-2xl bg-destructive/10">
+          <AlertTriangle className="size-7 text-destructive" aria-hidden />
         </div>
-        <h1 className="text-lg font-semibold text-foreground ">
-          Nešto nije u redu
+
+        <h1 className="text-xl font-bold text-foreground">
+          Nešto je pošlo po zlu
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Aplikacija je naišla na grešku. Možeš pokušati ponovo ili se vratiti
-          na početak.
+
+        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+          Došlo je do neočekivane greške. Pokušajte ponovo ili se
+          vratite na Dashboard.
         </p>
+
         {error.digest ? (
-          <p className="mt-2 font-mono text-[10px] text-muted-foreground/70">
-            {error.digest}
+          <p className="mt-3 rounded-lg bg-muted px-3 py-1.5 font-mono text-xs text-muted-foreground">
+            Kôd: {error.digest}
           </p>
         ) : null}
-        <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
+
+        {/* Actions */}
+        <div className="mt-8 flex flex-col gap-2.5 sm:flex-row sm:justify-center">
           <Button
-            type="button"
+            onClick={reset}
             variant="brand"
-            className="rounded-xl"
-            onClick={() => reset()}
+            className="gap-2 rounded-xl"
           >
+            <RefreshCw className="size-4" aria-hidden />
             Pokušaj ponovo
           </Button>
           <Link
             href="/dashboard"
             className={cn(
               buttonVariants({ variant: "outline" }),
-              "inline-flex rounded-xl no-underline"
+              "gap-2 rounded-xl border-border no-underline"
             )}
           >
+            <Home className="size-4" aria-hidden />
             Dashboard
           </Link>
         </div>
-      </SurfaceCard>
+      </div>
     </div>
   );
 }

@@ -1,0 +1,178 @@
+/**
+ * English strings — mirrors sr.ts structure.
+ * Used when locale is set to "en".
+ */
+export const en = {
+  nav: {
+    dock: {
+      dashboard: "Dashboard",
+      calendar: "Calendar",
+      clients: "Clients",
+      services: "Services",
+      more: "More",
+    },
+  },
+  landing: {
+    brand: "Salon Manager PRO",
+    header: {
+      login: "Sign in",
+      cta: "Try for free",
+    },
+    hero: {
+      title: "Pain and stress relief",
+      subtitle: "Professional massage and chiropractic",
+      primary: "Book appointment",
+      secondary: "View services",
+    },
+    stats: ["500+ clients", "4.9 rating", "10 years of experience"],
+    featureBullets: [
+      "Fewer calls — clients see available slots themselves",
+      "No missed appointments — reminders and clear history",
+      "More revenue — track income and services in one place",
+    ],
+    featureGrid: [
+      { title: "Calendar & shifts", body: "Weekly and daily view, staff shifts, appointment collision prevention." },
+      { title: "Client records", body: "CRM, notes, attachments, and visit history in one place." },
+      { title: "Finances & expenses", body: "Income, expenses, reports — ready for bookkeeping." },
+      { title: "Online booking", body: "Public salon page with a link for self-service scheduling." },
+      { title: "Loyalty", body: "Stamps and rewards — keep your regulars coming back." },
+      { title: "Reminders", body: "Email / SMS / WhatsApp based on salon settings." },
+      { title: "Multi-location", body: "Per-salon organization — secure multi-tenant model." },
+      { title: "Analytics", body: "Business trends, no-shows, and top services." },
+    ],
+    pricingTitle: "Pricing",
+    pricingSubtitle: "Start free, upgrade when you're ready.",
+    plans: [
+      {
+        name: "Free",
+        price: "0",
+        period: "/ month",
+        desc: "For small salons just getting started.",
+        features: ["Up to client & appointment limits", "Calendar & clients", "Public booking"],
+        cta: "Sign up",
+        highlight: false,
+      },
+      {
+        name: "Basic",
+        price: "from €19",
+        period: "/ month",
+        desc: "Growing salon, more appointments.",
+        features: ["Higher limits", "SMS/WhatsApp optional", "Priority support"],
+        cta: "Choose Basic",
+        highlight: false,
+      },
+      {
+        name: "Pro",
+        price: "from €39",
+        period: "/ month",
+        desc: "Multiple locations and teams.",
+        features: ["Highest limits", "Advanced analytics", "Dedicated onboarding"],
+        cta: "Choose Pro",
+        highlight: true,
+      },
+    ],
+    pricingNote:
+      "Exact amount depends on Paddle pricing and currency. Check in the app after registration.",
+    faqTitle: "Frequently asked questions",
+    faq: [
+      {
+        q: "Can I use the app on my phone?",
+        a: "Yes. The app is responsive; the mobile dock at the bottom makes navigation easy.",
+      },
+      {
+        q: "Where is data stored?",
+        a: "In your PostgreSQL database (self-hosted or our cloud). Chart files can later go to S3-compatible storage.",
+      },
+      {
+        q: "How does online booking work?",
+        a: "Each salon gets a public link /book/[slug]. Clients choose a service, date and time slot — no calls needed.",
+      },
+      {
+        q: "Can I cancel my subscription?",
+        a: "Yes, through the Paddle customer portal (link in billing settings).",
+      },
+    ],
+    integrationsTitle: "Integrations",
+    integrations: ["Paddle billing", "PostgreSQL", "Email (SMTP)", "Twilio / WhatsApp optional"],
+    clientsTitle: "Our clients",
+    ctaBand: "Try Salon Manager PRO — 7 days free.",
+    ctaPrimary: "Try 7 days free",
+    ctaSecondary: "I already have an account",
+    footer: {
+      product: "Product",
+      legal: "Legal",
+      links: [
+        { href: "/login", label: "Sign in" },
+        { href: "/register", label: "Register" },
+        { href: "/legal/privacy", label: "Privacy" },
+        { href: "/legal/terms", label: "Terms" },
+      ],
+    },
+  },
+  /** App-wide common strings (used across the dashboard, not just landing) */
+  common: {
+    save: "Save",
+    cancel: "Cancel",
+    delete: "Delete",
+    confirm: "Confirm",
+    edit: "Edit",
+    add: "Add",
+    search: "Search",
+    loading: "Loading...",
+    noResults: "No results",
+    back: "Back",
+    next: "Next",
+    close: "Close",
+    yes: "Yes",
+    no: "No",
+    status: {
+      scheduled: "Scheduled",
+      completed: "Completed",
+      no_show: "No-show",
+      cancelled: "Cancelled",
+    },
+  },
+  calendar: {
+    title: "Appointments",
+    newAppointment: "New appointment",
+    today: "Today",
+    week: "Week",
+    day: "Day",
+    noAppointments: "No appointments for this day",
+  },
+  clients: {
+    title: "Clients",
+    newClient: "New client",
+    searchPlaceholder: "Search clients...",
+    noClients: "No clients yet",
+    totalVisits: "Total visits",
+    lastVisit: "Last visit",
+  },
+  services: {
+    title: "Services",
+    newService: "New service",
+    duration: "Duration",
+    price: "Price",
+    category: "Category",
+    noCategory: "Uncategorized",
+  },
+  dashboard: {
+    greeting: {
+      morning: "Good morning",
+      afternoon: "Good afternoon",
+      evening: "Good evening",
+    },
+    todayAppointments: "Today's appointments",
+    activeClients: "Active clients",
+    revenue: "Revenue today",
+    unpaid: "Unpaid / receivables",
+  },
+  settings: {
+    title: "Settings",
+    salon: "Salon",
+    team: "Team",
+    notifications: "Notifications",
+    billing: "Billing",
+    security: "Security",
+  },
+} as const;

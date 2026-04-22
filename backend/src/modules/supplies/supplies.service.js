@@ -262,4 +262,84 @@ module.exports = {
   removeItem,
   listMovements,
   addMovement,
+  getServiceUsage,
+  setServiceUsage,
+  removeServiceUsage,
+  autoConsumeForAppointment,
 };
+
+/* ── Service → Supply usage mapping ── */
+
+async function getServiceUsage(orgId, serviceId) {
+  const r = await pool.query(
+    `SELECT ssu.id, ssu.service_id, ssu.supply_item_id, ssu.qty_per_use,
+            si.name AS item_name, si.unit AS item_unit, si.quantity AS item_qty
+     FROM service_supply_usage ssu
+     JOIN supply_items si ON si.id = ssu.supply_item_id AND si.organization_id = ssu.organization_id
+     WHERE ssu.organization_id = $1 AND ssu.service_id = $2
+     ORDER BY si.name`,
+    [orgId, serviceId]
+  );
+  return r.rows.map((row) => ({
+    id: Number(row.id),
+    service_id: Number(row.service_id),
+    supply_item_id: Number(row.supply_item_id),
+    qty_per_use: num(row.qty_per_use),
+    item_name: row.item_name,
+    item_unit: row.item_unit,
+    item_qty: num(row.item_qty),
+  }));
+}
+
+async function setServiceUsage(orgId, serviceId, supplyItemId, qtyPerUse) {
+  const r = await pool.query(
+    `INSERT INTO service_supply_usage (organization_id, service_id, supply_item_id, qty_per_use)
+     VALUES ($1, $2, $3, $4)
+     ON CONFLICT (organization_id, service_id, supply_item_id)
+     DO UPDATE SET qty_per_use = EXCLUDED.qty_per_use
+     RETURNING *`,
+    [orgId, serviceId, supplyItemId, qtyPerUse]
+  );
+  return r.rows[0];
+}
+
+async function removeServiceUsage(orgId, serviceId, supplyItemId) {
+  const r = await pool.query(
+    `DELETE FROM service_supply_usage
+     WHERE organization_id = $1 AND service_id = $2 AND supply_item_id = $3`,
+    [orgId, serviceId, supplyItemId]
+  );
+  return r.rowCount > 0;
+}
+
+/**
+ * Automatski umanjuje zalihe za sve materijale vezane za uslugu termina.
+ * Pozivati kada se termin označi kao "completed".
+ */
+async function autoConsumeForAppointment(orgId, userId, appointmentId, serviceId) {
+  const usageRows = await pool.query(
+    `SELECT supply_item_id, qty_per_use
+     FROM service_supply_usage
+     WHERE organization_id = $1 AND service_id = $2`,
+    [orgId, serviceId]
+  );
+  if (usageRows.rows.length === 0) return [];
+
+  const results = [];
+  for (const row of usageRows.rows) {
+    try {
+      const result = await addMovement(orgId, userId, {
+        supply_item_id: Number(row.supply_item_id),
+        movement_type: "usage",
+        quantity: num(row.qty_per_use),
+        appointment_id: appointmentId,
+        note: "Automatska potrošnja po završenom terminu",
+      });
+      results.push(result);
+    } catch (e) {
+      // Ne prekidaj ako nema dovoljno zalihe za jednu stavku
+      results.push({ skipped: true, error: e.message, supply_item_id: Number(row.supply_item_id) });
+    }
+  }
+  return results;
+}

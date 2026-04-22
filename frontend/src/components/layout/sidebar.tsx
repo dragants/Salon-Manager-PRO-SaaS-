@@ -14,11 +14,13 @@ import {
   LogOut,
   Menu,
   Settings,
+  Sparkles,
   UserCircle,
   Users,
   X,
 } from "lucide-react";
 import { SpaIcon } from "@/components/icons/spa-icon";
+import { LanguageSwitcher } from "@/components/features/settings/LanguageSwitcher";
 import { cn } from "@/lib/utils";
 import { clearToken } from "@/lib/auth/token";
 import { useAuth } from "@/providers/auth-provider";
@@ -117,11 +119,13 @@ export function AppSidebar() {
   }
 
   const initial = user?.email?.trim()?.charAt(0)?.toUpperCase() ?? "?";
+  const displayName = user?.display_name || user?.email?.split("@")[0] || "";
 
   const closeMobile = () => setMobileOpen(false);
 
   return (
     <>
+      {/* ── Mobile top bar ── */}
       <header className="sticky top-0 z-30 flex min-h-14 shrink-0 items-center gap-3 border-b border-sidebar-border bg-[var(--smp-sidebar)] px-4 pt-[env(safe-area-inset-top,0px)] text-[rgb(var(--sidebar-fg))] md:hidden">
         <Button
           type="button"
@@ -159,6 +163,7 @@ export function AppSidebar() {
         />
       ) : null}
 
+      {/* ── Sidebar ── */}
       <aside
         id="app-sidebar"
         className={cn(
@@ -267,13 +272,22 @@ export function AppSidebar() {
                 <p className="text-xs font-semibold uppercase tracking-wide text-[rgb(var(--sidebar-muted-fg))]">
                   Nalog
                 </p>
+                {displayName ? (
+                  <p className="truncate text-xs font-semibold text-[rgb(var(--sidebar-fg))]">
+                    {displayName}
+                  </p>
+                ) : null}
                 <p
-                  className="truncate text-xs font-medium text-[rgb(var(--sidebar-fg))] opacity-90"
+                  className="truncate text-[11px] text-[rgb(var(--sidebar-muted-fg))]"
                   title={user.email}
                 >
                   {user.email}
                 </p>
               </div>
+              <LanguageSwitcher
+                compact
+                className="shrink-0 text-[rgb(var(--sidebar-fg))]"
+              />
             </div>
           ) : null}
           <div className="p-2">
@@ -281,11 +295,11 @@ export function AppSidebar() {
               type="button"
               variant="ghost"
               size="sm"
-              className="min-h-11 w-full touch-manipulation justify-start gap-2.5 px-2.5 font-sans text-sm font-semibold text-[rgb(var(--sidebar-fg))] hover:bg-[rgb(var(--sidebar-active)/0.07)] hover:text-[rgb(var(--sidebar-hover-fg))] md:min-h-12 md:text-base"
+              className="min-h-10 w-full touch-manipulation justify-start gap-2.5 px-2.5 font-sans text-sm font-semibold text-[rgb(var(--sidebar-fg))] hover:bg-[rgb(var(--sidebar-active)/0.07)] hover:text-[rgb(var(--sidebar-hover-fg))] md:text-[0.9rem]"
               onClick={logout}
             >
               <LogOut
-                className="size-[1.125rem] shrink-0 opacity-85 md:size-5"
+                className="size-[1.125rem] shrink-0 opacity-85 md:size-[1.15rem]"
                 strokeWidth={2}
                 aria-hidden
               />
