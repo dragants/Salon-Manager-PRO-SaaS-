@@ -90,7 +90,7 @@ export function AppTopBar() {
   return (
     <header
       className={cn(
-        "sticky top-0 z-20 hidden h-[72px] min-h-[72px] w-full shrink-0 items-center justify-between gap-4 border-b border-border bg-card/95 px-6 py-0 text-foreground shadow-sm backdrop-blur-md md:flex"
+        "sticky top-0 z-20 hidden h-[72px] min-h-[72px] w-full shrink-0 items-center justify-between gap-4 border-b border-border bg-card px-6 py-0 text-foreground shadow-[0_1px_3px_rgba(0,0,0,0.06)] backdrop-blur-md dark:bg-card/95 md:flex"
       )}
     >
       <Link

@@ -151,8 +151,8 @@ export function AppSidebar() {
                 className={cn(
                   "relative flex min-h-11 items-center gap-2.5 rounded-none px-2.5 py-2 font-sans text-sm font-semibold leading-snug tracking-tight transition-colors duration-150 touch-manipulation md:min-h-12 md:rounded-[10px] md:text-base",
                   active
-                    ? "bg-[rgb(var(--sidebar-active)/0.12)] font-bold text-sidebar-primary shadow-none before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-[2.5px] before:rounded-r-sm before:bg-sidebar-primary"
-                    : "text-[rgb(var(--sidebar-fg))] hover:bg-[rgb(var(--sidebar-active)/0.07)] hover:text-[rgb(var(--sidebar-hover-fg))]"
+                    ? "font-bold shadow-none before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-[2.5px] before:rounded-r-sm before:bg-[rgb(var(--sidebar-item-active-fg))] bg-[rgb(var(--sidebar-item-active-bg))] text-[rgb(var(--sidebar-item-active-fg))] dark:before:bg-indigo-400/90"
+                    : "text-[rgb(var(--sidebar-fg))] hover:bg-[rgb(var(--sidebar-active)/0.08)] hover:text-[rgb(var(--sidebar-hover-fg))]"
                 )}
               >
                 <Icon

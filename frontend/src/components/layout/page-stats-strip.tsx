@@ -8,6 +8,7 @@ import { getApiErrorMessage } from "@/lib/api/errors";
 import { formatRsd } from "@/lib/formatMoney";
 import { useAuth } from "@/providers/auth-provider";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 import type { DashboardSummary } from "@/types/dashboard";
 
 export function PageStatsStrip() {
@@ -52,73 +53,83 @@ export function PageStatsStrip() {
   const showMoney = user.role === "admin";
 
   return (
-    <div className="hidden border-b border-border bg-muted/50 px-4 py-3 text-foreground md:block">
-      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-2 sm:px-4 lg:px-6">
+    <div
+      className="app-stat-strip hidden px-4 py-3 md:block"
+    >
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-start gap-3 px-2 sm:px-4 lg:px-6">
         {loading ? (
-          <div className="flex flex-wrap gap-4">
-            <Skeleton className="h-6 w-32" />
-            <Skeleton className="h-6 w-40" />
-            {showMoney ? <Skeleton className="h-6 w-44" /> : null}
+          <div className="flex flex-wrap gap-3">
+            <Skeleton className="h-12 w-36 rounded-[10px]" />
+            <Skeleton className="h-12 w-40 rounded-[10px]" />
+            {showMoney ? <Skeleton className="h-12 w-48 rounded-[10px]" /> : null}
           </div>
         ) : err ? (
           <p className="text-sm text-destructive">{err}</p>
         ) : data ? (
-          <div className="flex flex-wrap items-center gap-x-8 gap-y-3 text-base leading-snug">
-            <Link
-              href="/clients"
-              className="flex items-center gap-2.5 rounded-lg px-1 py-0.5 text-foreground transition-colors hover:bg-background/80 hover:text-primary"
-            >
-              <Users className="size-5 shrink-0 text-primary" aria-hidden />
+          <div className="flex flex-wrap items-stretch gap-3">
+            <Link href="/clients" className="app-stat-chip">
+              <Users
+                className="size-5 shrink-0 text-primary"
+                aria-hidden
+                strokeWidth={2.1}
+              />
               {showMoney && typeof data.clients === "number" ? (
-                <span className="text-foreground">
-                  <strong className="text-lg font-bold tabular-nums text-foreground">
+                <div className="min-w-0 text-left">
+                  <p className="app-stat-chip__value leading-none">
                     {data.clients}
-                  </strong>{" "}
-                  <span className="text-sm font-medium text-muted-foreground">
-                    klijenata
-                  </span>
-                </span>
+                  </p>
+                  <p className="app-stat-chip__label">klijenata</p>
+                </div>
               ) : (
-                <span className="text-sm font-medium text-muted-foreground">
-                  Klijenti
-                </span>
+                <span className="app-stat-chip__label text-foreground">Klijenti</span>
               )}
             </Link>
-            <Link
-              href="/calendar"
-              className="flex items-center gap-2.5 rounded-xl border border-primary/25 bg-primary/10 px-3 py-1.5 text-foreground shadow-sm transition-colors hover:border-primary/40 hover:bg-primary/15"
-            >
-              <CalendarDays className="size-5 shrink-0 text-primary" aria-hidden />
-              <span>
-                <strong className="text-lg font-bold tabular-nums text-foreground">
+            <Link href="/calendar" className="app-stat-chip">
+              <CalendarDays
+                className="size-5 shrink-0 text-primary"
+                strokeWidth={2.1}
+                aria-hidden
+              />
+              <div className="min-w-0 text-left">
+                <p className="app-stat-chip__value leading-none">
                   {data.todayAppointments}
-                </strong>{" "}
-                <span className="text-sm font-medium text-muted-foreground">
-                  termina danas
-                </span>
-              </span>
+                </p>
+                <p className="app-stat-chip__label">termina danas</p>
+              </div>
             </Link>
             {showMoney && typeof data.revenue === "number" ? (
-              <span className="flex items-center gap-2.5 text-foreground">
+              <div
+                className={cn(
+                  "app-stat-chip",
+                  "cursor-default hover:border-border hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)]"
+                )}
+                role="status"
+              >
                 <TrendingUp
-                  className="size-5 shrink-0 text-emerald-600 dark:text-emerald-400"
+                  className="size-5 shrink-0 text-primary"
+                  strokeWidth={2.1}
                   aria-hidden
                 />
-                <span className="text-sm font-medium text-muted-foreground">
-                  Prihod danas:{" "}
-                  <strong className="text-lg font-bold tabular-nums text-emerald-700 dark:text-emerald-300">
+                <div className="min-w-0 text-left">
+                  <p className="app-stat-chip__value text-primary leading-none">
                     {formatRsd(data.revenue)}
-                  </strong>
-                </span>
-              </span>
+                  </p>
+                  <p className="app-stat-chip__label">prihod danas</p>
+                </div>
+              </div>
             ) : null}
             {!showMoney && data.nextAppointment ? (
-              <span className="text-sm text-muted-foreground">
-                Sledeći:{" "}
-                <strong className="font-semibold text-foreground">
-                  {data.nextAppointment}
-                </strong>
-              </span>
+              <div
+                className="app-stat-chip cursor-default hover:border-border"
+                role="status"
+              >
+                <span className="app-stat-chip__label w-full sm:w-auto">
+                  Sledeći:{" "}
+                  <strong className="font-semibold text-foreground">
+                    {data.nextAppointment}
+                  </strong>
+                </span>
+              </div>
             ) : null}
           </div>
         ) : null}

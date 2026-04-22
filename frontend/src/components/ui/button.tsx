@@ -8,7 +8,8 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground shadow-[var(--lux-shadow-soft)] [a]:hover:bg-primary",
+        default:
+          "rounded-xl bg-primary text-primary-foreground !shadow-[var(--lux-shadow-primary)] hover:!brightness-100 hover:!bg-[#4F46E5] hover:!shadow-[var(--lux-shadow-primary-hover)] dark:hover:!bg-primary/88 focus-visible:ring-primary/40",
         outline:
           "border-border bg-transparent text-foreground shadow-none hover:bg-white/[0.04] aria-expanded:bg-muted",
         secondary:
@@ -19,7 +20,7 @@ const buttonVariants = cva(
           "bg-destructive/15 text-destructive shadow-none hover:bg-destructive/25 focus-visible:ring-destructive/30",
         link: "text-primary underline-offset-4 hover:underline shadow-none",
         brand:
-          "bg-primary text-primary-foreground shadow-[var(--lux-shadow-soft)] focus-visible:ring-primary/30",
+          "min-h-12 gap-2 rounded-[12px] px-[18px] py-3 text-[15px] font-semibold !shadow-[var(--lux-shadow-primary)] !brightness-100 bg-primary text-primary-foreground hover:!brightness-100 hover:!bg-[#4F46E5] hover:!shadow-[var(--lux-shadow-primary-hover)] dark:hover:!bg-primary/88 focus-visible:ring-primary/40",
       },
       size: {
         default:

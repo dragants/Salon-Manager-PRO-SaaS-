@@ -1,35 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { formatRsd } from "@/lib/formatMoney";
-import type { Client } from "@/types/client";
-import { cn } from "@/lib/utils";
 
-/** dd.MM. (npr. 12.04.) */
-function shortDateFromIso(iso: string | null | undefined): string {
-  if (!iso) return "—";
-  try {
-    return new Date(iso).toLocaleDateString("sr-Latn-RS", {
-      day: "2-digit",
-      month: "2-digit",
-    });
-  } catch {
-    return "—";
-  }
-}
-
-type BadgeState = { tone: "active" | "new" | "alert"; label: string };
-
-function clientBadge(c: Client): BadgeState {
-  const phone = (c.phone ?? "").trim();
-  if (!phone) {
-    return { tone: "alert", label: "Bez broja" };
-  }
-  if (!(c.notes ?? "").trim()) {
-    return { tone: "new", label: "Novi" };
-  }
-  return { tone: "active", label: "Aktivan" };
-}
+export { ClientListCardsSaaS as ClientDirectoryTiles } from "./client-list-cards-saas";
+export type { ClientListCardsSaaSProps as ClientDirectoryTilesProps } from "./client-list-cards-saas";
 
 export type ClientsKpiStatsProps = {
   clientsCount: number;
@@ -39,7 +13,7 @@ export type ClientsKpiStatsProps = {
 };
 
 /**
- * Ista vizuelna logika kao dashboard hero — tri jake obojene kartice.
+ * Tri KPI kartice (ljubičasta / zelena / žuta) — nezavisno od liste kartica.
  */
 export function ClientsKpiStats({
   clientsCount,
@@ -69,77 +43,5 @@ export function ClientsKpiStats({
         </p>
       </div>
     </div>
-  );
-}
-
-export type ClientDirectoryTilesProps = {
-  clients: Client[];
-  onOpenCard: (id: number) => void;
-  calendarHref: string;
-};
-
-/**
- * Puna kartična mreža (bez table). Nova struktura — ne koristi stari clients-grid JSX.
- */
-export function ClientDirectoryTiles({
-  clients,
-  onOpenCard,
-  calendarHref,
-}: ClientDirectoryTilesProps) {
-  return (
-    <ul className="cl-tiles" aria-label="Lista klijenata">
-      {clients.map((c) => {
-        const badge = clientBadge(c);
-        const initial = (c.name?.trim().charAt(0) || "?").toUpperCase();
-        const phone = (c.phone ?? "").trim() || "—";
-        const lastNote = (c.notes ?? "").trim() || "Nema poslednje napomene";
-
-        return (
-          <li key={c.id} className="cl-tile">
-            <div className="cl-tile__head">
-              <div className="cl-tile__avatar" aria-hidden>
-                {initial}
-              </div>
-              <div className="cl-tile__head-text">
-                <h3 className="cl-tile__name">{c.name}</h3>
-                <span
-                  className={cn(
-                    "cl-tile__badge",
-                    badge.tone === "active" && "cl-tile__badge--ok",
-                    badge.tone === "new" && "cl-tile__badge--new",
-                    badge.tone === "alert" && "cl-tile__badge--alert"
-                  )}
-                >
-                  {badge.label}
-                </span>
-              </div>
-            </div>
-
-            <p className="cl-tile__note">{lastNote}</p>
-
-            <div className="cl-tile__meta">
-              <span className="tabular-nums" title="Dodat u sistem">
-                📅 {shortDateFromIso(c.created_at)}
-              </span>
-              <span className="cl-tile__phone tabular-nums" title="Telefon">
-                📞 {phone}
-              </span>
-            </div>
-
-            <button
-              type="button"
-              className="cl-tile__cta"
-              onClick={() => onOpenCard(c.id)}
-            >
-              Otvori karton
-            </button>
-
-            <Link className="cl-tile__secondary" href={calendarHref}>
-              + Zakaži termin
-            </Link>
-          </li>
-        );
-      })}
-    </ul>
   );
 }
