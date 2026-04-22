@@ -43,7 +43,7 @@ export default function CalendarHeader({
           {title}
         </h2>
         <div className="flex flex-wrap items-center justify-end gap-2">
-          <div className="flex rounded-[var(--lux-radius-md)] border border-border bg-muted/50 p-0.5">
+          <div className="flex rounded-[var(--smp-radius-md)] border border-border bg-muted/50 p-0.5">
             <button
               type="button"
               onClick={() => onViewChange("day")}
@@ -117,7 +117,7 @@ export default function CalendarHeader({
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="max-w-2xl space-y-1">
-        <h1 className="font-heading text-[length:var(--lux-text-h2)] font-semibold text-foreground">
+        <h1 className="font-heading text-[length:var(--smp-text-h2)] font-semibold text-foreground">
           Kalendar
         </h1>
         <p className="text-sm text-muted-foreground">
@@ -133,7 +133,7 @@ export default function CalendarHeader({
         </p>
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        <div className="flex rounded-[var(--lux-radius-md)] border border-border bg-card/80 p-0.5 shadow-[var(--lux-shadow-soft)]">
+        <div className="flex rounded-[var(--smp-radius-md)] border border-border bg-card/80 p-0.5 shadow-[var(--smp-shadow-soft)]">
           <button
             type="button"
             onClick={() => onViewChange("day")}

@@ -48,7 +48,7 @@ export function TabsList({
     <div
       role="tablist"
       className={cn(
-        "inline-flex min-h-10 w-full min-w-0 flex-nowrap items-center gap-1 overflow-x-auto overscroll-x-contain rounded-2xl border border-border bg-card p-1.5 shadow-[var(--lux-shadow-soft)] [-ms-overflow-style:none] [scrollbar-width:none] sm:gap-1.5 [&::-webkit-scrollbar]:hidden",
+        "inline-flex min-h-10 w-full min-w-0 flex-nowrap items-center gap-1 overflow-x-auto overscroll-x-contain rounded-2xl border border-border bg-card p-1.5 shadow-[var(--smp-shadow-soft)] [-ms-overflow-style:none] [scrollbar-width:none] sm:gap-1.5 [&::-webkit-scrollbar]:hidden",
         className
       )}
       {...props}

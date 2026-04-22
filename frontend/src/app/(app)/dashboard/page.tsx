@@ -19,10 +19,20 @@ import { appointmentStaffLabel } from "@/components/features/calendar/calendar-u
 import { Button, buttonVariants } from "@/components/ui/button";
 import { AnalyticsChartSkeleton } from "@/components/features/dashboard/analytics-chart-skeleton";
 import { DashboardHeroStats } from "@/components/features/dashboard/dashboard-hero-stats";
-import { getAnalytics, getAppointments, getDashboard } from "@/lib/api";
+import {
+  getAnalytics,
+  getAppointments,
+  getDashboard,
+  getServices,
+} from "@/lib/api";
 import { getApiErrorMessage } from "@/lib/api/errors";
 import { formatRsd } from "@/lib/formatMoney";
 import { cn } from "@/lib/utils";
+import {
+  averageOpenMinutesPerDay,
+  averageServiceDurationMinutes,
+  estimatedSlotsPerDay,
+} from "@/lib/working-hours-slots";
 import { useAuth } from "@/providers/auth-provider";
 import { useOrganization } from "@/providers/organization-provider";
 import type { AppointmentRow } from "@/types/appointment";
@@ -158,7 +168,7 @@ export default function DashboardPage() {
   const dataEnabled = !authLoading && !!user;
   const tz = settings ? orgTimeZone(settings.timezone) : DEFAULT_TZ;
 
-  const [dashQuery, analyticsQuery, todayQuery] = useQueries({
+  const [dashQuery, analyticsQuery, todayQuery, servicesQuery] = useQueries({
     queries: [
       {
         queryKey: ["dashboard"] as const,
@@ -178,6 +188,12 @@ export default function DashboardPage() {
           (await getAppointments({ day: "today", timezone: tz })).data,
         enabled: dataEnabled && !!settings,
         staleTime: 20_000,
+      },
+      {
+        queryKey: ["services"] as const,
+        queryFn: async () => (await getServices()).data,
+        enabled: dataEnabled,
+        staleTime: 60_000,
       },
     ],
   });
@@ -199,6 +215,8 @@ export default function DashboardPage() {
   const todayError = todayQuery.isError
     ? getApiErrorMessage(todayQuery.error, "Današnji termini nisu učitani.")
     : null;
+
+  const servicesLoading = servicesQuery.isPending;
 
   function retryDashboard() {
     if (!user) {
@@ -279,7 +297,16 @@ export default function DashboardPage() {
   const greetName =
     emailLocalPart(user.email) || displayNameFromEmail(user.email);
   const busyToday = todayList?.length ?? 0;
-  const freeEstimate = Math.max(0, 14 - busyToday);
+  const servicesList = servicesQuery.data ?? null;
+  const openMinutesPerDay = averageOpenMinutesPerDay(
+    settings.working_hours as Record<string, unknown> | undefined
+  );
+  const avgServiceMin = averageServiceDurationMinutes(servicesList ?? undefined);
+  const maxSlotsPerDay = estimatedSlotsPerDay(openMinutesPerDay, avgServiceMin);
+  const slotWidgetVisible = !servicesLoading && maxSlotsPerDay != null;
+  const freeSlotsEstimate = slotWidgetVisible
+    ? Math.max(0, maxSlotsPerDay - busyToday)
+    : null;
 
   return (
     <div className="dashboard-shell pb-16">
@@ -390,7 +417,7 @@ export default function DashboardPage() {
         {/* Kalendar + desni panel */}
         <div className="col-span-12 grid grid-cols-12 gap-6">
           <div
-            className="dash-calendar-host col-span-12 flex h-[520px] flex-col overflow-hidden rounded-[22px] border border-border bg-card p-4 shadow-[var(--lux-shadow-soft)] ring-1 ring-black/[0.03] transition duration-200 hover:border-primary/30 hover:shadow-[var(--lux-shadow-hover)] lg:col-span-8"
+            className="dash-calendar-host col-span-12 flex h-[520px] flex-col overflow-hidden rounded-[22px] border border-border bg-card p-4 shadow-[var(--smp-shadow-soft)] ring-1 ring-black/[0.03] transition duration-200 hover:border-primary/30 hover:shadow-[var(--smp-shadow-hover)] lg:col-span-8"
           >
             <Suspense fallback={<CalendarPageSkeleton />}>
               <SalonCalendar embedMode />
@@ -441,7 +468,7 @@ export default function DashboardPage() {
                       <li key={a.id}>
                         <Link
                           href={`${calendarDayUrl}&appt=${a.id}`}
-                          className="dash-btn block rounded-xl border border-border border-l-[3px] border-l-[#6366F1] bg-muted/40 p-3.5 transition hover:-translate-y-0.5 hover:border-primary/35 hover:bg-muted/55 hover:shadow-md"
+                          className="dash-btn block rounded-xl border border-border border-l-[3px] border-l-primary bg-muted/40 p-3.5 transition hover:-translate-y-0.5 hover:border-primary/35 hover:bg-muted/55 hover:shadow-md"
                         >
                           <div className="flex items-start justify-between gap-2">
                             <p className="text-lg font-bold tabular-nums tracking-tight text-foreground">
@@ -479,28 +506,33 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="dash-card flex min-h-[128px] flex-col justify-between p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-                Brzi pregled
-              </p>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-2xl font-bold tabular-nums text-foreground">
-                    {freeEstimate}
-                  </p>
-                  <p className="text-sm text-muted-foreground">Slobodnih slotova *</p>
+            {slotWidgetVisible ? (
+              <div className="dash-card flex min-h-[128px] flex-col justify-between p-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+                  Brzi pregled
+                </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-2xl font-bold tabular-nums text-foreground">
+                      {freeSlotsEstimate ?? 0}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Slobodnih slotova *
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold tabular-nums text-primary">
+                      {busyToday}
+                    </p>
+                    <p className="text-sm text-muted-foreground">Termina danas</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-2xl font-bold tabular-nums text-primary">
-                    {busyToday}
-                  </p>
-                  <p className="text-sm text-muted-foreground">Termina danas</p>
-                </div>
+                <p className="text-xs leading-snug text-muted-foreground">
+                  * Procena: radni sati / prosečno trajanje usluge, umanjeno za današnje
+                  termine
+                </p>
               </div>
-              <p className="text-xs leading-snug text-muted-foreground">
-                * Procena u odnosu na uobičajen dan u kalendaru
-              </p>
-            </div>
+            ) : null}
           </div>
         </div>
 
@@ -576,13 +608,62 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="col-span-12 hidden min-h-[260px] flex-col items-center justify-center rounded-[20px] border border-dashed border-border bg-muted/30 text-center lg:col-span-4 lg:flex">
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Uskoro
-            </p>
-            <p className="mt-2 max-w-[12rem] text-sm text-muted-foreground">
-              Rezervisano za buduće module (npr. ciljevi, obaveštenja).
-            </p>
+          <div className="col-span-12 flex min-h-[260px] flex-col gap-4 rounded-[20px] border border-border bg-card p-5 shadow-md transition duration-200 hover:shadow-lg lg:col-span-4">
+            <div>
+              <h2 className="text-lg font-semibold tracking-tight text-foreground">
+                Pregled meseca
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Prihod i najtraženije usluge
+              </p>
+            </div>
+            {analyticsLoading ? (
+              <div className="space-y-3" aria-busy="true">
+                <div className="h-10 animate-pulse rounded-lg bg-muted" />
+                <div className="h-28 animate-pulse rounded-lg bg-muted" />
+              </div>
+            ) : analyticsError ? (
+              <p className="text-sm text-destructive">{analyticsError}</p>
+            ) : analytics ? (
+              <div className="flex min-h-0 flex-1 flex-col gap-5">
+                {showFinancialKpi && analytics.revenue_month != null ? (
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      Prihod (mesec)
+                    </p>
+                    <p className="mt-1 text-2xl font-bold tabular-nums text-foreground">
+                      {formatRsd(analytics.revenue_month)}
+                    </p>
+                  </div>
+                ) : null}
+                <div className="min-h-0 flex-1">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Top usluge
+                  </p>
+                  {(analytics.top_services ?? []).length > 0 ? (
+                    <ul className="mt-2 space-y-2.5">
+                      {(analytics.top_services ?? []).slice(0, 5).map((s) => (
+                        <li
+                          key={s.id}
+                          className="flex items-center justify-between gap-2 text-sm"
+                        >
+                          <span className="min-w-0 truncate font-medium text-foreground">
+                            {s.name}
+                          </span>
+                          <span className="shrink-0 text-right text-xs tabular-nums text-muted-foreground">
+                            {s.booking_count} zakaz. · {formatRsd(s.revenue)}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      Još nema podataka o uslugama za ovaj period.
+                    </p>
+                  )}
+                </div>
+              </div>
+            ) : null}
           </div>
         </div>
       </div>

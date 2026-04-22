@@ -74,11 +74,11 @@ export default function RegisterPage() {
     <div className="flex min-h-dvh items-center justify-center px-4 py-12 sm:px-6">
       <SurfaceCard
         padding="none"
-        className="w-full max-w-[400px] rounded-[var(--lux-radius-xl)] p-8 shadow-[var(--lux-shadow-hover)]"
+        className="w-full max-w-[400px] rounded-[var(--smp-radius-xl)] p-8 shadow-[var(--smp-shadow-hover)]"
       >
       <form onSubmit={onSubmit} className="space-y-6">
         <div className="space-y-1 text-center sm:text-left">
-          <p className="text-[length:var(--lux-text-small)]">
+          <p className="text-[length:var(--smp-text-small)]">
             <Link
               href="/landing"
               className="font-medium text-primary underline-offset-2 hover:underline"
@@ -86,10 +86,10 @@ export default function RegisterPage() {
               ← Početna stranica
             </Link>
           </p>
-          <h1 className="font-heading text-[length:var(--lux-text-h1)] font-medium tracking-tight text-foreground">
+          <h1 className="font-heading text-[length:var(--smp-text-h1)] font-medium tracking-tight text-foreground">
             Registracija
           </h1>
-          <p className="text-[length:var(--lux-text-body)] text-muted-foreground">
+          <p className="text-[length:var(--smp-text-body)] text-muted-foreground">
             Kreiraj nalog za salon lepote, masažu ili wellness i administratora.
             Lozinka min. 8 karaktera.
           </p>
@@ -97,7 +97,7 @@ export default function RegisterPage() {
 
         <div className="space-y-4">
           {error ? (
-            <p className="rounded-[var(--lux-radius-md)] border border-destructive/35 bg-destructive/10 px-3 py-2 text-[length:var(--lux-text-body)] text-destructive">
+            <p className="rounded-[var(--smp-radius-md)] border border-destructive/35 bg-destructive/10 px-3 py-2 text-[length:var(--smp-text-body)] text-destructive">
               {error}
             </p>
           ) : null}
@@ -140,12 +140,12 @@ export default function RegisterPage() {
           <Button
             type="submit"
             variant="default"
-            className="h-11 w-full shadow-[var(--lux-shadow-soft)]"
+            className="h-11 w-full shadow-[var(--smp-shadow-soft)]"
             disabled={loading}
           >
             {loading ? "Šaljem…" : "Napravi nalog"}
           </Button>
-          <p className="text-center text-[length:var(--lux-text-body)] text-muted-foreground">
+          <p className="text-center text-[length:var(--smp-text-body)] text-muted-foreground">
             Već imaš nalog?{" "}
             <Link
               href="/login"

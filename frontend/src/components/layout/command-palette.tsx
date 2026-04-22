@@ -489,9 +489,9 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                           role="option"
                           aria-selected={active}
                           className={cn(
-                            "flex w-full items-center gap-3 rounded-[var(--lux-radius-md)] px-3 py-2.5 text-left text-sm transition-all duration-200 ease-out",
+                            "flex w-full items-center gap-3 rounded-[var(--smp-radius-md)] px-3 py-2.5 text-left text-sm transition-all duration-200 ease-out",
                             active
-                              ? "bg-primary text-primary-foreground shadow-[var(--lux-shadow-soft)]"
+                              ? "bg-primary text-primary-foreground shadow-[var(--smp-shadow-soft)]"
                               : "hover:scale-[1.01] hover:bg-primary/[0.06]"
                           )}
                           onClick={() => runItem(item)}

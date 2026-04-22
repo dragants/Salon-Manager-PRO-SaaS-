@@ -36,7 +36,7 @@ export default function AppointmentCard({
     <div
       id={`cal-appt-${row.id}`}
       className={cn(
-        "group rounded-[var(--lux-radius-lg)] border border-border bg-card p-4 shadow-[var(--lux-shadow-soft)] transition-all duration-200 hover:border-primary/30 hover:shadow-[var(--lux-shadow-hover)]",
+        "group rounded-[var(--smp-radius-lg)] border border-border bg-card p-4 shadow-[var(--smp-shadow-soft)] transition-all duration-200 hover:border-primary/30 hover:shadow-[var(--smp-shadow-hover)]",
         "border-l-4",
         statusAccentBorder(row.status),
         highlight && "ring-2 ring-primary ring-offset-2 ring-offset-background"
@@ -69,7 +69,7 @@ export default function AppointmentCard({
               </label>
               <select
                 id={`staff-${row.id}`}
-                className="mt-1 w-full max-w-xs rounded-lg border border-border bg-[var(--lux-input-bg)] px-2 py-1 text-xs text-foreground"
+                className="mt-1 w-full max-w-xs rounded-lg border border-border bg-[var(--smp-input-bg)] px-2 py-1 text-xs text-foreground"
                 value={row.staff_user_id ?? ""}
                 onChange={(e) => {
                   const v = e.target.value;

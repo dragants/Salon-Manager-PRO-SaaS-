@@ -9,7 +9,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 export const commandPaletteDialogClassName = cn(
-  "max-h-[min(85vh,640px)] w-full max-w-[calc(100%-2rem)] gap-0 overflow-hidden rounded-[var(--lux-radius-lg)] border border-border bg-card p-0 text-foreground shadow-[var(--lux-shadow-heavy)] sm:max-w-[600px]"
+  "max-h-[min(85vh,640px)] w-full max-w-[calc(100%-2rem)] gap-0 overflow-hidden rounded-[var(--smp-radius-lg)] border border-border bg-card p-0 text-foreground shadow-[var(--smp-shadow-heavy)] sm:max-w-[600px]"
 );
 
 export function CommandPaletteSearchRow({

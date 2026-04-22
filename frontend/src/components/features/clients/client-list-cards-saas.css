@@ -5,8 +5,8 @@
 
 .client-cards-v2 {
   /* PRIMARY */
-  --primary-500: #6366f1;
-  --primary-600: #4f46e5;
+  --primary-500: rgb(var(--primary));
+  --primary-600: rgb(var(--primary-hover));
   --primary-100: #e0e7ff;
 
   /* SECONDARY */
@@ -37,7 +37,7 @@
   --border: #334155;
   --text: #f8fafc;
   --muted: #94a3b8;
-  --primary-100: rgb(99 102 241 / 0.2);
+  --primary-100: rgb(var(--primary) / 0.2);
 }
 
 /* mreža */
@@ -178,7 +178,7 @@
   cursor: pointer;
   color: #fff;
   background: var(--primary-500);
-  box-shadow: 0 2px 10px rgb(99 102 241 / 0.35);
+  box-shadow: 0 2px 10px rgb(var(--primary) / 0.35);
   transition:
     background 0.2s ease,
     box-shadow 0.2s ease,
@@ -186,7 +186,7 @@
 }
 .client-cards-v2 .ccv-btn:hover {
   background: var(--primary-600);
-  box-shadow: 0 6px 18px rgb(99 102 241 / 0.45);
+  box-shadow: 0 6px 18px rgb(var(--primary) / 0.45);
   transform: translateY(-1px);
 }
 .client-cards-v2 .ccv-btn:focus-visible {

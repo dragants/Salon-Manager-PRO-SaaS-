@@ -1,5 +1,5 @@
 export const appSurfaceClass =
-  "rounded-[var(--lux-radius-lg)] border border-border bg-card text-card-foreground shadow-[var(--lux-shadow-soft)] transition-all duration-200 ease-out will-change-transform hover:z-[1] hover:-translate-y-0.5 hover:shadow-[var(--lux-shadow-hover)] hover:border-primary/25";
+  "rounded-[var(--smp-radius-lg)] border border-border bg-card text-card-foreground shadow-[var(--smp-shadow-soft)] transition-all duration-200 ease-out will-change-transform hover:z-[1] hover:-translate-y-0.5 hover:shadow-[var(--smp-shadow-hover)] hover:border-primary/25";
 
 export const appPageStackClass = "flex flex-col gap-8";
 

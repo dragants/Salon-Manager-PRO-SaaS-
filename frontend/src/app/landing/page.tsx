@@ -192,7 +192,7 @@ export default function LandingPage() {
                   href="/register"
                   className={cn(
                     buttonVariants({ variant: "brand", size: "lg" }),
-                    "h-13 min-w-[15rem] rounded-xl px-8 text-base shadow-[var(--lux-shadow-hover)]"
+                    "h-13 min-w-[15rem] rounded-xl px-8 text-base shadow-[var(--smp-shadow-hover)]"
                   )}
                 >
                   Isprobaj 7 dana besplatno
@@ -215,7 +215,7 @@ export default function LandingPage() {
 
             {/* Hero vizual — app screenshot mock */}
             <div className="mx-auto mt-14 max-w-5xl">
-              <div className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--lux-shadow-heavy)]">
+              <div className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--smp-shadow-heavy)]">
                 <div className="flex h-9 items-center gap-1.5 border-b border-border bg-muted/60 px-4">
                   <span className="size-2.5 rounded-full bg-red-400/60" />
                   <span className="size-2.5 rounded-full bg-amber-400/60" />
@@ -300,7 +300,7 @@ export default function LandingPage() {
               {features.map(({ icon: Icon, title, desc }) => (
                 <div
                   key={title}
-                  className="group rounded-2xl border border-border bg-card p-5 shadow-[var(--lux-shadow-soft)] transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[var(--lux-shadow-hover)]"
+                  className="group rounded-2xl border border-border bg-card p-5 shadow-[var(--smp-shadow-soft)] transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[var(--smp-shadow-hover)]"
                 >
                   <div className="mb-3 flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary transition group-hover:bg-primary/15">
                     <Icon className="size-5" aria-hidden />
@@ -344,7 +344,7 @@ export default function LandingPage() {
                 },
               ].map(({ step, title, desc }) => (
                 <div key={step} className="text-center">
-                  <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-2xl bg-primary text-lg font-bold text-primary-foreground shadow-[var(--lux-shadow-soft)]">
+                  <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-2xl bg-primary text-lg font-bold text-primary-foreground shadow-[var(--smp-shadow-soft)]">
                     {step}
                   </div>
                   <h3 className="text-base font-semibold text-foreground">
@@ -367,7 +367,7 @@ export default function LandingPage() {
               {testimonials.map(({ quote, name, role }) => (
                 <div
                   key={name}
-                  className="rounded-2xl border border-border bg-card p-6 shadow-[var(--lux-shadow-soft)]"
+                  className="rounded-2xl border border-border bg-card p-6 shadow-[var(--smp-shadow-soft)]"
                 >
                   <p className="text-sm leading-relaxed text-foreground">
                     &ldquo;{quote}&rdquo;
@@ -401,9 +401,9 @@ export default function LandingPage() {
                 <div
                   key={plan.name}
                   className={cn(
-                    "relative rounded-2xl border p-6 shadow-[var(--lux-shadow-soft)] transition-all duration-200 sm:p-8",
+                    "relative rounded-2xl border p-6 shadow-[var(--smp-shadow-soft)] transition-all duration-200 sm:p-8",
                     plan.highlight
-                      ? "border-primary bg-card ring-1 ring-primary/30 shadow-[var(--lux-shadow-hover)]"
+                      ? "border-primary bg-card ring-1 ring-primary/30 shadow-[var(--smp-shadow-hover)]"
                       : "border-border bg-card"
                   )}
                 >
@@ -448,7 +448,7 @@ export default function LandingPage() {
                       }),
                       "mt-8 w-full rounded-xl",
                       plan.highlight
-                        ? "shadow-[var(--lux-shadow-soft)]"
+                        ? "shadow-[var(--smp-shadow-soft)]"
                         : "border-border"
                     )}
                   >
@@ -476,7 +476,7 @@ export default function LandingPage() {
               {sr.landing.faq.map((item, i) => (
                 <details
                   key={i}
-                  className="group rounded-2xl border border-border bg-card shadow-[var(--lux-shadow-soft)] transition-colors open:border-primary/20 open:shadow-[var(--lux-shadow-hover)]"
+                  className="group rounded-2xl border border-border bg-card shadow-[var(--smp-shadow-soft)] transition-colors open:border-primary/20 open:shadow-[var(--smp-shadow-hover)]"
                 >
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 text-left text-sm font-semibold text-foreground [&::-webkit-details-marker]:hidden">
                     <span>{item.q}</span>
@@ -509,7 +509,7 @@ export default function LandingPage() {
                 href="/register"
                 className={cn(
                   buttonVariants({ variant: "brand", size: "lg" }),
-                  "h-13 min-w-[16rem] rounded-xl px-8 text-base shadow-[var(--lux-shadow-hover)]"
+                  "h-13 min-w-[16rem] rounded-xl px-8 text-base shadow-[var(--smp-shadow-hover)]"
                 )}
               >
                 Započni besplatno

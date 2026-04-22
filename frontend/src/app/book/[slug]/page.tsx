@@ -283,7 +283,7 @@ export default function PublicBookingPage() {
       className="min-h-dvh touch-manipulation bg-gradient-to-b from-primary/10 via-background to-background px-4 py-10 pb-[max(2.5rem,env(safe-area-inset-bottom,0px)+1rem)] pt-[max(2.5rem,env(safe-area-inset-top,0px)+0.5rem)]"
     >
       <div className="mx-auto flex max-w-lg flex-col gap-6">
-        <header className="overflow-hidden rounded-3xl border border-border/80 bg-gradient-to-br from-primary/15 via-card to-background p-6 text-center shadow-[var(--lux-shadow-soft)] ring-1 ring-primary/10">
+        <header className="overflow-hidden rounded-3xl border border-border/80 bg-gradient-to-br from-primary/15 via-card to-background p-6 text-center shadow-[var(--smp-shadow-soft)] ring-1 ring-primary/10">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
             Online rezervacija
           </p>

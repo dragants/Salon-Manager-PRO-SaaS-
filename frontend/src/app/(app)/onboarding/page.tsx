@@ -217,7 +217,7 @@ export default function OnboardingPage() {
 
   if (!allowed || authLoading || !user) {
     return (
-      <p className="text-[length:var(--lux-text-body)] text-muted-foreground">
+      <p className="text-[length:var(--smp-text-body)] text-muted-foreground">
         Učitavanje…
       </p>
     );
@@ -250,10 +250,10 @@ export default function OnboardingPage() {
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-[length:var(--lux-text-small)] font-semibold uppercase tracking-wide text-muted-foreground">
+          <p className="text-[length:var(--smp-text-small)] font-semibold uppercase tracking-wide text-muted-foreground">
             Prvi ulaz
           </p>
-          <h1 className="font-heading text-[length:var(--lux-text-h2)] font-medium tracking-tight text-foreground">
+          <h1 className="font-heading text-[length:var(--smp-text-h2)] font-medium tracking-tight text-foreground">
             Podešavanje salona
           </h1>
         </div>
@@ -270,17 +270,17 @@ export default function OnboardingPage() {
 
       <SurfaceCard
         padding="none"
-        className="rounded-[var(--lux-radius-xl)] p-8 shadow-[var(--lux-shadow-hover)]"
+        className="rounded-[var(--smp-radius-xl)] p-8 shadow-[var(--smp-shadow-hover)]"
       >
         {step === 0 ? (
           <div className="space-y-4">
-            <div className="flex size-12 items-center justify-center rounded-[var(--lux-radius-lg)] bg-primary/15 text-primary">
+            <div className="flex size-12 items-center justify-center rounded-[var(--smp-radius-lg)] bg-primary/15 text-primary">
               <Sparkles className="size-6" aria-hidden />
             </div>
-            <h2 className="font-heading text-[length:var(--lux-text-h3)] font-medium text-foreground">
+            <h2 className="font-heading text-[length:var(--smp-text-h3)] font-medium text-foreground">
               Dobrodošli u vaš salon sistem
             </h2>
-            <p className="text-[length:var(--lux-text-body)] leading-relaxed text-muted-foreground">
+            <p className="text-[length:var(--smp-text-body)] leading-relaxed text-muted-foreground">
               Par kratkih koraka: osnovni podaci, usluge i radno vreme. Sve možete
               kasnije promeniti u Podešavanjima.
             </p>
@@ -289,10 +289,10 @@ export default function OnboardingPage() {
 
         {step === 1 ? (
           <div className="space-y-5">
-            <h2 className="font-heading text-[length:var(--lux-text-h3)] font-medium text-foreground">
+            <h2 className="font-heading text-[length:var(--smp-text-h3)] font-medium text-foreground">
               Osnovni podaci
             </h2>
-            <p className="text-[length:var(--lux-text-body)] text-muted-foreground">
+            <p className="text-[length:var(--smp-text-body)] text-muted-foreground">
               Ime salona, adresa i telefon. Dok ste na ovom koraku, izmene se
               automatski šalju na server (autosave).
             </p>
@@ -328,14 +328,14 @@ export default function OnboardingPage() {
 
         {step === 2 ? (
           <div className="space-y-5">
-            <h2 className="font-heading text-[length:var(--lux-text-h3)] font-medium text-foreground">
+            <h2 className="font-heading text-[length:var(--smp-text-h3)] font-medium text-foreground">
               Usluge
             </h2>
-            <p className="text-[length:var(--lux-text-body)] text-muted-foreground">
+            <p className="text-[length:var(--smp-text-body)] text-muted-foreground">
               Dodajte jednu ili dve usluge — ime, cena (RSD) i trajanje u minutima.
             </p>
-            <div className="surface-inset rounded-[var(--lux-radius-md)] p-4">
-              <p className="mb-3 text-[length:var(--lux-text-small)] font-semibold uppercase tracking-wide text-muted-foreground">
+            <div className="surface-inset rounded-[var(--smp-radius-md)] p-4">
+              <p className="mb-3 text-[length:var(--smp-text-small)] font-semibold uppercase tracking-wide text-muted-foreground">
                 Usluga 1
               </p>
               <div className="grid gap-3 sm:grid-cols-3">
@@ -368,8 +368,8 @@ export default function OnboardingPage() {
                 </div>
               </div>
             </div>
-            <div className="surface-inset rounded-[var(--lux-radius-md)] p-4">
-              <p className="mb-3 text-[length:var(--lux-text-small)] font-semibold uppercase tracking-wide text-muted-foreground">
+            <div className="surface-inset rounded-[var(--smp-radius-md)] p-4">
+              <p className="mb-3 text-[length:var(--smp-text-small)] font-semibold uppercase tracking-wide text-muted-foreground">
                 Usluga 2 (opciono)
               </p>
               <div className="grid gap-3 sm:grid-cols-3">
@@ -408,10 +408,10 @@ export default function OnboardingPage() {
 
         {step === 3 ? (
           <div className="space-y-4">
-            <h2 className="font-heading text-[length:var(--lux-text-h3)] font-medium text-foreground">
+            <h2 className="font-heading text-[length:var(--smp-text-h3)] font-medium text-foreground">
               Radno vreme
             </h2>
-            <p className="text-[length:var(--lux-text-body)] text-muted-foreground">
+            <p className="text-[length:var(--smp-text-body)] text-muted-foreground">
               Uključite dane i podesite otvaranje i zatvaranje.
             </p>
             <WorkingHoursEditor value={dayRows} onChange={setDayRows} />
@@ -489,7 +489,7 @@ export default function OnboardingPage() {
             <Button
               type="button"
               variant="default"
-              className="gap-1 shadow-[var(--lux-shadow-soft)]"
+              className="gap-1 shadow-[var(--smp-shadow-soft)]"
               onClick={() => void onNext()}
               disabled={busy}
             >
@@ -500,7 +500,7 @@ export default function OnboardingPage() {
             <Button
               type="button"
               variant="default"
-              className="gap-1 shadow-[var(--lux-shadow-soft)]"
+              className="gap-1 shadow-[var(--smp-shadow-soft)]"
               onClick={finish}
             >
               Uđi u aplikaciju

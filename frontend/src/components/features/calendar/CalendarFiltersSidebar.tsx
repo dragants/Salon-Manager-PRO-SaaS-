@@ -30,7 +30,7 @@ export default function CalendarFiltersSidebar({
   onSearchChange,
 }: Props) {
   return (
-    <aside className="w-full shrink-0 space-y-5 rounded-[var(--lux-radius-lg)] border border-border bg-card p-4 shadow-[var(--lux-shadow-soft)] lg:w-56">
+    <aside className="w-full shrink-0 space-y-5 rounded-[var(--smp-radius-lg)] border border-border bg-card p-4 shadow-[var(--smp-shadow-soft)] lg:w-56">
       <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
         <Filter className="size-4 text-primary" aria-hidden />
         Filteri

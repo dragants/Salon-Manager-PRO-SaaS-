@@ -7,7 +7,7 @@
 
 /*
  * Design system: RGB CSS variables (light + .dark).
- * Tailwind/shadcn koriste most preko --lux-* = rgb(var(--token)).
+ * Jedan sistem tokena: --smp-* (most za shadcn/Tailwind).
  */
 @theme inline {
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
@@ -15,57 +15,57 @@
     "Liberation Mono", "Courier New", monospace;
   --font-heading: var(--font-sans);
 
-  --color-background: var(--lux-bg);
-  --color-foreground: var(--lux-text);
-  --color-card: var(--lux-card);
-  --color-card-foreground: var(--lux-text);
-  --color-popover: var(--lux-card);
-  --color-popover-foreground: var(--lux-text);
-  --color-primary: var(--lux-accent);
-  --color-primary-foreground: var(--lux-accent-contrast);
-  --color-secondary: var(--lux-secondary);
-  --color-secondary-foreground: var(--lux-secondary-fg);
-  --color-muted: var(--lux-muted);
-  --color-muted-foreground: var(--lux-text-muted);
-  --color-accent: var(--lux-muted);
-  --color-accent-foreground: var(--lux-text);
-  --color-destructive: var(--lux-danger);
-  --color-border: var(--lux-border);
-  --color-input: var(--lux-input-bg);
-  --color-ring: var(--lux-ring);
+  --color-background: var(--smp-bg);
+  --color-foreground: var(--smp-text);
+  --color-card: var(--smp-card);
+  --color-card-foreground: var(--smp-text);
+  --color-popover: var(--smp-card);
+  --color-popover-foreground: var(--smp-text);
+  --color-primary: var(--smp-accent);
+  --color-primary-foreground: var(--smp-accent-contrast);
+  --color-secondary: var(--smp-secondary);
+  --color-secondary-foreground: var(--smp-secondary-fg);
+  --color-muted: var(--smp-muted);
+  --color-muted-foreground: var(--smp-text-muted);
+  --color-accent: var(--smp-muted);
+  --color-accent-foreground: var(--smp-text);
+  --color-destructive: var(--smp-danger);
+  --color-border: var(--smp-border);
+  --color-input: var(--smp-input-bg);
+  --color-ring: var(--smp-ring);
 
   --color-success: rgb(var(--success));
   --color-warning: rgb(var(--warning));
 
-  --color-chart-1: var(--lux-accent);
+  --color-chart-1: var(--smp-accent);
   --color-chart-2: rgb(14 165 233);
-  --color-chart-3: var(--lux-text-muted);
+  --color-chart-3: var(--smp-text-muted);
   --color-chart-4: rgb(148 163 184);
   --color-chart-5: rgb(100 116 139);
 
-  --color-sidebar: var(--lux-sidebar);
-  --color-sidebar-foreground: var(--lux-sidebar-fg);
-  --color-sidebar-primary: var(--lux-sidebar-active);
-  --color-sidebar-primary-foreground: var(--lux-sidebar);
-  --color-sidebar-accent: var(--lux-sidebar-hover-bg);
-  --color-sidebar-accent-foreground: var(--lux-sidebar-hover-fg);
-  --color-sidebar-border: var(--lux-sidebar-border);
-  --color-sidebar-ring: var(--lux-sidebar-active);
+  --color-sidebar: var(--smp-sidebar);
+  --color-sidebar-foreground: var(--smp-sidebar-fg);
+  --color-sidebar-primary: var(--smp-sidebar-active);
+  --color-sidebar-primary-foreground: var(--smp-sidebar);
+  --color-sidebar-accent: var(--smp-sidebar-hover-bg);
+  --color-sidebar-accent-foreground: var(--smp-sidebar-hover-fg);
+  --color-sidebar-border: var(--smp-sidebar-border);
+  --color-sidebar-ring: var(--smp-sidebar-active);
 
-  --radius-sm: var(--lux-radius-sm);
-  --radius-md: var(--lux-radius-md);
-  --radius-lg: var(--lux-radius-lg);
-  --radius-xl: var(--lux-radius-xl);
-  --radius: var(--lux-radius-md);
-  --radius-2xl: calc(var(--lux-radius-lg) + 4px);
-  --radius-3xl: calc(var(--lux-radius-xl) + 4px);
+  --radius-sm: var(--smp-radius-sm);
+  --radius-md: var(--smp-radius-md);
+  --radius-lg: var(--smp-radius-lg);
+  --radius-xl: var(--smp-radius-xl);
+  --radius: var(--smp-radius-md);
+  --radius-2xl: calc(var(--smp-radius-lg) + 4px);
+  --radius-3xl: calc(var(--smp-radius-xl) + 4px);
   --radius-4xl: 28px;
 
   /* SaaS UI kit: `shadow-hover` klasa (mapiran na dizajn senku) */
-  --shadow-hover: var(--lux-shadow-hover);
+  --shadow-hover: var(--smp-shadow-hover);
 }
 
-/* ☀️ LIGHT — SaaS PRO: indigo akcije, neutral 80% UI, success/warn/danger status */
+/* ☀️ LIGHT — SaaS PRO: deep violet + gold accent */
 :root {
   /* Documented design tokens (8px grid + type scale) */
   --ds-text-xs: 0.75rem;
@@ -83,21 +83,14 @@
   --ds-space-6: 1.5rem;
   --ds-space-8: 2rem;
   --ds-space-10: 2.5rem;
-  /* Legacy hex aliases (dokumentacija / JS) */
-  --primary-500: #6366f1;
-  --primary-600: #4f46e5;
-  --primary-100: #e0e7ff;
-  --secondary-500: #0ea5e9;
-
-  /* Primary — dugmad, linkovi, fokus (indigo) */
-  --primary: 99 102 241;
-  --primary-hover: 79 70 229;
+  /* Primarna (duboko ljubičasta) + akcent zlato + sky za grafike */
+  --primary: 91 33 182;
+  --primary-hover: 76 29 149;
   --primary-foreground: 255 255 255;
-
-  /* Sekundarni naglasak (sky) + grafički tercijeri */
-  --gold-mid: 14 165 233;
-  --gold-light: 56 189 248;
-  --gold-pale: 224 231 255;
+  --accent: 245 158 11;
+  --color-sky: 14 165 233;
+  --color-sky-light: 56 189 248;
+  --color-sky-muted: 224 231 255;
 
   /* Pozadina app-a (SaaS: tamnija canvas → bele kartice iskaču) */
   --bg: 241 245 249;
@@ -112,71 +105,76 @@
   --secondary-foreground: 17 24 39;
 
   --input-bg: 255 255 255;
-  /* Sidebar kao bela ploča + jasno aktivno stanje */
-  --sidebar: 255 255 255;
-  --sidebar-border: 229 231 235;
-  --sidebar-item-active-bg: 238 242 255;
-  --sidebar-item-active-fg: 79 70 229;
+  /* Sidebar: tamna ploča, beli tekst, aktivan = zlato */
+  --sidebar: 30 27 46;
+  --sidebar-border: 45 42 63;
+  --sidebar-item-active-bg: 55 48 35;
+  --sidebar-item-active-fg: 245 158 11;
 
-  --sidebar-fg: 55 65 81;
-  --sidebar-hover-fg: 17 24 39;
-  --sidebar-active: 79 70 229;
-  --sidebar-muted-fg: 107 114 128;
+  --sidebar-fg: 255 255 255;
+  --sidebar-hover-fg: 255 255 255;
+  --sidebar-active: 245 158 11;
+  --sidebar-muted-fg: 186 190 210;
 
   --success: 34 197 94;
   --warning: 245 158 11;
   --danger: 239 68 68;
 
+  /* KPI kartice (dashboard) — jasne semantičke boje */
+  --kpi-revenue: 245 158 11;
+  --kpi-clients: 20 184 166;
+  --kpi-appointments: 91 33 182;
+  --kpi-unpaid: 239 68 68;
+
   /* Most za postojeće komponente + shadcn */
-  --lux-bg: rgb(var(--bg));
-  --lux-card: rgb(var(--card));
-  --lux-text: rgb(var(--text));
-  --lux-text-muted: rgb(var(--text-muted));
-  --lux-border: rgb(var(--border));
-  --lux-muted: rgb(var(--muted));
-  --lux-secondary: rgb(var(--secondary));
-  --lux-secondary-fg: rgb(var(--secondary-foreground));
-  --lux-accent: rgb(var(--primary));
-  --lux-accent-hover: rgb(var(--primary-hover));
-  --lux-accent-contrast: rgb(var(--primary-foreground));
-  --lux-input-bg: rgb(var(--input-bg));
-  --lux-sidebar: rgb(var(--sidebar));
-  --lux-sidebar-border: rgb(var(--sidebar-border));
-  --lux-sidebar-fg: rgb(var(--sidebar-fg));
-  --lux-sidebar-hover-fg: rgb(var(--sidebar-hover-fg));
-  --lux-sidebar-active: rgb(var(--sidebar-active));
-  --lux-sidebar-muted: rgb(var(--sidebar-muted-fg));
-  --lux-gold-mid: rgb(var(--gold-mid));
-  --lux-gold-light: rgb(var(--gold-light));
-  --lux-sidebar-hover-bg: rgb(var(--sidebar-active) / 0.08);
-  --lux-ring: rgb(var(--primary));
-  --lux-danger: rgb(var(--danger));
+  --smp-bg: rgb(var(--bg));
+  --smp-card: rgb(var(--card));
+  --smp-text: rgb(var(--text));
+  --smp-text-muted: rgb(var(--text-muted));
+  --smp-border: rgb(var(--border));
+  --smp-muted: rgb(var(--muted));
+  --smp-secondary: rgb(var(--secondary));
+  --smp-secondary-fg: rgb(var(--secondary-foreground));
+  --smp-accent: rgb(var(--primary));
+  --smp-accent-hover: rgb(var(--primary-hover));
+  --smp-accent-contrast: rgb(var(--primary-foreground));
+  --smp-input-bg: rgb(var(--input-bg));
+  --smp-sidebar: rgb(var(--sidebar));
+  --smp-sidebar-border: rgb(var(--sidebar-border));
+  --smp-sidebar-fg: rgb(var(--sidebar-fg));
+  --smp-sidebar-hover-fg: rgb(var(--sidebar-hover-fg));
+  --smp-sidebar-active: rgb(var(--sidebar-active));
+  --smp-sidebar-muted: rgb(var(--sidebar-muted-fg));
+  --smp-chart-sky: rgb(var(--color-sky));
+  --smp-chart-sky-light: rgb(var(--color-sky-light));
+  --smp-sidebar-hover-bg: rgb(var(--accent) / 0.12);
+  --smp-ring: rgb(var(--primary));
+  --smp-danger: rgb(var(--danger));
 
-  --lux-shadow-soft:
+  --smp-shadow-soft:
     0 1px 2px rgb(0 0 0 / 0.05), 0 4px 12px rgb(0 0 0 / 0.06);
-  --lux-shadow-hover: 0 12px 32px -8px rgb(0 0 0 / 0.1);
-  --lux-shadow-heavy: 0 20px 40px -12px rgb(0 0 0 / 0.12);
-  /* Primarni CTA: dubina (ljubičasta senka) */
-  --lux-shadow-primary: 0 6px 16px rgb(99 102 241 / 0.3);
-  --lux-shadow-primary-hover: 0 8px 22px rgb(99 102 241 / 0.38);
+  --smp-shadow-hover: 0 12px 32px -8px rgb(0 0 0 / 0.1);
+  --smp-shadow-heavy: 0 20px 40px -12px rgb(0 0 0 / 0.12);
+  --smp-shadow-primary: 0 6px 20px rgb(91 33 182 / 0.32);
+  --smp-shadow-primary-hover: 0 10px 28px rgb(91 33 182 / 0.42);
 
-  --lux-space-xs: 4px;
-  --lux-space-sm: 8px;
-  --lux-space-md: 16px;
-  --lux-space-lg: 24px;
-  --lux-space-xl: 32px;
-  --lux-space-2xl: 48px;
+  --smp-space-xs: 4px;
+  --smp-space-sm: 8px;
+  --smp-space-md: 16px;
+  --smp-space-lg: 24px;
+  --smp-space-xl: 32px;
+  --smp-space-2xl: 48px;
 
-  --lux-radius-sm: 8px;
-  --lux-radius-md: 12px;
-  --lux-radius-lg: 16px;
-  --lux-radius-xl: 20px;
+  --smp-radius-sm: 8px;
+  --smp-radius-md: 12px;
+  --smp-radius-lg: 16px;
+  --smp-radius-xl: 20px;
 
-  --lux-text-h1: 2.5rem;
-  --lux-text-h2: 1.75rem;
-  --lux-text-h3: 1.25rem;
-  --lux-text-body: 16px;
-  --lux-text-small: 12px;
+  --smp-text-h1: 2.5rem;
+  --smp-text-h2: 1.75rem;
+  --smp-text-h3: 1.25rem;
+  --smp-text-body: 16px;
+  --smp-text-small: 12px;
 
   /**
    * SMP UI — semantički tokeni (SaaS: Stripe/Linear stil)
@@ -219,15 +217,15 @@
   --smp-duration: 0.2s;
 }
 
-/* 🌙 DARK — slate + indigo akcent */
+/* 🌙 DARK — slate + violet / zlatni akcent u sidebaru */
 .dark {
-  --primary: 129 140 248;
-  --primary-hover: 165 180 252;
+  --primary: 167 139 250;
+  --primary-hover: 196 181 253;
   --primary-foreground: 15 23 42;
 
-  --gold-mid: 56 189 248;
-  --gold-light: 125 211 252;
-  --gold-pale: 49 46 129;
+  --color-sky: 56 189 248;
+  --color-sky-light: 125 211 252;
+  --color-sky-muted: 49 46 129;
 
   --bg: 15 23 42;
   --card: 30 41 59;
@@ -254,33 +252,38 @@
   --warning: 250 204 21;
   --danger: 248 113 113;
 
-  --lux-bg: rgb(var(--bg));
-  --lux-card: rgb(var(--card));
-  --lux-text: rgb(var(--text));
-  --lux-text-muted: rgb(var(--text-muted));
-  --lux-border: rgb(var(--border));
-  --lux-muted: rgb(var(--muted));
-  --lux-secondary: rgb(var(--secondary));
-  --lux-secondary-fg: rgb(var(--secondary-foreground));
-  --lux-accent: rgb(var(--primary));
-  --lux-accent-hover: rgb(var(--primary-hover));
-  --lux-accent-contrast: rgb(var(--primary-foreground));
-  --lux-input-bg: rgb(var(--input-bg));
-  --lux-sidebar: rgb(var(--sidebar));
-  --lux-sidebar-border: rgb(var(--sidebar-border));
-  --lux-sidebar-fg: rgb(var(--sidebar-fg));
-  --lux-sidebar-hover-fg: rgb(var(--sidebar-hover-fg));
-  --lux-sidebar-active: rgb(var(--sidebar-active));
-  --lux-sidebar-muted: rgb(var(--sidebar-muted-fg));
-  --lux-gold-mid: rgb(var(--gold-mid));
-  --lux-gold-light: rgb(var(--gold-light));
-  --lux-sidebar-hover-bg: rgb(var(--sidebar-active) / 0.12);
-  --lux-ring: rgb(var(--primary));
-  --lux-danger: rgb(var(--danger));
+  --kpi-revenue: 251 191 36;
+  --kpi-clients: 45 212 191;
+  --kpi-appointments: 167 139 250;
+  --kpi-unpaid: 248 113 113;
 
-  --lux-shadow-soft: 0 10px 30px rgb(0 0 0 / 0.35);
-  --lux-shadow-hover: 0 15px 40px rgb(0 0 0 / 0.45);
-  --lux-shadow-heavy: 0 24px 64px rgb(0 0 0 / 0.55);
+  --smp-bg: rgb(var(--bg));
+  --smp-card: rgb(var(--card));
+  --smp-text: rgb(var(--text));
+  --smp-text-muted: rgb(var(--text-muted));
+  --smp-border: rgb(var(--border));
+  --smp-muted: rgb(var(--muted));
+  --smp-secondary: rgb(var(--secondary));
+  --smp-secondary-fg: rgb(var(--secondary-foreground));
+  --smp-accent: rgb(var(--primary));
+  --smp-accent-hover: rgb(var(--primary-hover));
+  --smp-accent-contrast: rgb(var(--primary-foreground));
+  --smp-input-bg: rgb(var(--input-bg));
+  --smp-sidebar: rgb(var(--sidebar));
+  --smp-sidebar-border: rgb(var(--sidebar-border));
+  --smp-sidebar-fg: rgb(var(--sidebar-fg));
+  --smp-sidebar-hover-fg: rgb(var(--sidebar-hover-fg));
+  --smp-sidebar-active: rgb(var(--sidebar-active));
+  --smp-sidebar-muted: rgb(var(--sidebar-muted-fg));
+  --smp-chart-sky: rgb(var(--color-sky));
+  --smp-chart-sky-light: rgb(var(--color-sky-light));
+  --smp-sidebar-hover-bg: rgb(var(--sidebar-active) / 0.12);
+  --smp-ring: rgb(var(--primary));
+  --smp-danger: rgb(var(--danger));
+
+  --smp-shadow-soft: 0 10px 30px rgb(0 0 0 / 0.35);
+  --smp-shadow-hover: 0 15px 40px rgb(0 0 0 / 0.45);
+  --smp-shadow-heavy: 0 24px 64px rgb(0 0 0 / 0.55);
 }
 
 @layer base {
@@ -298,7 +301,7 @@
     color-scheme: dark;
   }
   html {
-    @apply font-sans text-[length:var(--lux-text-body)] antialiased;
+    @apply font-sans text-[length:var(--smp-text-body)] antialiased;
   }
   body {
     background-color: rgb(var(--bg));
@@ -317,7 +320,7 @@
     z-index: 0;
     background: radial-gradient(
         ellipse 120% 80% at 100% -20%,
-        rgb(99 102 241 / 0.09),
+        rgb(91 33 182 / 0.09),
         transparent 55%
       ),
       radial-gradient(
@@ -420,9 +423,9 @@
   .card-stripe {
     background: rgb(var(--card));
     border: 1px solid rgb(var(--border));
-    border-radius: var(--lux-radius-lg);
+    border-radius: var(--smp-radius-lg);
     padding: 20px;
-    box-shadow: var(--lux-shadow-soft);
+    box-shadow: var(--smp-shadow-soft);
   }
 
   .btn-primary,
@@ -438,12 +441,12 @@
       transform 0.2s ease,
       background 0.2s ease,
       box-shadow 0.2s ease;
-    box-shadow: var(--lux-shadow-primary);
+    box-shadow: var(--smp-shadow-primary);
   }
   .btn-primary:hover,
   .btn-primary-premium:hover {
     background: rgb(var(--primary-hover));
-    box-shadow: var(--lux-shadow-primary-hover);
+    box-shadow: var(--smp-shadow-primary-hover);
     transform: translateY(-1px);
   }
   .btn-primary:active,
@@ -494,28 +497,25 @@
     transform: translateY(-1px);
   }
 
-  .lux-badge {
+  .smp-badge {
     display: inline-flex;
     align-items: center;
     padding: 4px 10px;
     border-radius: 999px;
-    font-size: var(--lux-text-small);
+    font-size: var(--smp-text-small);
     font-weight: 600;
   }
-  .lux-badge-success {
+  .smp-badge-success {
     background: rgb(var(--success) / 0.15);
     color: rgb(var(--success));
     border: 1px solid rgb(var(--success) / 0.35);
   }
-  .lux-badge-warning {
+  .smp-badge-warning {
     background: rgb(var(--warning) / 0.15);
-    color: rgb(161 98 7);
+    color: rgb(var(--warning));
     border: 1px solid rgb(var(--warning) / 0.35);
   }
-  .dark .lux-badge-warning {
-    color: rgb(250 204 21);
-  }
-  .lux-badge-danger {
+  .smp-badge-danger {
     background: rgb(var(--danger) / 0.12);
     color: rgb(var(--danger));
     border: 1px solid rgb(var(--danger) / 0.35);
@@ -530,11 +530,8 @@
   .status-warning {
     @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold;
     background: rgb(var(--warning) / 0.15);
-    color: rgb(161 98 7);
+    color: rgb(var(--warning));
     border: 1px solid rgb(var(--warning) / 0.35);
-  }
-  .dark .status-warning {
-    color: rgb(250 204 21);
   }
   .status-danger {
     @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold;
@@ -550,22 +547,22 @@
     @apply text-lg font-semibold text-foreground;
   }
   .ds-h3 {
-    font-size: var(--lux-text-h3);
+    font-size: var(--smp-text-h3);
     @apply font-semibold text-foreground;
   }
   .ds-label {
-    font-size: var(--lux-text-small);
+    font-size: var(--smp-text-small);
     @apply font-medium text-muted-foreground;
   }
   .ds-body {
     @apply text-sm text-foreground;
   }
   .ds-small {
-    font-size: var(--lux-text-small);
+    font-size: var(--smp-text-small);
   }
 
   .surface-inset {
-    border-radius: var(--lux-radius-md);
+    border-radius: var(--smp-radius-md);
     border: 1px solid rgb(var(--border));
     background: rgb(var(--muted) / 0.45);
     box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.06);
@@ -578,7 +575,7 @@
   .btn-accent-warm {
     height: 44px;
     padding: 0 16px;
-    border-radius: var(--lux-radius-md);
+    border-radius: var(--smp-radius-md);
     background: rgb(var(--primary));
     color: rgb(var(--primary-foreground));
     font-weight: 600;
@@ -592,14 +589,14 @@
   }
 }
 
-/* Javna landing stranica: 2026 Stripe-like (ne menja app :root tokene) */
+/* Javna landing — koristi iste tokene kao app */
 .landing-pro {
-  --lp-primary: #6366f1;
-  --lp-primary-hover: #4f46e5;
-  --lp-bg: #f9fafb;
-  --lp-card: #ffffff;
-  --lp-text: #111827;
-  --lp-muted: #6b7280;
+  --lp-primary: rgb(var(--primary));
+  --lp-primary-hover: rgb(var(--primary-hover));
+  --lp-bg: rgb(var(--bg));
+  --lp-card: rgb(var(--card));
+  --lp-text: rgb(var(--text));
+  --lp-muted: rgb(var(--text-muted));
   --lp-border: rgb(17 24 39 / 0.06);
   --lp-shadow: 0 10px 30px rgb(0 0 0 / 0.05);
   --lp-shadow-lg: 0 20px 50px rgb(0 0 0 / 0.06);
@@ -690,7 +687,7 @@
 .landing-pro .btn:hover {
   background: var(--lp-primary-hover);
   transform: translateY(-1px);
-  box-shadow: 0 8px 20px rgb(99 102 241 / 0.25);
+  box-shadow: 0 8px 20px rgb(91 33 182 / 0.25);
 }
 
 .landing-pro .btn-outline {
@@ -712,7 +709,7 @@
 }
 
 .landing-pro .btn-outline:hover {
-  background: rgb(99 102 241 / 0.06);
+  background: rgb(91 33 182 / 0.06);
   transform: translateY(-1px);
 }
 
@@ -800,7 +797,7 @@
   border-radius: 999px;
   margin-bottom: 0.625rem;
   background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
-  border: 1px solid rgb(99 102 241 / 0.2);
+  border: 1px solid rgb(91 33 182 / 0.2);
 }
 
 .landing-pro .client-card h3 {
@@ -893,7 +890,7 @@
   background:
     radial-gradient(
       ellipse 120% 80% at 50% -20%,
-      rgb(99 102 241 / 0.12),
+      rgb(91 33 182 / 0.12),
       transparent 55%
     ),
     var(--lp-bg);
@@ -980,8 +977,8 @@
 }
 
 .landing-pro .landing-price-card-highlight {
-  border-color: rgb(99 102 241 / 0.45);
-  box-shadow: 0 16px 40px rgb(99 102 241 / 0.15);
+  border-color: rgb(91 33 182 / 0.45);
+  box-shadow: 0 16px 40px rgb(91 33 182 / 0.15);
 }
 
 .landing-pro .landing-price-card h3 {
@@ -1074,9 +1071,9 @@
   border-radius: 999px;
   font-size: 0.8125rem;
   font-weight: 600;
-  background: rgb(99 102 241 / 0.08);
+  background: rgb(91 33 182 / 0.08);
   color: var(--lp-primary);
-  border: 1px solid rgb(99 102 241 / 0.2);
+  border: 1px solid rgb(91 33 182 / 0.2);
 }
 
 .landing-pro .landing-footer {

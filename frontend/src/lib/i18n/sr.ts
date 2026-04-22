@@ -5,10 +5,11 @@
 export const sr = {
   nav: {
     dock: {
-      home: "Početna",
-      calendar: "Termini",
+      dashboard: "Dashboard",
+      calendar: "Kalendar",
       clients: "Klijenti",
-      settings: "Podeš.",
+      services: "Usluge",
+      more: "Više",
     },
   },
   landing: {

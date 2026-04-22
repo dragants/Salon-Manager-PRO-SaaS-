@@ -231,7 +231,7 @@
   }
   .smp-btn--primary:hover:not(:disabled) {
     background: var(--smp-brand-hover);
-    box-shadow: 0 4px 14px rgb(99 102 241 / 0.35);
+    box-shadow: 0 4px 14px rgb(91 33 182 / 0.35);
     transform: translateY(-1px);
   }
   .smp-btn--primary:active:not(:disabled) {

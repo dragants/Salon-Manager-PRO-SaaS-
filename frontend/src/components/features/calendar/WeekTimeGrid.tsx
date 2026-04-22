@@ -118,14 +118,14 @@ export default function WeekTimeGrid({
 
   if (rows.length === 0) {
     return (
-      <p className="rounded-[var(--lux-radius-lg)] border border-border bg-card py-16 text-center text-sm text-muted-foreground shadow-[var(--lux-shadow-soft)]">
+      <p className="rounded-[var(--smp-radius-lg)] border border-border bg-card py-16 text-center text-sm text-muted-foreground shadow-[var(--smp-shadow-soft)]">
         Nema termina ove nedelje. Dodaj termin ili promeni nedelju.
       </p>
     );
   }
 
   const gridInner = (
-    <div className="max-h-[min(70vh,640px)] overflow-auto rounded-[var(--lux-radius-lg)] border border-border bg-card shadow-[var(--lux-shadow-soft)] max-sm:max-h-[min(82vh,760px)]">
+    <div className="max-h-[min(70vh,640px)] overflow-auto rounded-[var(--smp-radius-lg)] border border-border bg-card shadow-[var(--smp-shadow-soft)] max-sm:max-h-[min(82vh,760px)]">
       <div className="flex min-w-[760px] touch-pan-x touch-pan-y">
         <div className="sticky left-0 z-20 w-11 shrink-0 border-r border-border bg-muted/60">
           <div className="h-10 shrink-0 border-b border-border" aria-hidden />

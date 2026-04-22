@@ -1,4 +1,4 @@
 /**
- * Podrazumevani salon akcent (indigo) — u skladu sa DS tokenima; server može overridovati.
+ * Podrazumevani akcent (duboko ljubičasta) — u skladu sa DS tokenima; server može overridovati.
  */
-export const DEFAULT_THEME_COLOR_HEX = "#6366F1";
+export const DEFAULT_THEME_COLOR_HEX = "#5B21B6";

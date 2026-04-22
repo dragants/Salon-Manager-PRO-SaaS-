@@ -6,7 +6,7 @@ export function Table({
   ...props
 }: React.ComponentProps<"table">) {
   return (
-    <div className="relative w-full overflow-x-auto rounded-[var(--lux-radius-lg)] border border-border">
+    <div className="relative w-full overflow-x-auto rounded-[var(--smp-radius-lg)] border border-border">
       <table
         className={cn("w-full caption-bottom text-sm", className)}
         {...props}

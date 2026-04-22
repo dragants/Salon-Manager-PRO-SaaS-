@@ -74,7 +74,7 @@ export function AppSidebar() {
 
   return (
     <>
-      <header className="sticky top-0 z-30 flex min-h-14 shrink-0 items-center gap-3 border-b border-sidebar-border bg-[var(--lux-sidebar)] px-4 pt-[env(safe-area-inset-top,0px)] text-[rgb(var(--sidebar-fg))] md:hidden">
+      <header className="sticky top-0 z-30 flex min-h-14 shrink-0 items-center gap-3 border-b border-sidebar-border bg-[var(--smp-sidebar)] px-4 pt-[env(safe-area-inset-top,0px)] text-[rgb(var(--sidebar-fg))] md:hidden">
         <Button
           type="button"
           variant="ghost"
@@ -111,7 +111,7 @@ export function AppSidebar() {
       <aside
         id="app-sidebar"
         className={cn(
-          "flex min-h-0 w-[min(19.5rem,92vw)] shrink-0 flex-col border-r border-sidebar-border bg-[var(--lux-sidebar)] text-sidebar-foreground shadow-[var(--lux-shadow-soft)] md:relative md:z-auto md:min-h-screen md:w-[248px]",
+          "flex min-h-0 w-[min(19.5rem,92vw)] shrink-0 flex-col border-r border-sidebar-border bg-[var(--smp-sidebar)] text-sidebar-foreground shadow-[var(--smp-shadow-soft)] md:relative md:z-auto md:min-h-screen md:w-[248px]",
           "fixed inset-y-0 left-0 z-50 pt-[env(safe-area-inset-top,0px)] transition-transform duration-200 ease-out md:translate-x-0 md:pt-0",
           mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}
@@ -186,7 +186,7 @@ export function AppSidebar() {
             </a>
           ) : null}
         </nav>
-        <div className="relative z-10 mt-auto shrink-0 border-t border-sidebar-border bg-[var(--lux-sidebar)] pb-[env(safe-area-inset-bottom,0px)]">
+        <div className="relative z-10 mt-auto shrink-0 border-t border-sidebar-border bg-[var(--smp-sidebar)] pb-[env(safe-area-inset-bottom,0px)]">
           {user ? (
             <div className="flex items-start gap-2 border-b border-sidebar-border px-3 py-2">
               <span

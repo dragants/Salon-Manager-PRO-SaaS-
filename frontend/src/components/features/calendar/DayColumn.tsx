@@ -111,7 +111,7 @@ function WeekGridDraggableBlock({
       ) : null}
       {canAssignStaff && teamOptions && onPatchStaff ? (
         <select
-          className="mt-0.5 w-full max-w-full truncate rounded border border-border bg-[var(--lux-input-bg)] px-0.5 py-0 text-[8px] text-foreground"
+          className="mt-0.5 w-full max-w-full truncate rounded border border-border bg-[var(--smp-input-bg)] px-0.5 py-0 text-[8px] text-foreground"
           value={row.staff_user_id ?? ""}
           title="Radnik"
           onPointerDown={(e) => e.stopPropagation()}

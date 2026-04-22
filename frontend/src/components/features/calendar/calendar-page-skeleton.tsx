@@ -3,7 +3,7 @@ import { Loader2 } from "lucide-react";
 export function CalendarPageSkeleton() {
   return (
     <div
-      className="flex min-h-[50vh] flex-col items-center justify-center gap-3 rounded-[var(--lux-radius-lg)] border border-border bg-card px-6 py-16 shadow-[var(--lux-shadow-soft)]"
+      className="flex min-h-[50vh] flex-col items-center justify-center gap-3 rounded-[var(--smp-radius-lg)] border border-border bg-card px-6 py-16 shadow-[var(--smp-shadow-soft)]"
       role="status"
       aria-live="polite"
       aria-busy="true"

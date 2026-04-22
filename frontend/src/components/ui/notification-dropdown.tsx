@@ -38,7 +38,7 @@ export function NotificationDropdownPanel({
   return (
     <div
       className={cn(
-        "w-[min(calc(100vw-2rem),320px)] overflow-hidden rounded-[var(--lux-radius-lg)] border border-border bg-card shadow-[var(--lux-shadow-hover)]",
+        "w-[min(calc(100vw-2rem),320px)] overflow-hidden rounded-[var(--smp-radius-lg)] border border-border bg-card shadow-[var(--smp-shadow-hover)]",
         className
       )}
     >

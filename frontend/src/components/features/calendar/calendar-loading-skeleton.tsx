@@ -15,7 +15,7 @@ export function CalendarLoadingSkeleton({ view, className }: Props) {
         {Array.from({ length: 5 }).map((_, i) => (
           <div
             key={i}
-            className="h-24 animate-pulse rounded-[var(--lux-radius-lg)] border border-border bg-card"
+            className="h-24 animate-pulse rounded-[var(--smp-radius-lg)] border border-border bg-card"
           />
         ))}
       </div>
@@ -25,7 +25,7 @@ export function CalendarLoadingSkeleton({ view, className }: Props) {
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-[var(--lux-radius-lg)] border border-border bg-card p-3 shadow-[var(--lux-shadow-soft)]",
+        "overflow-hidden rounded-[var(--smp-radius-lg)] border border-border bg-card p-3 shadow-[var(--smp-shadow-soft)]",
         className
       )}
       aria-busy="true"

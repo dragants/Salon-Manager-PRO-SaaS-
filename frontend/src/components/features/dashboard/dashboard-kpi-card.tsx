@@ -47,9 +47,9 @@ export function DashboardKpiCard({
   return (
     <div
       className={cn(
-        "group relative min-h-[100px] overflow-hidden rounded-[var(--lux-radius-lg)] border border-border border-l-4 bg-gradient-to-br p-4 transition-all duration-200 sm:p-5",
-        "shadow-[var(--lux-shadow-soft)]",
-        "hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[var(--lux-shadow-hover)]",
+        "group relative min-h-[100px] overflow-hidden rounded-[var(--smp-radius-lg)] border border-border border-l-4 bg-gradient-to-br p-4 transition-all duration-200 sm:p-5",
+        "shadow-[var(--smp-shadow-soft)]",
+        "hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[var(--smp-shadow-hover)]",
         accentClass[accent],
         dominant && "z-[1] ring-1 ring-primary/40"
       )}

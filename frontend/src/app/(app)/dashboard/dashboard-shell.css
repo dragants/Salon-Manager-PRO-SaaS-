@@ -39,7 +39,7 @@
   background: rgb(var(--card));
   border: 1px solid rgb(var(--border));
   border-radius: var(--dash-radius-card);
-  box-shadow: var(--lux-shadow-soft);
+  box-shadow: var(--smp-shadow-soft);
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease,
@@ -48,7 +48,7 @@
 
 .dashboard-shell .dash-card:hover {
   transform: scale(1.02);
-  box-shadow: var(--lux-shadow-hover);
+  box-shadow: var(--smp-shadow-hover);
   border-color: rgb(var(--primary) / 0.28);
 }
 
@@ -70,14 +70,14 @@
   );
   border: 1px solid rgb(var(--border));
   box-shadow:
-    var(--lux-shadow-soft),
+    var(--smp-shadow-soft),
     0 0 28px -8px rgb(var(--primary) / 0.25);
 }
 
 .dashboard-shell .dash-card-primary:hover {
   border-color: rgb(var(--primary) / 0.35);
   box-shadow:
-    var(--lux-shadow-hover),
+    var(--smp-shadow-hover),
     0 0 36px -6px rgb(var(--primary) / 0.3);
 }
 
@@ -155,16 +155,17 @@
   font-weight: 700;
 }
 
-.dashboard-shell .stat-card-purple {
-  background: #6366f1;
+/* KPI: prihod = zlato, klijenti = teal, termini = violet, duguje = crveno */
+.dashboard-shell .stat-card-kpi-revenue {
+  background: rgb(var(--kpi-revenue));
 }
-.dashboard-shell .stat-card-green {
-  background: #22c55e;
+.dashboard-shell .stat-card-kpi-clients {
+  background: rgb(var(--kpi-clients));
 }
-.dashboard-shell .stat-card-yellow {
-  background: #f59e0b;
+.dashboard-shell .stat-card-kpi-appointments {
+  background: rgb(var(--kpi-appointments));
 }
-.dashboard-shell .stat-card-red {
-  background: #ef4444;
+.dashboard-shell .stat-card-kpi-unpaid {
+  background: rgb(var(--kpi-unpaid));
 }
 

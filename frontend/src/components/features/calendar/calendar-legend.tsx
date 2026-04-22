@@ -21,7 +21,7 @@ export function CalendarLegend({
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center gap-4 rounded-[var(--lux-radius-lg)] border border-border bg-card px-4 py-3 text-xs text-muted-foreground shadow-[var(--lux-shadow-soft)]",
+        "flex flex-wrap items-center gap-4 rounded-[var(--smp-radius-lg)] border border-border bg-card px-4 py-3 text-xs text-muted-foreground shadow-[var(--smp-shadow-soft)]",
         className
       )}
     >

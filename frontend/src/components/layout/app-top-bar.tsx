@@ -23,7 +23,7 @@ import { useAuth } from "@/providers/auth-provider";
 
 /** Brza akcija u headeru: uvek čitljiv tekst + oštra ikonica, hover preko primary. */
 const topBarQuickLinkClass = cn(
-  "group inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-[var(--lux-radius-md)] border px-3",
+  "group inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-[var(--smp-radius-md)] border px-3",
   "border-primary/25 bg-background text-sm font-semibold text-foreground shadow-sm",
   "no-underline outline-none transition-all duration-150 ease-out",
   "hover:border-primary hover:bg-primary/10 hover:shadow-md",
@@ -93,16 +93,6 @@ export function AppTopBar() {
         "sticky top-0 z-20 hidden h-[72px] min-h-[72px] w-full shrink-0 items-center justify-between gap-4 border-b border-border bg-card px-6 py-0 text-foreground shadow-[0_1px_3px_rgba(0,0,0,0.06)] backdrop-blur-md dark:bg-card/95 md:flex"
       )}
     >
-      <Link
-        href="/dashboard"
-        className="font-heading text-lg font-semibold tracking-tight text-foreground transition-colors duration-200 hover:text-primary"
-      >
-        Salon Manager{" "}
-        <span className="text-xs font-sans font-normal text-muted-foreground">
-          PRO
-        </span>
-      </Link>
-
       <div className="mx-4 hidden min-w-0 flex-1 items-center justify-center gap-2 lg:flex">
         <Link href={weekCal} className={topBarQuickLinkClass}>
           <CalendarPlus
@@ -134,7 +124,7 @@ export function AppTopBar() {
           title="Brza pretraga: klijenti, usluge, navigacija (Ctrl+K ili Cmd+K)"
           aria-label="Otvori brzu pretragu i komandnu paletu. Prečica: Control+K ili Command+K"
           className={cn(
-            "group flex h-10 min-w-[min(100%,240px)] max-w-md flex-1 items-center gap-2.5 rounded-[var(--lux-radius-md)] border border-primary/25 bg-background px-3 text-left text-sm font-medium shadow-sm outline-none transition-all duration-150 ease-out",
+            "group flex h-10 min-w-[min(100%,240px)] max-w-md flex-1 items-center gap-2.5 rounded-[var(--smp-radius-md)] border border-primary/25 bg-background px-3 text-left text-sm font-medium shadow-sm outline-none transition-all duration-150 ease-out",
             "text-foreground hover:border-primary hover:bg-primary/10 hover:shadow-md",
             "focus-visible:ring-2 focus-visible:ring-primary/35 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           )}
@@ -169,7 +159,7 @@ export function AppTopBar() {
         <div className="relative" ref={menuRef}>
           <button
             type="button"
-            className="flex items-center gap-2 rounded-[var(--lux-radius-md)] border border-primary/25 bg-background py-1.5 pl-2 pr-2.5 text-left shadow-sm transition hover:border-primary hover:bg-primary/10 hover:shadow-md"
+            className="flex items-center gap-2 rounded-[var(--smp-radius-md)] border border-primary/25 bg-background py-1.5 pl-2 pr-2.5 text-left shadow-sm transition hover:border-primary hover:bg-primary/10 hover:shadow-md"
             aria-expanded={menuOpen}
             aria-haspopup="menu"
             onClick={(e) => {
@@ -199,7 +189,7 @@ export function AppTopBar() {
           {menuOpen ? (
             <div
               role="menu"
-              className="absolute right-0 mt-2 w-52 overflow-hidden rounded-[var(--lux-radius-lg)] border border-border bg-card py-1 shadow-[var(--lux-shadow-hover)]"
+              className="absolute right-0 mt-2 w-52 overflow-hidden rounded-[var(--smp-radius-lg)] border border-border bg-card py-1 shadow-[var(--smp-shadow-hover)]"
             >
               <Link
                 href="/account"

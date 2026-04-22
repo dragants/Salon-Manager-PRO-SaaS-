@@ -53,28 +53,28 @@ export function DashboardHeroStats({
         className
       )}
     >
-      <div className="stat-card stat-card-purple">
+      <div className="stat-card stat-card-kpi-clients">
         <p className="stat-card-label">Aktivni klijenti</p>
         <p className="stat-card-value tabular-nums">{clientsCount}</p>
         <p className="mt-1 text-sm font-medium text-white/85">
           U bazi salona
         </p>
       </div>
-      <div className="stat-card stat-card-green">
+      <div className="stat-card stat-card-kpi-appointments">
         <p className="stat-card-label">Danas · termini</p>
         <p className="stat-card-value tabular-nums">{appointmentsToday}</p>
         <p className="mt-1 text-sm font-medium text-white/85">
           Zakazano za današnji dan
         </p>
       </div>
-      <div className="stat-card stat-card-yellow">
+      <div className="stat-card stat-card-kpi-revenue">
         <p className="stat-card-label">Promet danas</p>
         <p className="stat-card-value tabular-nums">{promet}</p>
         <p className="mt-1 text-sm font-medium text-white/90">
           {showFinancial ? "Prihod i završeni tretmani" : "Samo admin"}
         </p>
       </div>
-      <div className="stat-card stat-card-red">
+      <div className="stat-card stat-card-kpi-unpaid">
         <p className="stat-card-label">Neplaćeno / potraživanja</p>
         {dug}
       </div>

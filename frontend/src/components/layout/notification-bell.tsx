@@ -36,7 +36,7 @@ export function NotificationBell() {
         type="button"
         variant="outline"
         size="icon"
-        className="relative size-10 rounded-[var(--lux-radius-md)] border-border bg-card/80 text-foreground shadow-[var(--lux-shadow-soft)] hover:bg-card"
+        className="relative size-10 rounded-[var(--smp-radius-md)] border-border bg-card/80 text-foreground shadow-[var(--smp-shadow-soft)] hover:bg-card"
         aria-label="Notifikacije"
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}

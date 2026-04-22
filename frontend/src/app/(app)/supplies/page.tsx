@@ -520,7 +520,7 @@ export default function SuppliesPage() {
             <div className="space-y-2">
               <Label>Tip</Label>
               <select
-                className="flex h-10 w-full rounded-xl border border-border bg-[var(--lux-input-bg)] px-3 text-sm"
+                className="flex h-10 w-full rounded-xl border border-border bg-[var(--smp-input-bg)] px-3 text-sm"
                 value={movType}
                 onChange={(e) =>
                   setMovType(e.target.value as typeof movType)

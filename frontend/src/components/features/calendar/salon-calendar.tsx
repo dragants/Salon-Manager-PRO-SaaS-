@@ -532,7 +532,7 @@ export function SalonCalendar({ embedMode = false }: { embedMode?: boolean }) {
           {view === "day" ? (
             <div
               className={cn(
-                "rounded-[var(--lux-radius-lg)] border px-4 py-3 text-sm shadow-[var(--lux-shadow-soft)]",
+                "rounded-[var(--smp-radius-lg)] border px-4 py-3 text-sm shadow-[var(--smp-shadow-soft)]",
                 "border-border bg-card text-muted-foreground"
               )}
             >
@@ -560,11 +560,11 @@ export function SalonCalendar({ embedMode = false }: { embedMode?: boolean }) {
             <CalendarLoadingSkeleton view={view} />
           ) : view === "week" ? (
             rows.length === 0 ? (
-              <p className="rounded-[var(--lux-radius-lg)] border border-border bg-card py-16 text-center text-sm text-muted-foreground shadow-[var(--lux-shadow-soft)]">
+              <p className="rounded-[var(--smp-radius-lg)] border border-border bg-card py-16 text-center text-sm text-muted-foreground shadow-[var(--smp-shadow-soft)]">
                 Nema termina ove nedelje. Dodaj termin ili promeni nedelju.
               </p>
             ) : filteredAppointments.length === 0 ? (
-              <p className="rounded-[var(--lux-radius-lg)] border border-primary/25 bg-primary/10 py-12 text-center text-sm text-foreground shadow-[var(--lux-shadow-soft)]">
+              <p className="rounded-[var(--smp-radius-lg)] border border-primary/25 bg-primary/10 py-12 text-center text-sm text-foreground shadow-[var(--smp-shadow-soft)]">
                 Nema termina koji odgovaraju filterima. Isprazni pretragu ili
                 izaberi „Svi statusi“.
               </p>
@@ -590,7 +590,7 @@ export function SalonCalendar({ embedMode = false }: { embedMode?: boolean }) {
               />
             )
           ) : dayListSorted.length === 0 ? (
-            <div className="rounded-[var(--lux-radius-lg)] border border-border bg-card py-16 text-center shadow-[var(--lux-shadow-soft)]">
+            <div className="rounded-[var(--smp-radius-lg)] border border-border bg-card py-16 text-center shadow-[var(--smp-shadow-soft)]">
               <p className="text-sm text-muted-foreground">
                 {rows.length === 0
                   ? "Za ovaj izabrani dan nema zakazanih termina u bazi. Proveri datum strelicama ili „Danas“, pređi na prikaz „Nedelja“ da vidiš ostale dane, ili dodaj termin."
