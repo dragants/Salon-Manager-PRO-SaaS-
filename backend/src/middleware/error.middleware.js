@@ -38,7 +38,16 @@ module.exports = function errorHandler(err, req, res, next) {
     return res.status(503).json({
       error: isProduction
         ? "Servis privremeno nedostupan."
-        : "Tabele u bazi ne postoje. Pokreni sql/schema.sql na svojoj PostgreSQL bazi.",
+        : "Tabele u bazi ne postoje. Pokreni backend/sql/schema.sql na PostgreSQL bazi (ili migracije u backend/sql/migrations/).",
+    });
+  }
+
+  /** Npr. kolona category_id na services — šema starija od aplikacije */
+  if (err.code === "42703") {
+    return res.status(503).json({
+      error: isProduction
+        ? "Servis privremeno nedostupan."
+        : "Baza nema očekivane kolone (šema je starija od aplikacije). Pokreni na PostgreSQL-u: backend/sql/schema.sql — ili redom 018–021 iz backend/sql/migrations/.",
     });
   }
 

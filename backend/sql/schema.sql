@@ -243,3 +243,66 @@ CREATE INDEX IF NOT EXISTS idx_client_loyalty_client
 
 ALTER TABLE appointments ADD COLUMN IF NOT EXISTS redeems_loyalty BOOLEAN NOT NULL DEFAULT FALSE;
 ALTER TABLE appointments ADD COLUMN IF NOT EXISTS loyalty_program_id INTEGER REFERENCES loyalty_programs(id) ON DELETE SET NULL;
+
+-- ---------------------------------------------------------------------------
+-- Migracije 018–021 (idempotentno): kategorije usluga, zalihe po usluzi,
+-- ponavljanje termina, otkazivanje putem tokena. Pokreni ceo schema.sql ili
+-- pojedinačno fajlove iz backend/sql/migrations/ ako baza već postoji.
+-- ---------------------------------------------------------------------------
+
+-- 018: Service categories + kolone na services
+CREATE TABLE IF NOT EXISTS service_categories (
+  id SERIAL PRIMARY KEY,
+  organization_id INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_service_categories_org
+  ON service_categories (organization_id, sort_order);
+
+ALTER TABLE services ADD COLUMN IF NOT EXISTS category_id INTEGER
+  REFERENCES service_categories(id) ON DELETE SET NULL;
+
+ALTER TABLE services ADD COLUMN IF NOT EXISTS color TEXT;
+ALTER TABLE services ADD COLUMN IF NOT EXISTS description TEXT;
+
+CREATE INDEX IF NOT EXISTS idx_services_org_category
+  ON services (organization_id, category_id);
+
+-- 019: Service–supply usage
+CREATE TABLE IF NOT EXISTS service_supply_usage (
+  id BIGSERIAL PRIMARY KEY,
+  organization_id INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  service_id INTEGER NOT NULL REFERENCES services(id) ON DELETE CASCADE,
+  supply_item_id BIGINT NOT NULL REFERENCES supply_items(id) ON DELETE CASCADE,
+  qty_per_use NUMERIC(14, 3) NOT NULL DEFAULT 1 CHECK (qty_per_use > 0),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (organization_id, service_id, supply_item_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_service_supply_usage_service
+  ON service_supply_usage (organization_id, service_id);
+
+CREATE INDEX IF NOT EXISTS idx_service_supply_usage_item
+  ON service_supply_usage (supply_item_id);
+
+-- 020: Recurring appointments
+ALTER TABLE appointments ADD COLUMN IF NOT EXISTS recurrence_rule JSONB;
+ALTER TABLE appointments ADD COLUMN IF NOT EXISTS recurrence_group_id UUID;
+
+CREATE INDEX IF NOT EXISTS idx_appointments_recurrence_group
+  ON appointments (organization_id, recurrence_group_id)
+  WHERE recurrence_group_id IS NOT NULL;
+
+-- 021: Cancel token + status cancelled
+ALTER TABLE appointments DROP CONSTRAINT IF EXISTS appointments_status_check;
+ALTER TABLE appointments ADD CONSTRAINT appointments_status_check
+  CHECK (status IN ('scheduled', 'completed', 'no_show', 'cancelled'));
+
+ALTER TABLE appointments ADD COLUMN IF NOT EXISTS cancel_token TEXT;
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_appointments_cancel_token
+  ON appointments (cancel_token)
+  WHERE cancel_token IS NOT NULL;
