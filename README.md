@@ -58,6 +58,41 @@ Sistem za upravljanje terminima, klijentima, uslugama i zaposlenima u salonima �
 
    (Zahteva build frontenda: `npm run build --prefix frontend`.)
 
+## Production (PM2)
+
+Repo je monorepo: `backend/` (Express API) + `frontend/` (Next.js). PM2 konfiguracija je u `ecosystem.config.cjs`.
+
+### 1) Build
+
+```bash
+npm install
+npm run build --prefix frontend
+```
+
+### 2) Start / restart / logovi
+
+```bash
+npm i -g pm2
+pm2 start ecosystem.config.cjs
+pm2 status
+pm2 logs
+```
+
+Log fajlovi: `logs/api.out.log`, `logs/api.error.log`, `logs/web.out.log`, `logs/web.error.log`.
+
+### 3) Auto-start posle restarta servera
+
+```bash
+pm2 startup
+pm2 save
+```
+
+### 4) Log rotacija
+
+```bash
+pm2 install pm2-logrotate
+```
+
 ## Okruženje (primeri)
 
 **Frontend** (`frontend/.env.local` — opciono):
