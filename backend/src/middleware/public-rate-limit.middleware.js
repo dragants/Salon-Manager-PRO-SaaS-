@@ -1,13 +1,15 @@
-const rateLimit = require("express-rate-limit");
+const { rateLimit, ipKeyGenerator } = require("express-rate-limit");
 
 /**
  * Public limiter key: per-IP + per-salon slug.
  * - smanjuje abuse po salonu
  * - sprečava da jedna IP adresa iscrpi limit za sve slugs
+ * - ipKeyGenerator: obavezno za express-rate-limit v7 (IPv6 / validacija ključa)
  */
 function publicKey(req) {
   const slug = (req.params && req.params.slug) || "unknown";
-  return `${req.ip}|${slug}`;
+  const ip = ipKeyGenerator(req.ip ?? "");
+  return `${ip}|${slug}`;
 }
 
 /**

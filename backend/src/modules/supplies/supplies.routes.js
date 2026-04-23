@@ -43,6 +43,7 @@ router.delete(
 );
 
 /* ── Movements ── */
+router.get(
   "/movements",
   auth,
   requireAdmin,
