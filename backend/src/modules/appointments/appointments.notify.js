@@ -2,6 +2,7 @@ const pool = require("../../config/db");
 const sms = require("../../services/sms.service");
 const whatsapp = require("../../services/whatsapp.service");
 const emailService = require("../../services/email.service");
+const notificationsQueue = require("../../../../queue/notifications");
 
 function defaultAppTimeZone() {
   return process.env.APP_TIMEZONE || "Europe/Belgrade";
@@ -271,6 +272,9 @@ async function sendBookingNotifications(
 
   const smsWanted = Boolean(sendSms);
   const emailWanted = Boolean(sendEmail);
+  const queueEnabled = process.env.NOTIFICATIONS_QUEUE_ENABLED !== "false";
+  const baseEventId = `booking_confirm:${orgId}:${appointment.id}`;
+  const queueOpts = { attempts: 5, backoff: 5000, removeOnComplete: true, removeOnFail: false };
 
   if (smsWanted) {
     if (!client.phone) {
@@ -279,8 +283,24 @@ async function sendBookingNotifications(
       out.sms = "skipped_not_configured";
     } else {
       try {
-        await sms.sendSMS(client.phone, message, twilioOrg);
-        out.sms = "sent";
+        if (queueEnabled) {
+          await notificationsQueue.add(
+            {
+              type: "sms",
+              data: {
+                eventId: `${baseEventId}:sms`,
+                to: client.phone,
+                message,
+                twilioOverride: twilioOrg,
+              },
+            },
+            { ...queueOpts, jobId: `${baseEventId}:sms` }
+          );
+          out.sms = "queued";
+        } else {
+          await sms.sendSMS(client.phone, message, twilioOrg);
+          out.sms = "sent";
+        }
       } catch (e) {
         console.error("SMS notify failed", e);
         out.sms = "failed";
@@ -300,8 +320,23 @@ async function sendBookingNotifications(
         if (!to) {
           out.whatsapp = "skipped_no_phone";
         } else {
-          await whatsapp.sendWhatsApp(to, message);
-          out.whatsapp = "sent";
+          if (queueEnabled) {
+            await notificationsQueue.add(
+              {
+                type: "whatsapp",
+                data: {
+                  eventId: `${baseEventId}:whatsapp`,
+                  to,
+                  message,
+                },
+              },
+              { ...queueOpts, jobId: `${baseEventId}:whatsapp` }
+            );
+            out.whatsapp = "queued";
+          } else {
+            await whatsapp.sendWhatsApp(to, message);
+            out.whatsapp = "sent";
+          }
         }
       } catch (e) {
         console.error("WhatsApp notify failed", e);
@@ -332,13 +367,31 @@ async function sendBookingNotifications(
           : "Potvrda termina";
         const textBody = `${message}\n\n—`;
         const htmlBody = `<p>${message.replace(/\n/g, "<br/>")}</p>`;
-        await emailService.sendBookingConfirmationEmail(bn, {
-          to,
-          subject: subj,
-          text: textBody,
-          html: htmlBody,
-        });
-        out.email = "sent";
+        if (queueEnabled) {
+          await notificationsQueue.add(
+            {
+              type: "email",
+              data: {
+                eventId: `${baseEventId}:email`,
+                to,
+                subject: subj,
+                text: textBody,
+                html: htmlBody,
+                bookingNotifications: bn,
+              },
+            },
+            { ...queueOpts, jobId: `${baseEventId}:email` }
+          );
+          out.email = "queued";
+        } else {
+          await emailService.sendBookingConfirmationEmail(bn, {
+            to,
+            subject: subj,
+            text: textBody,
+            html: htmlBody,
+          });
+          out.email = "sent";
+        }
       } catch (e) {
         console.error("Email notify failed", e);
         out.email = "failed";

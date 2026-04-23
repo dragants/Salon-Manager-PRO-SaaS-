@@ -1,4 +1,8 @@
 const authService = require("./auth.service");
+const twofaService = require("./auth.2fa.service");
+const jwt = require("jsonwebtoken");
+const { JWT_SECRET } = require("../../config/env");
+const { resetLoginFailures } = require("../../middleware/loginProtection");
 const {
   ACCESS_TOKEN_COOKIE,
   accessTokenCookieOptions,
@@ -23,8 +27,21 @@ async function login(req, res) {
   if (!token) {
     return res.status(401).json({ error: "Invalid credentials" });
   }
+  // On successful login, clear brute-force counter.
+  await resetLoginFailures({ email: req.body?.email, ip: req.ip });
   setAccessTokenCookie(res, token, remember);
-  res.json({ ok: true });
+  let decoded;
+  try {
+    decoded = jwt.verify(token, JWT_SECRET);
+  } catch {
+    decoded = null;
+  }
+  const mfa = decoded?.mfa !== false;
+  res.json({
+    ok: true,
+    mfa_required: decoded?.mfa === false,
+    mfa: mfa,
+  });
 }
 
 function logout(req, res) {
@@ -52,4 +69,25 @@ async function resetPassword(req, res) {
   res.json({ ok: true, message: "Lozinka je ažurirana. Možete se prijaviti." });
 }
 
-module.exports = { register, login, logout, forgotPassword, resetPassword };
+async function begin2faSetup(req, res) {
+  const out = await twofaService.beginSetup({ userId: req.user.userId });
+  res.json(out);
+}
+
+async function enable2fa(req, res) {
+  const out = await twofaService.enable({
+    userId: req.user.userId,
+    otp: req.body.otp,
+  });
+  res.json(out);
+}
+
+module.exports = {
+  register,
+  login,
+  logout,
+  forgotPassword,
+  resetPassword,
+  begin2faSetup,
+  enable2fa,
+};

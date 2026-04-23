@@ -10,6 +10,7 @@ const loginSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().required(),
   remember: Joi.boolean().optional(),
+  otp: Joi.string().trim().min(6).max(10).optional(),
 });
 
 const forgotPasswordSchema = Joi.object({
@@ -21,9 +22,14 @@ const resetPasswordSchema = Joi.object({
   password: Joi.string().min(8).required(),
 });
 
+const enable2faSchema = Joi.object({
+  otp: Joi.string().trim().min(6).max(10).required(),
+});
+
 module.exports = {
   registerSchema,
   loginSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  enable2faSchema,
 };

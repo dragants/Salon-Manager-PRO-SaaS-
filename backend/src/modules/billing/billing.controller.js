@@ -2,6 +2,7 @@ const pool = require("../../config/db");
 const env = require("../../config/env");
 const paddleService = require("../../services/paddle.service");
 const planLimits = require("../../services/plan-limits.service");
+const stripeBilling = require("../../services/stripeBilling.service");
 
 /** Kolone stripe_* u bazi čuvaju Paddle user_id i subscription_id (Classic). */
 async function status(req, res) {
@@ -56,9 +57,19 @@ async function checkout(req, res) {
   res.json({ url });
 }
 
+async function stripeCheckout(req, res) {
+  const { url } = await stripeBilling.createCheckoutSessionForOrg(req.user.orgId);
+  res.json({ url });
+}
+
+async function stripePortal(req, res) {
+  const { url } = await stripeBilling.createPortalSessionForOrg(req.user.orgId);
+  res.json({ url });
+}
+
 async function portal(req, res) {
   const { url } = await paddleService.createBillingPortalSession(req.user.orgId);
   res.json({ url });
 }
 
-module.exports = { status, checkout, portal };
+module.exports = { status, checkout, stripeCheckout, stripePortal, portal };

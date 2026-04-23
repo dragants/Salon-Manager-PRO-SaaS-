@@ -1,7 +1,8 @@
 const router = require("express").Router();
 const controller = require("./services.controller");
-const auth = require("../../middleware/auth.middleware");
-const requireAdmin = require("../../middleware/admin.middleware");
+const auth = require("../../middleware/auth");
+const tenant = require("../../middleware/tenant");
+const { permit } = require("../../middleware/rbac");
 const validate = require("../../middleware/validate.middleware");
 const asyncHandler = require("../../utils/asyncHandler");
 const {
@@ -13,18 +14,26 @@ const {
 } = require("./services.validation");
 
 /* ── Categories (before /:id to avoid path clash) ── */
-router.get("/categories", auth, asyncHandler(controller.getCategories));
+router.get(
+  "/categories",
+  auth,
+  tenant,
+  permit("view_services"),
+  asyncHandler(controller.getCategories)
+);
 router.post(
   "/categories",
   auth,
-  requireAdmin,
+  tenant,
+  permit("manage_services"),
   validate(createCategorySchema),
   asyncHandler(controller.createCategory)
 );
 router.patch(
   "/categories/:id",
   auth,
-  requireAdmin,
+  tenant,
+  permit("manage_services"),
   validate(idParamSchema, "params"),
   validate(updateCategorySchema),
   asyncHandler(controller.updateCategory)
@@ -32,30 +41,35 @@ router.patch(
 router.delete(
   "/categories/:id",
   auth,
-  requireAdmin,
+  tenant,
+  permit("manage_services"),
   validate(idParamSchema, "params"),
   asyncHandler(controller.removeCategory)
 );
 
 /* ── Services ── */
-router.get("/", auth, asyncHandler(controller.getAll));
+router.get("/", auth, tenant, permit("view_services"), asyncHandler(controller.getAll));
 router.post(
   "/",
   auth,
-  requireAdmin,
+  tenant,
+  permit("manage_services"),
   validate(createServiceSchema),
   asyncHandler(controller.create)
 );
 router.get(
   "/:id",
   auth,
+  tenant,
+  permit("view_services"),
   validate(idParamSchema, "params"),
   asyncHandler(controller.getById)
 );
 router.patch(
   "/:id",
   auth,
-  requireAdmin,
+  tenant,
+  permit("manage_services"),
   validate(idParamSchema, "params"),
   validate(updateServiceSchema),
   asyncHandler(controller.update)
@@ -63,7 +77,8 @@ router.patch(
 router.delete(
   "/:id",
   auth,
-  requireAdmin,
+  tenant,
+  permit("manage_services"),
   validate(idParamSchema, "params"),
   asyncHandler(controller.remove)
 );

@@ -15,12 +15,25 @@ async function getAll(req, res) {
     day = resolved;
   }
   let data;
+  const onlyOwnStaffUserId =
+    req.onlyOwnStaffUserId != null ? Number(req.onlyOwnStaffUserId) : null;
   if (from && to) {
-    data = await service.getByDateRange(req.user.orgId, from, to, timezone);
+    data = await service.getByDateRange(
+      req.user.orgId,
+      from,
+      to,
+      timezone,
+      onlyOwnStaffUserId
+    );
   } else if (day) {
-    data = await service.getByDay(req.user.orgId, day, timezone);
+    data = await service.getByDay(
+      req.user.orgId,
+      day,
+      timezone,
+      onlyOwnStaffUserId
+    );
   } else {
-    data = await service.getAll(req.user.orgId);
+    data = await service.getAll(req.user.orgId, onlyOwnStaffUserId);
   }
   res.json(data);
 }

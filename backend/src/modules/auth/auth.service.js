@@ -4,6 +4,7 @@ const env = require("../../config/env");
 const { generate } = require("../../utils/jwt");
 const { hashPassword, comparePassword } = require("../../utils/hash");
 const { sendPasswordResetEmail } = require("../../services/auth-mail.service");
+const { authenticator } = require("otplib");
 
 async function register({ email, password, organization_name }) {
   const client = await pool.connect();
@@ -29,6 +30,7 @@ async function register({ email, password, organization_name }) {
     return generate({
       userId: userResult.rows[0].id,
       orgId,
+      tenantId: orgId,
       role: "admin",
       tv: 0,
     });
@@ -40,12 +42,15 @@ async function register({ email, password, organization_name }) {
   }
 }
 
-async function login({ email, password, remember: _remember }) {
+async function login({ email, password, remember: _remember, otp }) {
   let result;
   try {
     result = await pool.query(
       `SELECT id, password, organization_id, role,
-              COALESCE(token_version, 0)::int AS token_version
+              COALESCE(token_version, 0)::int AS token_version,
+              COALESCE(twofa_enabled, false) AS twofa_enabled,
+              twofa_secret,
+              COALESCE(mfa_enforced, false) AS mfa_enforced
        FROM users WHERE email = $1`,
       [email]
     );
@@ -70,11 +75,34 @@ async function login({ email, password, remember: _remember }) {
   if (!ok) {
     return null;
   }
+
+  const role = user.role;
+  const isPrivileged = role === "owner" || role === "admin";
+  const enforceMfa = Boolean(user.mfa_enforced) || isPrivileged;
+
+  // MFA handling:
+  // - If enforced and not enabled: issue a limited token with mfa=false so user can complete setup.
+  // - If enabled: require valid OTP to issue full token (mfa=true).
+  if (enforceMfa && user.twofa_enabled) {
+    const code = otp != null ? String(otp).trim() : "";
+    const secret = user.twofa_secret ? String(user.twofa_secret) : "";
+    const okOtp =
+      code && secret ? authenticator.check(code, secret) : false;
+    if (!okOtp) {
+      const err = new Error("Invalid 2FA code");
+      err.statusCode = 401;
+      err.code = "MFA_INVALID";
+      throw err;
+    }
+  }
+
   return generate({
     userId: user.id,
     orgId: user.organization_id,
-    role: user.role,
+    tenantId: user.organization_id,
+    role,
     tv: user.token_version,
+    mfa: !enforceMfa ? true : Boolean(user.twofa_enabled),
   });
 }
 

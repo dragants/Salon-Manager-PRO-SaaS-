@@ -4,9 +4,11 @@ const cookieParser = require("cookie-parser");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const morgan = require("morgan");
+const { redisStoreOrNull } = require("./middleware/rateLimitRedisStore");
 
 const { FRONTEND_URLS } = require("./config/env");
 const paddleWebhook = require("./webhooks/paddle.webhook");
+const stripeWebhook = require("./webhooks/stripe.webhook");
 
 /** Dodatni origini (zarezom), npr. drugi front ili staging — vidi CORS_ORIGINS u .env */
 const CORS_EXTRA_ORIGINS = (process.env.CORS_ORIGINS || "")
@@ -69,23 +71,31 @@ app.post(
   paddleWebhook
 );
 
+// Stripe requires raw body for signature verification (must be before express.json()).
+app.post("/webhooks/stripe", express.raw({ type: "application/json" }), stripeWebhook);
+
 app.use(cookieParser());
 app.use(express.json({ limit: "12mb" }));
 
 app.use(
-  rateLimit({
+  (() => {
+    const store = redisStoreOrNull("global");
+    return rateLimit({
     windowMs: GLOBAL_WINDOW_MS,
     max: GLOBAL_MAX,
     standardHeaders: true,
     legacyHeaders: false,
+    ...(store ? { store } : {}),
     /* /auth ima sopstvene, strože limitere — ne mešati sa 500/15m za API. */
     skip: (req) =>
       req.path === "/health" ||
       req.path === "/webhooks/paddle" ||
+      req.path === "/webhooks/stripe" ||
       req.path.startsWith("/public") ||
       req.path === "/appointments/stream" ||
       req.path.startsWith("/auth"),
-  })
+    });
+  })()
 );
 
 app.use(

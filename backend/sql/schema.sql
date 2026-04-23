@@ -13,6 +13,8 @@ CREATE TABLE IF NOT EXISTS organizations (
   stripe_customer_id TEXT,
   stripe_subscription_id TEXT,
   subscription_status TEXT DEFAULT 'inactive',
+  status TEXT NOT NULL DEFAULT 'active'
+    CHECK (status IN ('active', 'suspended')),
   billing_plan TEXT NOT NULL DEFAULT 'free'
     CHECK (billing_plan IN ('free', 'basic', 'pro')),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -26,11 +28,17 @@ CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
   email TEXT NOT NULL UNIQUE,
   password TEXT NOT NULL,
-  role TEXT NOT NULL DEFAULT 'admin' CHECK (role IN ('admin', 'worker')),
+  role TEXT NOT NULL DEFAULT 'admin'
+    CHECK (role IN ('owner', 'admin', 'receptionist', 'staff', 'worker')),
   organization_id INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  tenant_id INTEGER GENERATED ALWAYS AS (organization_id) STORED,
   token_version INTEGER NOT NULL DEFAULT 0,
   display_name TEXT,
   worker_profile JSONB NOT NULL DEFAULT '{}'::jsonb,
+  twofa_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+  twofa_secret TEXT,
+  twofa_backup_codes_hash JSONB NOT NULL DEFAULT '[]'::jsonb,
+  mfa_enforced BOOLEAN NOT NULL DEFAULT FALSE,
   password_reset_token_hash TEXT,
   password_reset_expires_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -39,6 +47,7 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS audit_log (
   id BIGSERIAL PRIMARY KEY,
   organization_id INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  tenant_id INTEGER GENERATED ALWAYS AS (organization_id) STORED,
   user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
   action TEXT NOT NULL,
   entity_type TEXT,
@@ -52,6 +61,7 @@ CREATE INDEX IF NOT EXISTS idx_audit_log_org_created ON audit_log(organization_i
 CREATE TABLE IF NOT EXISTS clients (
   id SERIAL PRIMARY KEY,
   organization_id INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  tenant_id INTEGER GENERATED ALWAYS AS (organization_id) STORED,
   name TEXT NOT NULL,
   phone TEXT,
   email TEXT,
@@ -88,6 +98,7 @@ CREATE INDEX IF NOT EXISTS idx_chart_files_entry ON client_chart_files(chart_ent
 CREATE TABLE IF NOT EXISTS services (
   id SERIAL PRIMARY KEY,
   organization_id INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  tenant_id INTEGER GENERATED ALWAYS AS (organization_id) STORED,
   name TEXT NOT NULL,
   price NUMERIC(12, 2) NOT NULL DEFAULT 0,
   duration INTEGER NOT NULL DEFAULT 60,
@@ -98,6 +109,7 @@ CREATE TABLE IF NOT EXISTS services (
 CREATE TABLE IF NOT EXISTS appointments (
   id SERIAL PRIMARY KEY,
   organization_id INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  tenant_id INTEGER GENERATED ALWAYS AS (organization_id) STORED,
   client_id INTEGER NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
   service_id INTEGER NOT NULL REFERENCES services(id) ON DELETE RESTRICT,
   staff_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
@@ -110,21 +122,28 @@ CREATE TABLE IF NOT EXISTS appointments (
 CREATE TABLE IF NOT EXISTS payments (
   id SERIAL PRIMARY KEY,
   organization_id INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  tenant_id INTEGER GENERATED ALWAYS AS (organization_id) STORED,
   amount NUMERIC(12, 2) NOT NULL,
   date TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_users_org ON users(organization_id);
+CREATE INDEX IF NOT EXISTS idx_users_tenant ON users(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_clients_org ON clients(organization_id);
+CREATE INDEX IF NOT EXISTS idx_clients_tenant ON clients(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_services_org ON services(organization_id);
+CREATE INDEX IF NOT EXISTS idx_services_tenant ON services(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_appointments_org_date ON appointments(organization_id, date);
+CREATE INDEX IF NOT EXISTS idx_appointments_tenant_date ON appointments(tenant_id, date);
 CREATE INDEX IF NOT EXISTS idx_appointments_org_staff ON appointments(organization_id, staff_user_id);
 CREATE INDEX IF NOT EXISTS idx_payments_org ON payments(organization_id);
+CREATE INDEX IF NOT EXISTS idx_payments_tenant ON payments(tenant_id);
 
 CREATE TABLE IF NOT EXISTS appointment_notification_log (
   id SERIAL PRIMARY KEY,
   organization_id INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  tenant_id INTEGER GENERATED ALWAYS AS (organization_id) STORED,
   appointment_id INTEGER NOT NULL REFERENCES appointments(id) ON DELETE CASCADE,
   kind TEXT NOT NULL CHECK (
     kind IN (
@@ -141,6 +160,18 @@ CREATE TABLE IF NOT EXISTS appointment_notification_log (
 );
 
 CREATE INDEX IF NOT EXISTS idx_appt_notif_appt ON appointment_notification_log(appointment_id);
+
+-- Tenants view (SaaS API surface)
+DROP VIEW IF EXISTS tenants;
+CREATE VIEW tenants AS
+SELECT
+  o.id,
+  o.name,
+  COALESCE(NULLIF(btrim(o.settings->>'timezone'), ''), 'Europe/Belgrade') AS timezone,
+  COALESCE(NULLIF(btrim(o.settings #>> '{finance,currency}'), ''), 'RSD') AS currency,
+  o.status,
+  o.billing_plan AS plan
+FROM organizations o;
 
 CREATE TABLE IF NOT EXISTS work_shifts (
   id SERIAL PRIMARY KEY,

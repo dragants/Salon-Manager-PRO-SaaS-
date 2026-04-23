@@ -167,40 +167,58 @@ async function listSelectFragment() {
     : listSelectWithoutStaff;
 }
 
-async function getAll(orgId) {
+async function getAll(orgId, onlyStaffUserId = null) {
   const listSelect = await listSelectFragment();
+  const extra =
+    onlyStaffUserId != null
+      ? ` AND a.staff_user_id = $2`
+      : ``;
   const res = await pool.query(
     `${listSelect}
-     WHERE a.organization_id = $1
+     WHERE a.organization_id = $1${extra}
      ORDER BY a.date ASC`,
-    [orgId]
+    onlyStaffUserId != null ? [orgId, Number(onlyStaffUserId)] : [orgId]
   );
   return res.rows;
 }
 
-async function getByDay(orgId, day, timeZone) {
+async function getByDay(orgId, day, timeZone, onlyStaffUserId = null) {
   assertValidTimeZone(timeZone);
   const listSelect = await listSelectFragment();
+  const extra =
+    onlyStaffUserId != null
+      ? ` AND a.staff_user_id = $4`
+      : ``;
   const res = await pool.query(
     `${listSelect}
      WHERE a.organization_id = $1
        AND to_char(timezone($3::text, a.date), 'YYYY-MM-DD') = $2
+       ${extra}
      ORDER BY a.date ASC`,
-    [orgId, day, timeZone]
+    onlyStaffUserId != null
+      ? [orgId, day, timeZone, Number(onlyStaffUserId)]
+      : [orgId, day, timeZone]
   );
   return res.rows;
 }
 
-async function getByDateRange(orgId, from, to, timeZone) {
+async function getByDateRange(orgId, from, to, timeZone, onlyStaffUserId = null) {
   assertValidTimeZone(timeZone);
   const listSelect = await listSelectFragment();
+  const extra =
+    onlyStaffUserId != null
+      ? ` AND a.staff_user_id = $5`
+      : ``;
   const res = await pool.query(
     `${listSelect}
      WHERE a.organization_id = $1
        AND (timezone($4::text, a.date))::date >= $2::date
        AND (timezone($4::text, a.date))::date <= $3::date
+       ${extra}
      ORDER BY a.date ASC`,
-    [orgId, from, to, timeZone]
+    onlyStaffUserId != null
+      ? [orgId, from, to, timeZone, Number(onlyStaffUserId)]
+      : [orgId, from, to, timeZone]
   );
   return res.rows;
 }

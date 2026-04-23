@@ -34,6 +34,25 @@ function subscriptionBypass(req) {
   return false;
 }
 
+function mfaBypass(req) {
+  const path = req.originalUrl.split("?")[0];
+  if (path === "/health") {
+    return true;
+  }
+  // Allow only MFA setup flows when session is MFA-pending
+  if (path.startsWith("/auth/2fa")) {
+    return true;
+  }
+  if (path === "/auth/logout") {
+    return true;
+  }
+  // Minimal bootstrap endpoints
+  if (path.startsWith("/users/me") && req.method.toUpperCase() === "GET") {
+    return true;
+  }
+  return false;
+}
+
 function extractBearerOrCookie(req) {
   const fromCookie = req.cookies?.[ACCESS_TOKEN_COOKIE];
   if (fromCookie && String(fromCookie).trim()) {
@@ -63,6 +82,9 @@ module.exports = async function authMiddleware(req, res, next) {
     const decoded = jwt.verify(token, JWT_SECRET);
     const userId = decoded.userId;
     if (userId == null) {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+    if (decoded.orgId == null && decoded.tenantId == null) {
       return res.status(401).json({ error: "Invalid token" });
     }
 
@@ -97,6 +119,21 @@ module.exports = async function authMiddleware(req, res, next) {
     }
 
     req.user = decoded;
+    // Canonical multi-tenant context (tenant == organization for now)
+    if (req.user && req.user.orgId == null && req.user.tenantId != null) {
+      req.user.orgId = req.user.tenantId;
+    }
+    if (req.user && req.user.tenantId == null) {
+      req.user.tenantId = req.user.orgId;
+    }
+    req.tenantId = req.user?.tenantId ?? null;
+
+    if (req.user?.mfa === false && !mfaBypass(req)) {
+      return res.status(403).json({
+        error: "2FA je obavezna za ovaj nalog. Dovrši podešavanje.",
+        code: "MFA_REQUIRED",
+      });
+    }
 
     if (process.env.SUBSCRIPTION_ENFORCED === "true") {
       if (!subscriptionBypass(req)) {

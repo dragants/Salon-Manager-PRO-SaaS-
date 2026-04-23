@@ -1,4 +1,5 @@
 const { rateLimit, ipKeyGenerator } = require("express-rate-limit");
+const { redisStoreOrNull } = require("./rateLimitRedisStore");
 
 /**
  * Public limiter key: per-IP + per-salon slug.
@@ -16,11 +17,13 @@ function publicKey(req) {
  * @param {{ windowMs: number, max: number, name: string }} cfg
  */
 function makePublicLimiter(cfg) {
+  const store = redisStoreOrNull(`public:${cfg.name}`);
   return rateLimit({
     windowMs: cfg.windowMs,
     max: cfg.max,
     standardHeaders: true,
     legacyHeaders: false,
+    ...(store ? { store } : {}),
     keyGenerator: publicKey,
     handler: (req, res, _next, options) => {
       const retryAfterSec = Math.ceil(options.windowMs / 1000);

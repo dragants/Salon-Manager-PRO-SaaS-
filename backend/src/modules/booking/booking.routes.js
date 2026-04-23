@@ -2,6 +2,7 @@ const router = require("express").Router();
 const controller = require("./booking.controller");
 const validateZod = require("../../middleware/validate-zod.middleware");
 const { makePublicLimiter } = require("../../middleware/public-rate-limit.middleware");
+const { publicBookingProtection } = require("../../middleware/publicBookingProtection");
 const asyncHandler = require("../../utils/asyncHandler");
 const {
   publicSlugParamsSchema,
@@ -55,6 +56,7 @@ router.get(
 router.post(
   "/:slug/book",
   bookWriteLimit,
+  publicBookingProtection,
   validateZod(publicSlugParamsSchema, "params"),
   validateZod(bookBodySchema, "body"),
   asyncHandler(controller.book)
@@ -63,6 +65,7 @@ router.post(
 router.post(
   "/:slug/cancel/:token",
   bookWriteLimit,
+  publicBookingProtection,
   validateZod(publicCancelParamsSchema, "params"),
   asyncHandler(controller.cancelByToken)
 );

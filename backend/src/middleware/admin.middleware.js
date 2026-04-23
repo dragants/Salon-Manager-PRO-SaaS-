@@ -1,14 +1,5 @@
-const usersService = require("../modules/users/users.service");
-const asyncHandler = require("../utils/asyncHandler");
+const requirePermission = require("./requirePermission.middleware");
+const { PERM } = require("../security/permissions");
 
-async function requireAdmin(req, res, next) {
-  const user = await usersService.getById(req.user.userId);
-  if (user.role !== "admin") {
-    return res.status(403).json({
-      error: "Samo administrator salona može ovo uraditi.",
-    });
-  }
-  next();
-}
-
-module.exports = asyncHandler(requireAdmin);
+// Backwards-compatible name: "admin" == has org settings write permissions.
+module.exports = requirePermission(PERM.ORG_SETTINGS_WRITE);

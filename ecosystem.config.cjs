@@ -64,6 +64,26 @@ module.exports = {
       max_restarts: 10,
       restart_delay: 5000,
     },
+    {
+      name: "salon-worker",
+      cwd: path.join(ROOT, "backend"),
+      script: "node",
+      args: "src/workers/notifications.worker.js",
+      instances: 1,
+      exec_mode: "fork",
+      autorestart: true,
+      watch: false,
+      max_memory_restart: "250M",
+      env: {
+        NODE_ENV: "production",
+      },
+      error_file: path.join(LOG_DIR, "worker.error.log"),
+      out_file: path.join(LOG_DIR, "worker.out.log"),
+      log_date_format: "YYYY-MM-DD HH:mm:ss",
+      min_uptime: "10s",
+      max_restarts: 20,
+      restart_delay: 5000,
+    },
   ],
 };
 
