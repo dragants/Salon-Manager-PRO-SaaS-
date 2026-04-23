@@ -15,5 +15,14 @@ services:
       - salon_manager_pg:/var/lib/postgresql/data
       - ./backend/sql/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
 
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - salon_manager_redis:/data
+
 volumes:
   salon_manager_pg:
+  salon_manager_redis:

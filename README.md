@@ -105,6 +105,13 @@ Na LAN-u, ako otvaraš aplikaciju kao `http://192.168.x.x:3000`, ostavi prazno i
 
 **Backend** (`backend/.env`): vidi `backend/.env.example`.
 
+### Redis (queue)
+
+Ako koristiš `docker compose up -d`, podiže se i Redis (`redis:7-alpine`).
+
+- Ako backend radi na hostu (van Dockera): `REDIS_HOST=127.0.0.1`, `REDIS_PORT=6379`
+- Ako backend radi u Dockeru: `REDIS_HOST=redis`, `REDIS_PORT=6379`
+
 ## Autentifikacija
 
 JWT (Bearer token), sesija i zaštita ruta na API-ju; javne rute za booking pod odgovarajućim prefiksom.
