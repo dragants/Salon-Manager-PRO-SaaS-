@@ -8,6 +8,7 @@
     "start": "node src/server.js",
     "dev": "cross-env NODE_ENV=development nodemon src/server.js",
     "migrate:sql": "node scripts/run-sql-migration.cjs",
+    "migrate:018-021": "node scripts/run-migrations-018-021.cjs",
     "test": "node --test \"test/**/*.test.js\""
   },
   "dependencies": {

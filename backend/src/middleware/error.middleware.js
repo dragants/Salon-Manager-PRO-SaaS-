@@ -47,7 +47,7 @@ module.exports = function errorHandler(err, req, res, next) {
     return res.status(503).json({
       error: isProduction
         ? "Servis privremeno nedostupan."
-        : "Baza nema očekivane kolone (šema je starija od aplikacije). Pokreni na PostgreSQL-u: backend/sql/schema.sql — ili redom 018–021 iz backend/sql/migrations/.",
+        : "Baza nema očekivane kolone (šema je starija od aplikacije). U folderu backend pokreni: npm run migrate:018-021 — ili psql -f sql/schema.sql / pojedinačne migracije 018–021.",
     });
   }
 
