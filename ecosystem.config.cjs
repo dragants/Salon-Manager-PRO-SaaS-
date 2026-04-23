@@ -14,14 +14,19 @@ const path = require("path");
 const ROOT = __dirname;
 const LOG_DIR = path.join(ROOT, "logs");
 
+const isWin = process.platform === "win32";
+// On Windows PM2 can't reliably spawn `npm` directly → use `cmd /c ...`.
+const baseRunner = isWin
+  ? { script: "cmd", interpreter: "none" }
+  : { script: "npm", interpreter: "none" };
+
 module.exports = {
   apps: [
     {
       name: "salon-api",
       cwd: path.join(ROOT, "backend"),
-      script: "npm",
-      args: "start",
-      interpreter: "none",
+      ...baseRunner,
+      args: isWin ? "/c npm start" : "start",
       instances: 1,
       exec_mode: "fork",
       autorestart: true,
@@ -41,9 +46,8 @@ module.exports = {
     {
       name: "salon-web",
       cwd: path.join(ROOT, "frontend"),
-      script: "npm",
-      args: "start",
-      interpreter: "none",
+      ...baseRunner,
+      args: isWin ? "/c npm start" : "start",
       instances: 1,
       exec_mode: "fork",
       autorestart: true,
