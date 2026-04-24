@@ -1,5 +1,9 @@
 const Joi = require("joi");
 
+const idParamSchema = Joi.object({
+  id: Joi.number().integer().positive().required(),
+});
+
 const workerProfileSchema = Joi.object({
   service_ids: Joi.array().items(Joi.number().integer().positive()).max(500),
   working_hours: Joi.object().unknown(true),
@@ -58,6 +62,7 @@ const pushUnsubscribeSchema = Joi.object({
 }).unknown(false);
 
 module.exports = {
+  idParamSchema,
   createTeamMemberSchema,
   patchTeamMemberSchema,
   changePasswordSchema,

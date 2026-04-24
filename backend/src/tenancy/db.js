@@ -1,36 +1,9 @@
 /**
- * Minimal tenant-scoped DB helper.
+ * Re-export from utils/db.js to avoid duplication.
+ * All tenant-scoped DB logic lives in ../utils/db.js.
  *
- * This repo currently scopes by `organization_id` everywhere.
- * We expose `tenantId` as the canonical name, but keep compatibility:
- * tenantId === orgId.
- *
- * Usage:
- *   const { db } = require("../tenancy/db");
- *   await db(req.tenantId).query("SELECT ... WHERE organization_id = $1", [req.tenantId]);
+ * Existing code that imports from "../tenancy/db" continues to work.
  */
-
-const pool = require("../config/db");
-
-function assertTenantId(tenantId) {
-  const t = Number(tenantId);
-  if (!Number.isFinite(t) || t <= 0) {
-    const err = new Error("Missing tenant context");
-    err.statusCode = 401;
-    throw err;
-  }
-  return t;
-}
-
-function db(tenantId) {
-  const t = assertTenantId(tenantId);
-  return {
-    tenantId: t,
-    query(sql, params = []) {
-      return pool.query(sql, params);
-    },
-  };
-}
+const { db, assertTenantId } = require("../utils/db");
 
 module.exports = { db, assertTenantId };
-

@@ -6,6 +6,7 @@ const { permit } = require("../../middleware/rbac");
 const validate = require("../../middleware/validate.middleware");
 const asyncHandler = require("../../utils/asyncHandler");
 const {
+  idParamSchema,
   createTeamMemberSchema,
   patchTeamMemberSchema,
   changePasswordSchema,
@@ -51,13 +52,21 @@ router.post(
 
 router.get("/", auth, tenant, permit("manage_users"), asyncHandler(controller.listTeam));
 
-router.get("/:id", auth, tenant, permit("manage_users"), asyncHandler(controller.getTeamMember));
+router.get(
+  "/:id",
+  auth,
+  tenant,
+  permit("manage_users"),
+  validate(idParamSchema, "params"),
+  asyncHandler(controller.getTeamMember)
+);
 
 router.patch(
   "/:id",
   auth,
   tenant,
   permit("manage_users"),
+  validate(idParamSchema, "params"),
   validate(patchTeamMemberSchema),
   asyncHandler(controller.updateTeamMember)
 );
@@ -67,6 +76,7 @@ router.delete(
   auth,
   tenant,
   permit("manage_users"),
+  validate(idParamSchema, "params"),
   asyncHandler(controller.removeTeamMember)
 );
 
