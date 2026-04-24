@@ -1,5 +1,6 @@
 "use client";
 
+import type React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -23,25 +24,39 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { sr } from "@/lib/i18n/sr";
+import { useT } from "@/lib/i18n/locale";
 
-const primaryDock = [
-  { href: "/dashboard", label: sr.nav.dock.dashboard, icon: LayoutDashboard },
-  { href: "/calendar", label: sr.nav.dock.calendar, icon: CalendarDays },
-  { href: "/clients", label: sr.nav.dock.clients, icon: Users },
-  { href: "/services", label: sr.nav.dock.services, icon: SpaIcon },
-] as const;
+type DockLabelKey = keyof (typeof import("@/lib/i18n/sr"))["sr"]["nav"]["dock"];
 
-const moreRoutes = [
-  { href: "/shifts", label: "Smena", icon: CalendarClock },
-  { href: "/supplies", label: "Materijal", icon: Package },
-  { href: "/analytics", label: "Analitika", icon: BarChart3 },
-  { href: "/finances", label: "Kasa", icon: CreditCard },
-  { href: "/account", label: "Moj nalog", icon: UserCircle },
-  { href: "/settings", label: "Podešavanja", icon: Settings },
-] as const;
+type DockItem = {
+  href: string;
+  labelKey: DockLabelKey;
+  icon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
+};
 
-const moreHrefs = moreRoutes.map((r) => r.href);
+const primaryDockDef: DockItem[] = [
+  { href: "/dashboard", labelKey: "dashboard", icon: LayoutDashboard },
+  { href: "/calendar", labelKey: "calendar", icon: CalendarDays },
+  { href: "/clients", labelKey: "clients", icon: Users },
+  { href: "/services", labelKey: "services", icon: SpaIcon },
+];
+
+type MoreItem = {
+  href: string;
+  labelKey: string;
+  icon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
+};
+
+const moreRoutesDef: MoreItem[] = [
+  { href: "/shifts", labelKey: "shifts", icon: CalendarClock },
+  { href: "/supplies", labelKey: "supplies", icon: Package },
+  { href: "/analytics", labelKey: "analytics", icon: BarChart3 },
+  { href: "/finances", labelKey: "finances", icon: CreditCard },
+  { href: "/account", labelKey: "account", icon: UserCircle },
+  { href: "/settings", labelKey: "settings", icon: Settings },
+];
+
+const moreHrefs = moreRoutesDef.map((r) => r.href);
 
 function pathMatchesDock(href: string, pathname: string): boolean {
   if (href === "/dashboard") {
@@ -53,14 +68,26 @@ function pathMatchesDock(href: string, pathname: string): boolean {
 export function MobileDock() {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
+  const t = useT();
 
   const moreActive = moreHrefs.some((href) => pathMatchesDock(href, pathname));
+
+  const primaryDock = primaryDockDef.map((item) => ({
+    ...item,
+    label: t.nav.dock[item.labelKey] ?? String(item.labelKey),
+  }));
+
+  const moreRoutes = moreRoutesDef.map((item) => ({
+    ...item,
+    label:
+      (t.nav.more as Record<string, string>)[item.labelKey] ?? item.labelKey,
+  }));
 
   return (
     <>
       <nav
         className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-card/95 px-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] pt-1 shadow-[0_-4px_24px_rgba(0,0,0,0.08)] backdrop-blur-md md:hidden"
-        aria-label="Brza navigacija"
+        aria-label={t.nav.more.quickNav}
       >
         <ul className="mx-auto flex max-w-lg items-stretch justify-between gap-0.5">
           {primaryDock.map(({ href, label, icon: Icon }) => {
@@ -110,7 +137,7 @@ export function MobileDock() {
                 )}
                 aria-hidden
               />
-              <span className="truncate">{sr.nav.dock.more}</span>
+              <span className="truncate">{t.nav.dock.more}</span>
             </button>
           </li>
         </ul>
@@ -127,11 +154,13 @@ export function MobileDock() {
           )}
         >
           <DialogHeader className="border-b border-border px-4 py-3">
-            <DialogTitle className="text-base">Još u aplikaciji</DialogTitle>
+            <DialogTitle className="text-base">
+              {t.nav.more.moreInApp}
+            </DialogTitle>
           </DialogHeader>
           <nav
             className="max-h-[min(60dvh,420px)] overflow-y-auto px-2 pb-[max(1rem,env(safe-area-inset-bottom))] pt-1"
-            aria-label="Dodatne stranice"
+            aria-label={t.nav.more.morePages}
           >
             <ul className="space-y-0.5">
               {moreRoutes.map(({ href, label, icon: Icon }) => {

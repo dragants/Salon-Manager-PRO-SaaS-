@@ -23,6 +23,7 @@ import { SpaIcon } from "@/components/icons/spa-icon";
 import { LanguageSwitcher } from "@/components/features/settings/LanguageSwitcher";
 import { cn } from "@/lib/utils";
 import { clearToken } from "@/lib/auth/token";
+import { useT } from "@/lib/i18n/locale";
 import { useAuth } from "@/providers/auth-provider";
 import { useOrganization } from "@/providers/organization-provider";
 import { Button } from "@/components/ui/button";
@@ -30,38 +31,39 @@ import type React from "react";
 
 type NavItem = {
   href: string;
-  label: string;
+  labelKey: string;
   icon: React.ComponentType<{
     className?: string;
     strokeWidth?: number;
     "aria-hidden"?: boolean;
   }>;
-  /** Sakrij od radnika (worker). */
   workerHidden?: boolean;
 };
 
-const NAV_GROUPS: {
+type NavGroupDef = {
   id: "manage" | "finance" | "settings";
-  label: string;
+  labelKey: string;
   items: NavItem[];
-}[] = [
+};
+
+const NAV_GROUPS: NavGroupDef[] = [
   {
     id: "manage",
-    label: "Upravljanje",
+    labelKey: "management",
     items: [
-      { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-      { href: "/calendar", label: "Termini", icon: CalendarDays },
+      { href: "/dashboard", labelKey: "dashboard", icon: LayoutDashboard },
+      { href: "/calendar", labelKey: "calendar", icon: CalendarDays },
       {
         href: "/shifts",
-        label: "Smena",
+        labelKey: "shifts",
         icon: CalendarClock,
         workerHidden: true,
       },
-      { href: "/clients", label: "Klijenti", icon: Users },
-      { href: "/services", label: "Usluge", icon: SpaIcon },
+      { href: "/clients", labelKey: "clients", icon: Users },
+      { href: "/services", labelKey: "services", icon: SpaIcon },
       {
         href: "/supplies",
-        label: "Materijal",
+        labelKey: "supplies",
         icon: Package,
         workerHidden: true,
       },
@@ -69,26 +71,26 @@ const NAV_GROUPS: {
   },
   {
     id: "finance",
-    label: "Finansije",
+    labelKey: "finances",
     items: [
       {
         href: "/finances",
-        label: "Kasa",
+        labelKey: "finances",
         icon: CreditCard,
         workerHidden: true,
       },
-      { href: "/analytics", label: "Analitika", icon: BarChart3 },
+      { href: "/analytics", labelKey: "analytics", icon: BarChart3 },
     ],
   },
   {
     id: "settings",
-    label: "Podešavanja",
+    labelKey: "system",
     items: [
-      { href: "/account", label: "Moj nalog", icon: UserCircle },
-      { href: "/settings", label: "Podešavanja", icon: Settings },
+      { href: "/account", labelKey: "account", icon: UserCircle },
+      { href: "/settings", labelKey: "settings", icon: Settings },
     ],
   },
-] as const;
+];
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -96,6 +98,7 @@ export function AppSidebar() {
   const { user, refreshUser } = useAuth();
   const { settings } = useOrganization();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const t = useT();
 
   const navGroups = useMemo(() => {
     if (user?.role !== "worker") {
@@ -135,7 +138,7 @@ export function AppSidebar() {
           onClick={() => setMobileOpen(true)}
           aria-expanded={mobileOpen}
           aria-controls="app-sidebar"
-          aria-label="Otvori meni"
+          aria-label={t.nav.sidebar.openMenu}
         >
           <Menu className="size-5" aria-hidden />
         </Button>
@@ -158,7 +161,7 @@ export function AppSidebar() {
         <button
           type="button"
           className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[1px] md:hidden"
-          aria-label="Zatvori meni"
+          aria-label={t.nav.sidebar.closeMenu}
           onClick={closeMobile}
         />
       ) : null}
@@ -192,7 +195,7 @@ export function AppSidebar() {
             size="icon-lg"
             className="shrink-0 touch-manipulation md:hidden"
             onClick={closeMobile}
-            aria-label="Zatvori meni"
+            aria-label={t.nav.sidebar.closeMenu}
           >
             <X className="size-5" aria-hidden />
           </Button>
@@ -201,12 +204,18 @@ export function AppSidebar() {
           {navGroups.map((group, gi) => (
             <div key={group.id} className="space-y-1.5">
               <p className="px-2.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[rgb(var(--sidebar-muted-fg))]">
-                {group.label}
+                {(t.nav.sidebar.groups as Record<string, string>)[
+                  group.labelKey
+                ] ?? group.labelKey}
               </p>
               <div className="space-y-0.5">
-                {group.items.map(({ href, label, icon: Icon }) => {
+                {group.items.map(({ href, labelKey, icon: Icon }) => {
                   const active =
                     pathname === href || pathname.startsWith(`${href}/`);
+                  const label =
+                    (t.nav.sidebar.items as Record<string, string>)[
+                      labelKey
+                    ] ?? labelKey;
                   return (
                     <Link
                       key={href}
@@ -255,7 +264,7 @@ export function AppSidebar() {
                 strokeWidth={2}
                 aria-hidden
               />
-              Online rezervacije
+              {t.nav.sidebar.items.onlineBooking}
             </a>
           ) : null}
         </nav>
@@ -303,7 +312,7 @@ export function AppSidebar() {
                 strokeWidth={2}
                 aria-hidden
               />
-              <span className="truncate">Odjava</span>
+              <span className="truncate">{t.nav.sidebar.logout}</span>
             </Button>
           </div>
         </div>
