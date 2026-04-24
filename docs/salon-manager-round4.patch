@@ -1,0 +1,2274 @@
+diff --git a/backend/src/modules/users/users.routes.js b/backend/src/modules/users/users.routes.js
+index 673f975..acf3092 100644
+--- a/backend/src/modules/users/users.routes.js
++++ b/backend/src/modules/users/users.routes.js
+@@ -6,6 +6,7 @@ const { permit } = require("../../middleware/rbac");
+ const validate = require("../../middleware/validate.middleware");
+ const asyncHandler = require("../../utils/asyncHandler");
+ const {
++  idParamSchema,
+   createTeamMemberSchema,
+   patchTeamMemberSchema,
+   changePasswordSchema,
+@@ -51,13 +52,21 @@ router.post(
+ 
+ router.get("/", auth, tenant, permit("manage_users"), asyncHandler(controller.listTeam));
+ 
+-router.get("/:id", auth, tenant, permit("manage_users"), asyncHandler(controller.getTeamMember));
++router.get(
++  "/:id",
++  auth,
++  tenant,
++  permit("manage_users"),
++  validate(idParamSchema, "params"),
++  asyncHandler(controller.getTeamMember)
++);
+ 
+ router.patch(
+   "/:id",
+   auth,
+   tenant,
+   permit("manage_users"),
++  validate(idParamSchema, "params"),
+   validate(patchTeamMemberSchema),
+   asyncHandler(controller.updateTeamMember)
+ );
+@@ -67,6 +76,7 @@ router.delete(
+   auth,
+   tenant,
+   permit("manage_users"),
++  validate(idParamSchema, "params"),
+   asyncHandler(controller.removeTeamMember)
+ );
+ 
+diff --git a/backend/src/modules/users/users.validation.js b/backend/src/modules/users/users.validation.js
+index 839bb42..b391c52 100644
+--- a/backend/src/modules/users/users.validation.js
++++ b/backend/src/modules/users/users.validation.js
+@@ -1,5 +1,9 @@
+ const Joi = require("joi");
+ 
++const idParamSchema = Joi.object({
++  id: Joi.number().integer().positive().required(),
++});
++
+ const workerProfileSchema = Joi.object({
+   service_ids: Joi.array().items(Joi.number().integer().positive()).max(500),
+   working_hours: Joi.object().unknown(true),
+@@ -58,6 +62,7 @@ const pushUnsubscribeSchema = Joi.object({
+ }).unknown(false);
+ 
+ module.exports = {
++  idParamSchema,
+   createTeamMemberSchema,
+   patchTeamMemberSchema,
+   changePasswordSchema,
+diff --git a/backend/src/tenancy/db.js b/backend/src/tenancy/db.js
+index 97bced6..34406d6 100644
+--- a/backend/src/tenancy/db.js
++++ b/backend/src/tenancy/db.js
+@@ -1,36 +1,9 @@
+ /**
+- * Minimal tenant-scoped DB helper.
++ * Re-export from utils/db.js to avoid duplication.
++ * All tenant-scoped DB logic lives in ../utils/db.js.
+  *
+- * This repo currently scopes by `organization_id` everywhere.
+- * We expose `tenantId` as the canonical name, but keep compatibility:
+- * tenantId === orgId.
+- *
+- * Usage:
+- *   const { db } = require("../tenancy/db");
+- *   await db(req.tenantId).query("SELECT ... WHERE organization_id = $1", [req.tenantId]);
++ * Existing code that imports from "../tenancy/db" continues to work.
+  */
+-
+-const pool = require("../config/db");
+-
+-function assertTenantId(tenantId) {
+-  const t = Number(tenantId);
+-  if (!Number.isFinite(t) || t <= 0) {
+-    const err = new Error("Missing tenant context");
+-    err.statusCode = 401;
+-    throw err;
+-  }
+-  return t;
+-}
+-
+-function db(tenantId) {
+-  const t = assertTenantId(tenantId);
+-  return {
+-    tenantId: t,
+-    query(sql, params = []) {
+-      return pool.query(sql, params);
+-    },
+-  };
+-}
++const { db, assertTenantId } = require("../utils/db");
+ 
+ module.exports = { db, assertTenantId };
+-
+diff --git a/backend/test/rbac-permissions.test.js b/backend/test/rbac-permissions.test.js
+new file mode 100644
+index 0000000..faaa3ed
+--- /dev/null
++++ b/backend/test/rbac-permissions.test.js
+@@ -0,0 +1,156 @@
++const { describe, it } = require("node:test");
++const assert = require("node:assert/strict");
++const {
++  ROLE,
++  PERM,
++  normalizeRole,
++  permissionsForRole,
++  hasPermission,
++} = require("../src/security/permissions");
++
++describe("RBAC: normalizeRole", () => {
++  it("normalizes 'worker' to 'staff'", () => {
++    assert.equal(normalizeRole("worker"), ROLE.STAFF);
++  });
++
++  it("normalizes 'admin' to 'admin'", () => {
++    assert.equal(normalizeRole("admin"), ROLE.ADMIN);
++  });
++
++  it("normalizes 'owner' to 'owner'", () => {
++    assert.equal(normalizeRole("owner"), ROLE.OWNER);
++  });
++
++  it("normalizes 'receptionist' to 'receptionist'", () => {
++    assert.equal(normalizeRole("receptionist"), ROLE.RECEPTIONIST);
++  });
++
++  it("normalizes 'staff' to 'staff'", () => {
++    assert.equal(normalizeRole("staff"), ROLE.STAFF);
++  });
++
++  it("returns null for unknown role", () => {
++    assert.equal(normalizeRole("superadmin"), null);
++    assert.equal(normalizeRole(""), null);
++    assert.equal(normalizeRole(null), null);
++    assert.equal(normalizeRole(undefined), null);
++  });
++});
++
++describe("RBAC: permissionsForRole", () => {
++  it("owner has all permissions", () => {
++    const perms = permissionsForRole("owner");
++    const allPerms = Object.values(PERM);
++    assert.equal(perms.length, allPerms.length);
++    for (const p of allPerms) {
++      assert.ok(perms.includes(p), `owner should have ${p}`);
++    }
++  });
++
++  it("admin has most permissions except none missing", () => {
++    const perms = permissionsForRole("admin");
++    assert.ok(perms.includes(PERM.APPOINTMENTS_READ));
++    assert.ok(perms.includes(PERM.APPOINTMENTS_WRITE));
++    assert.ok(perms.includes(PERM.APPOINTMENTS_DELETE));
++    assert.ok(perms.includes(PERM.CLIENTS_READ));
++    assert.ok(perms.includes(PERM.CLIENTS_WRITE));
++    assert.ok(perms.includes(PERM.SERVICES_READ));
++    assert.ok(perms.includes(PERM.SERVICES_WRITE));
++    assert.ok(perms.includes(PERM.TEAM_READ));
++    assert.ok(perms.includes(PERM.TEAM_WRITE));
++  });
++
++  it("receptionist can read/write appointments and clients", () => {
++    const perms = permissionsForRole("receptionist");
++    assert.ok(perms.includes(PERM.APPOINTMENTS_READ));
++    assert.ok(perms.includes(PERM.APPOINTMENTS_WRITE));
++    assert.ok(perms.includes(PERM.CLIENTS_READ));
++    assert.ok(perms.includes(PERM.CLIENTS_WRITE));
++  });
++
++  it("receptionist cannot delete appointments or manage team", () => {
++    const perms = permissionsForRole("receptionist");
++    assert.ok(!perms.includes(PERM.APPOINTMENTS_DELETE));
++    assert.ok(!perms.includes(PERM.TEAM_WRITE));
++    assert.ok(!perms.includes(PERM.TEAM_READ));
++  });
++
++  it("staff (worker) can only read appointments, clients, services, settings", () => {
++    const perms = permissionsForRole("staff");
++    assert.ok(perms.includes(PERM.APPOINTMENTS_READ));
++    assert.ok(perms.includes(PERM.CLIENTS_READ));
++    assert.ok(perms.includes(PERM.SERVICES_READ));
++    assert.ok(perms.includes(PERM.ORG_SETTINGS_READ));
++    assert.equal(perms.length, 4);
++  });
++
++  it("staff cannot write anything", () => {
++    const perms = permissionsForRole("staff");
++    assert.ok(!perms.includes(PERM.APPOINTMENTS_WRITE));
++    assert.ok(!perms.includes(PERM.CLIENTS_WRITE));
++    assert.ok(!perms.includes(PERM.SERVICES_WRITE));
++    assert.ok(!perms.includes(PERM.ORG_SETTINGS_WRITE));
++  });
++
++  it("legacy 'worker' gets staff permissions", () => {
++    const staffPerms = permissionsForRole("staff");
++    const workerPerms = permissionsForRole("worker");
++    assert.deepEqual(workerPerms, staffPerms);
++  });
++
++  it("unknown role gets empty permissions", () => {
++    const perms = permissionsForRole("hacker");
++    assert.deepEqual(perms, []);
++  });
++});
++
++describe("RBAC: hasPermission", () => {
++  it("owner has appointments:delete", () => {
++    assert.equal(hasPermission("owner", PERM.APPOINTMENTS_DELETE), true);
++  });
++
++  it("admin has team:write", () => {
++    assert.equal(hasPermission("admin", PERM.TEAM_WRITE), true);
++  });
++
++  it("receptionist does not have team:write", () => {
++    assert.equal(hasPermission("receptionist", PERM.TEAM_WRITE), false);
++  });
++
++  it("staff does not have appointments:write", () => {
++    assert.equal(hasPermission("staff", PERM.APPOINTMENTS_WRITE), false);
++  });
++
++  it("unknown role has no permissions", () => {
++    assert.equal(hasPermission("unknown", PERM.APPOINTMENTS_READ), false);
++  });
++});
++
++describe("RBAC: role hierarchy coverage", () => {
++  it("each higher role has at least as many permissions as lower ones", () => {
++    const ownerPerms = permissionsForRole("owner");
++    const adminPerms = permissionsForRole("admin");
++    const receptionistPerms = permissionsForRole("receptionist");
++    const staffPerms = permissionsForRole("staff");
++
++    assert.ok(ownerPerms.length >= adminPerms.length, "owner >= admin");
++    assert.ok(adminPerms.length >= receptionistPerms.length, "admin >= receptionist");
++    assert.ok(receptionistPerms.length >= staffPerms.length, "receptionist >= staff");
++  });
++
++  it("admin permissions are a subset of owner permissions", () => {
++    const ownerPerms = permissionsForRole("owner");
++    const adminPerms = permissionsForRole("admin");
++    for (const p of adminPerms) {
++      assert.ok(ownerPerms.includes(p), `owner should include admin perm: ${p}`);
++    }
++  });
++
++  it("staff permissions are a subset of receptionist permissions", () => {
++    const receptionistPerms = permissionsForRole("receptionist");
++    const staffPerms = permissionsForRole("staff");
++    for (const p of staffPerms) {
++      assert.ok(receptionistPerms.includes(p), `receptionist should include staff perm: ${p}`);
++    }
++  });
++});
+diff --git a/backend/test/users-validation.test.js b/backend/test/users-validation.test.js
+new file mode 100644
+index 0000000..effb5c0
+--- /dev/null
++++ b/backend/test/users-validation.test.js
+@@ -0,0 +1,140 @@
++const { describe, it } = require("node:test");
++const assert = require("node:assert/strict");
++const {
++  idParamSchema,
++  createTeamMemberSchema,
++  patchTeamMemberSchema,
++  changePasswordSchema,
++} = require("../src/modules/users/users.validation");
++
++describe("users validation: idParamSchema", () => {
++  it("accepts valid positive integer id", () => {
++    const { error, value } = idParamSchema.validate({ id: 42 });
++    assert.equal(error, undefined);
++    assert.equal(value.id, 42);
++  });
++
++  it("coerces string id to number", () => {
++    const { error, value } = idParamSchema.validate({ id: "7" });
++    assert.equal(error, undefined);
++    assert.equal(value.id, 7);
++  });
++
++  it("rejects zero", () => {
++    const { error } = idParamSchema.validate({ id: 0 });
++    assert.ok(error);
++  });
++
++  it("rejects negative", () => {
++    const { error } = idParamSchema.validate({ id: -1 });
++    assert.ok(error);
++  });
++
++  it("rejects non-integer", () => {
++    const { error } = idParamSchema.validate({ id: 3.5 });
++    assert.ok(error);
++  });
++
++  it("rejects non-numeric string", () => {
++    const { error } = idParamSchema.validate({ id: "abc" });
++    assert.ok(error);
++  });
++
++  it("rejects missing id", () => {
++    const { error } = idParamSchema.validate({});
++    assert.ok(error);
++  });
++});
++
++describe("users validation: createTeamMemberSchema", () => {
++  it("accepts valid team member", () => {
++    const { error, value } = createTeamMemberSchema.validate({
++      email: "new@salon.rs",
++      password: "secure123",
++      role: "admin",
++    });
++    assert.equal(error, undefined);
++    assert.equal(value.email, "new@salon.rs");
++    assert.equal(value.role, "admin");
++  });
++
++  it("accepts worker role", () => {
++    const { error } = createTeamMemberSchema.validate({
++      email: "radnik@salon.rs",
++      password: "password123",
++      role: "worker",
++    });
++    assert.equal(error, undefined);
++  });
++
++  it("rejects invalid role", () => {
++    const { error } = createTeamMemberSchema.validate({
++      email: "test@test.rs",
++      password: "password123",
++      role: "superadmin",
++    });
++    assert.ok(error);
++  });
++
++  it("rejects short password", () => {
++    const { error } = createTeamMemberSchema.validate({
++      email: "test@test.rs",
++      password: "short",
++      role: "admin",
++    });
++    assert.ok(error);
++  });
++
++  it("rejects invalid email", () => {
++    const { error } = createTeamMemberSchema.validate({
++      email: "not-an-email",
++      password: "password123",
++      role: "admin",
++    });
++    assert.ok(error);
++  });
++
++  it("accepts display_name", () => {
++    const { error, value } = createTeamMemberSchema.validate({
++      email: "test@salon.rs",
++      password: "password123",
++      role: "admin",
++      display_name: "Marija P.",
++    });
++    assert.equal(error, undefined);
++    assert.equal(value.display_name, "Marija P.");
++  });
++});
++
++describe("users validation: changePasswordSchema", () => {
++  it("accepts valid password change", () => {
++    const { error } = changePasswordSchema.validate({
++      current_password: "old12345",
++      new_password: "new12345",
++    });
++    assert.equal(error, undefined);
++  });
++
++  it("rejects same current and new password", () => {
++    const { error } = changePasswordSchema.validate({
++      current_password: "same1234",
++      new_password: "same1234",
++    });
++    assert.ok(error);
++  });
++
++  it("rejects short new password", () => {
++    const { error } = changePasswordSchema.validate({
++      current_password: "current1",
++      new_password: "short",
++    });
++    assert.ok(error);
++  });
++
++  it("rejects missing current_password", () => {
++    const { error } = changePasswordSchema.validate({
++      new_password: "newpassword",
++    });
++    assert.ok(error);
++  });
++});
+diff --git a/frontend/src/app/book/[slug]/page.tsx b/frontend/src/app/book/[slug]/page.tsx
+index 2b167aa..2c2cb4c 100644
+--- a/frontend/src/app/book/[slug]/page.tsx
++++ b/frontend/src/app/book/[slug]/page.tsx
+@@ -1,19 +1,8 @@
+ "use client";
+ 
+ import { useParams } from "next/navigation";
+-import {
+-  Fragment,
+-  useCallback,
+-  useEffect,
+-  useMemo,
+-  useState,
+-  type CSSProperties,
+-} from "react";
+-import { addDays, formatYyyyMmDd, todayLocal } from "@/lib/dateLocal";
+-import { browserTimeZone } from "@/components/features/calendar/calendar-utils";
+-import { Button } from "@/components/ui/button";
+-import { Input } from "@/components/ui/input";
+-import { Label } from "@/components/ui/label";
++import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
++import { MapPin, Phone } from "lucide-react";
+ import { SurfaceCard } from "@/components/ui/surface-card";
+ import {
+   fetchPublicSalon,
+@@ -23,208 +12,38 @@ import {
+   type PublicSlot,
+ } from "@/lib/api/public-booking";
+ import { hexToRgbSpaceSeparated } from "@/lib/color-hex";
++import { browserTimeZone } from "@/components/features/calendar/calendar-utils";
+ import { mapsSearchUrl, telHref } from "@/lib/contact-links";
+-import { cn } from "@/lib/utils";
+ import {
+-  CalendarDays,
+-  Check,
+-  CircleCheck,
+-  Clock,
+-  MapPin,
+-  Phone,
+-  Sparkles,
+-  UserRound,
+-} from "lucide-react";
+-
+-const BOOKING_STEPS = [
+-  { id: 1 as const, label: "Usluga", short: "Usluga", Icon: Sparkles },
+-  { id: 2 as const, label: "Datum", short: "Datum", Icon: CalendarDays },
+-  { id: 3 as const, label: "Termin", short: "Termin", Icon: Clock },
+-  { id: 4 as const, label: "Podaci", short: "Podaci", Icon: UserRound },
+-] as const;
+-
+-function hueFromString(s: string): number {
+-  let h = 0;
+-  for (let i = 0; i < s.length; i += 1) {
+-    h = s.charCodeAt(i) + ((h << 5) - h);
+-  }
+-  return Math.abs(h % 360);
+-}
+-
+-function initialsFromName(name: string): string {
+-  const parts = name.trim().split(/\s+/).filter(Boolean);
+-  if (parts.length === 0) return "?";
+-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+-  return `${parts[0][0] ?? ""}${parts[1][0] ?? ""}`.toUpperCase();
+-}
+-
+-function WorkerAvatar({
+-  name,
+-  employeeId,
+-  size = "md",
+-  className,
+-}: {
+-  name: string | null | undefined;
+-  employeeId?: number | null;
+-  size?: "sm" | "md";
+-  className?: string;
+-}) {
+-  const label = name?.trim() || "Tim";
+-  const initials = initialsFromName(label);
+-  const hue = hueFromString(
+-    `${employeeId ?? ""}:${label}`
+-  );
+-  const sizeCls =
+-    size === "sm"
+-      ? "size-7 text-[10px] ring-2"
+-      : "size-9 text-xs ring-2";
+-
+-  return (
+-    <div
+-      className={cn(
+-        "flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br font-bold tabular-nums text-white shadow-inner ring-background",
+-        sizeCls,
+-        className
+-      )}
+-      style={{
+-        background: `linear-gradient(145deg, hsl(${hue} 65% 52%) 0%, hsl(${(hue + 38) % 360} 55% 38%) 100%)`,
+-      }}
+-      aria-hidden
+-      title={name || undefined}
+-    >
+-      <span className="drop-shadow-sm">{initials}</span>
+-    </div>
+-  );
+-}
+-
+-function BookingStepper({ step }: { step: 1 | 2 | 3 | 4 }) {
+-  return (
+-    <nav
+-      className="rounded-2xl border border-border/80 bg-card/90 px-2 py-4 shadow-[var(--smp-shadow-soft)] backdrop-blur-sm sm:px-4"
+-      aria-label="Koraci rezervacije"
+-    >
+-      <ol className="flex w-full items-center">
+-        {BOOKING_STEPS.map(({ id, label, short, Icon }, index) => {
+-          const done = step > id;
+-          const active = step === id;
+-          const prevId = index > 0 ? BOOKING_STEPS[index - 1].id : null;
+-          const segmentDone = prevId != null && step > prevId;
+-
+-          return (
+-            <Fragment key={id}>
+-              {index > 0 ? (
+-                <li
+-                  className="mx-1 flex h-11 min-w-[12px] flex-1 items-center sm:mx-2 sm:h-12"
+-                  aria-hidden
+-                >
+-                  <div className="h-1 w-full overflow-hidden rounded-full bg-muted">
+-                    <div
+-                      className={cn(
+-                        "h-full rounded-full transition-all duration-500 ease-out",
+-                        segmentDone
+-                          ? "w-full bg-primary shadow-[0_0_12px_-2px_rgb(var(--primary)/0.65)]"
+-                          : "w-0 bg-primary"
+-                      )}
+-                    />
+-                  </div>
+-                </li>
+-              ) : null}
+-              <li className="flex w-[4.25rem] shrink-0 flex-col items-center sm:w-[5.25rem]">
+-                <div
+-                  className={cn(
+-                    "relative flex size-11 items-center justify-center rounded-2xl border-2 transition-all duration-300 sm:size-12",
+-                    done &&
+-                      "border-primary bg-primary text-primary-foreground shadow-[0_10px_28px_-10px_rgb(var(--primary)/0.65)]",
+-                    active &&
+-                      !done &&
+-                      "scale-105 border-primary bg-primary/15 text-primary shadow-[0_0_0_4px_rgb(var(--primary)/0.14)] ring-2 ring-primary/30",
+-                    !active &&
+-                      !done &&
+-                      "border-border bg-muted/60 text-muted-foreground"
+-                  )}
+-                >
+-                  {done ? (
+-                    <Check className="size-5" strokeWidth={2.75} />
+-                  ) : (
+-                    <Icon className="size-5" strokeWidth={2} />
+-                  )}
+-                  {active ? (
+-                    <span className="absolute -bottom-1.5 left-1/2 size-2 -translate-x-1/2 rounded-full bg-primary shadow-[0_0_0_3px_var(--background)]" />
+-                  ) : null}
+-                </div>
+-                <span
+-                  className={cn(
+-                    "mt-2 hidden max-w-[5.25rem] truncate text-center text-[10px] font-bold uppercase leading-tight tracking-wide sm:block",
+-                    active ? "text-primary" : "text-muted-foreground"
+-                  )}
+-                >
+-                  {label}
+-                </span>
+-                <span
+-                  className={cn(
+-                    "mt-2 max-w-[4.25rem] truncate text-center text-[9px] font-bold uppercase leading-tight tracking-wide sm:hidden",
+-                    active ? "text-primary" : "text-muted-foreground"
+-                  )}
+-                >
+-                  {short}
+-                </span>
+-              </li>
+-            </Fragment>
+-          );
+-        })}
+-      </ol>
+-    </nav>
+-  );
+-}
+-
+-function BookingProgressBar({ step }: { step: 1 | 2 | 3 | 4 }) {
+-  const pct = (step / 4) * 100;
+-  return (
+-    <div className="space-y-2">
+-      <div
+-        className="h-2 overflow-hidden rounded-full bg-muted/80 ring-1 ring-border/60"
+-        role="progressbar"
+-        aria-valuenow={Math.round(pct)}
+-        aria-valuemin={0}
+-        aria-valuemax={100}
+-        aria-label={`Napredak: korak ${step} od 4`}
+-      >
+-        <div
+-          className="h-full rounded-full bg-gradient-to-r from-primary via-primary to-primary/80 shadow-[0_0_20px_-4px_rgb(var(--primary)/0.7)] transition-[width] duration-500 ease-out"
+-          style={{ width: `${pct}%` }}
+-        />
+-      </div>
+-      <div className="flex items-center justify-between text-[11px] font-medium text-muted-foreground">
+-        <span>
+-          Korak {step} / 4 — {BOOKING_STEPS[step - 1]?.label}
+-        </span>
+-        <span className="tabular-nums text-primary">{Math.round(pct)}%</span>
+-      </div>
+-    </div>
+-  );
+-}
+-
+-function todayYmdLocal(): string {
+-  return new Date().toLocaleDateString("en-CA");
+-}
++  type BookingStep,
++  type BookingSuccess as BookingSuccessData,
++  BookingProgressBar,
++  BookingStepper,
++  todayYmdLocal,
++} from "@/components/features/booking/booking-shared";
++import { StepSelectService } from "@/components/features/booking/StepSelectService";
++import { StepSelectDate } from "@/components/features/booking/StepSelectDate";
++import { StepSelectSlot } from "@/components/features/booking/StepSelectSlot";
++import { StepClientForm } from "@/components/features/booking/StepClientForm";
++import { BookingSuccess } from "@/components/features/booking/BookingSuccess";
+ 
+ export default function PublicBookingPage() {
+   const params = useParams();
+   const slug = typeof params.slug === "string" ? params.slug : "";
+ 
++  /* ── Salon data ── */
+   const [salonData, setSalonData] = useState<PublicSalonPayload | null>(null);
+   const [loadError, setLoadError] = useState<string | null>(null);
++
++  /* ── Slots ── */
++  const [slots, setSlots] = useState<PublicSlot[]>([]);
+   const [slotsLoading, setSlotsLoading] = useState(false);
+   const [slotsError, setSlotsError] = useState<string | null>(null);
+-  const [slots, setSlots] = useState<PublicSlot[]>([]);
+   const [fromShifts, setFromShifts] = useState(false);
+ 
+-  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+-  const [success, setSuccess] = useState<{
+-    summary: string;
+-    notifyHint: string;
+-  } | null>(null);
+-
++  /* ── Booking flow ── */
++  const [step, setStep] = useState<BookingStep>(1);
++  const [success, setSuccess] = useState<BookingSuccessData | null>(null);
+   const [serviceId, setServiceId] = useState<number | "">("");
+   const [date, setDate] = useState(todayYmdLocal);
+   const [selectedSlot, setSelectedSlot] = useState<PublicSlot | null>(null);
+@@ -250,11 +69,9 @@ export default function PublicBookingPage() {
+     return salonData.services.find((s) => s.id === serviceId) ?? null;
+   }, [salonData, serviceId]);
+ 
++  /* ── Load salon ── */
+   useEffect(() => {
+-    if (!slug) {
+-      setLoadError("Nedostaje link salona.");
+-      return;
+-    }
++    if (!slug) { setLoadError("Nedostaje link salona."); return; }
+     let cancelled = false;
+     setLoadError(null);
+     void (async () => {
+@@ -262,35 +79,22 @@ export default function PublicBookingPage() {
+         const data = await fetchPublicSalon(slug);
+         if (cancelled) return;
+         setSalonData(data);
+-        if (data.services.length > 0) {
+-          setServiceId(data.services[0].id);
+-        }
++        if (data.services.length > 0) setServiceId(data.services[0].id);
+       } catch (e) {
+-        if (!cancelled) {
+-          setLoadError(e instanceof Error ? e.message : "Greška pri učitavanju.");
+-        }
++        if (!cancelled) setLoadError(e instanceof Error ? e.message : "Greška pri učitavanju.");
+       }
+     })();
+-    return () => {
+-      cancelled = true;
+-    };
++    return () => { cancelled = true; };
+   }, [slug]);
+ 
++  /* ── Load slots ── */
+   const loadSlots = useCallback(async () => {
+-    if (!slug || serviceId === "" || !date) {
+-      setSlots([]);
+-      setFromShifts(false);
+-      return;
+-    }
++    if (!slug || serviceId === "" || !date) { setSlots([]); setFromShifts(false); return; }
+     setSlotsLoading(true);
+     setSlotsError(null);
+     setSelectedSlot(null);
+     try {
+-      const data = await fetchPublicSlots(slug, {
+-        service_id: serviceId,
+-        date,
+-        timezone: salonTz,
+-      });
++      const data = await fetchPublicSlots(slug, { service_id: serviceId, date, timezone: salonTz });
+       setSlots(data.slots);
+       setFromShifts(data.from_shifts === true);
+     } catch (e) {
+@@ -302,10 +106,9 @@ export default function PublicBookingPage() {
+     }
+   }, [slug, serviceId, date, salonTz]);
+ 
+-  useEffect(() => {
+-    void loadSlots();
+-  }, [loadSlots]);
++  useEffect(() => { void loadSlots(); }, [loadSlots]);
+ 
++  /* ── Actions ── */
+   function resetBookingFlow() {
+     setSuccess(null);
+     setStep(1);
+@@ -323,10 +126,7 @@ export default function PublicBookingPage() {
+       setFormError("Izaberi uslugu, termin i unesi ime i telefon.");
+       return;
+     }
+-    if (
+-      salonData?.booking_notify?.public_booking_email === true &&
+-      !email.trim()
+-    ) {
++    if (salonData?.booking_notify?.public_booking_email === true && !email.trim()) {
+       setFormError("Unesi e-mail adresu za potvrdu termina.");
+       return;
+     }
+@@ -343,30 +143,18 @@ export default function PublicBookingPage() {
+         service_id: serviceId,
+         start: selectedSlot.start,
+         timezone: salonTz,
+-        staff_user_id:
+-          fromShifts && selectedSlot.employee_id != null
+-            ? selectedSlot.employee_id
+-            : undefined,
++        staff_user_id: fromShifts && selectedSlot.employee_id != null ? selectedSlot.employee_id : undefined,
+       });
+-      const sms =
+-        out.notify?.sms === "sent" ? " SMS potvrda je poslata." : "";
+-      const wa =
+-        out.notify?.whatsapp === "sent"
+-          ? " WhatsApp potvrda je poslata."
+-          : "";
+-      const em =
+-        out.notify?.email === "sent" ? " E-mail potvrda je poslata." : "";
++      const sms = out.notify?.sms === "sent" ? " SMS potvrda je poslata." : "";
++      const wa = out.notify?.whatsapp === "sent" ? " WhatsApp potvrda je poslata." : "";
++      const em = out.notify?.email === "sent" ? " E-mail potvrda je poslata." : "";
+       const svc = selectedService?.name ?? "Usluga";
+       setSuccess({
+-        summary: `${svc} · ${date} · ${selectedSlot.label}${
+-          selectedSlot.employee_name ? ` · ${selectedSlot.employee_name}` : ""
+-        }`,
++        summary: `${svc} · ${date} · ${selectedSlot.label}${selectedSlot.employee_name ? ` · ${selectedSlot.employee_name}` : ""}`,
+         notifyHint: `${sms}${wa}${em}`.trim() || "Potvrda je zabeležena.",
+       });
+       setSelectedSlot(null);
+-      setName("");
+-      setPhone("");
+-      setEmail("");
++      setName(""); setPhone(""); setEmail("");
+       void loadSlots();
+     } catch (e) {
+       setFormError(e instanceof Error ? e.message : "Rezervacija nije uspela.");
+@@ -375,16 +163,11 @@ export default function PublicBookingPage() {
+     }
+   }
+ 
++  /* ── Guards ── */
+   if (loadError) {
+     return (
+-      <div
+-        id="main-content"
+-        className="flex min-h-dvh items-center justify-center bg-background px-4 py-16"
+-      >
+-        <SurfaceCard
+-          padding="md"
+-          className="max-w-lg border-amber-200 bg-amber-50 text-amber-950 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100"
+-        >
++      <div id="main-content" className="flex min-h-dvh items-center justify-center bg-background px-4 py-16">
++        <SurfaceCard padding="md" className="max-w-lg border-amber-200 bg-amber-50 text-amber-950 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100">
+           {loadError}
+         </SurfaceCard>
+       </div>
+@@ -393,71 +176,26 @@ export default function PublicBookingPage() {
+ 
+   if (!salonData) {
+     return (
+-      <div
+-        id="main-content"
+-        className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-background"
+-      >
+-        <div
+-          className="size-10 animate-pulse rounded-2xl bg-sky-200/80 dark:bg-sky-900/50"
+-          aria-hidden
+-        />
+-        <p className="text-sm font-medium text-muted-foreground">
+-          Učitavanje…
+-        </p>
++      <div id="main-content" className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-background">
++        <div className="size-10 animate-pulse rounded-2xl bg-sky-200/80 dark:bg-sky-900/50" aria-hidden />
++        <p className="text-sm font-medium text-muted-foreground">Učitavanje…</p>
+       </div>
+     );
+   }
+ 
+   const { salon, services } = salonData;
+-  const emailRequired =
+-    salonData.booking_notify?.public_booking_email === true;
++  const emailRequired = salonData.booking_notify?.public_booking_email === true;
+ 
++  /* ── Success screen ── */
+   if (success) {
+     return (
+-      <div
+-        id="main-content"
+-        style={bookingThemeStyle}
+-        className="min-h-dvh touch-manipulation bg-gradient-to-b from-emerald-50/90 to-background px-4 py-10 pb-[max(2.5rem,env(safe-area-inset-bottom,0px)+1rem)] pt-[max(2.5rem,env(safe-area-inset-top,0px)+0.5rem)] dark:from-emerald-950/40"
+-      >
+-        <div className="mx-auto flex max-w-lg flex-col gap-6">
+-          <SurfaceCard
+-            padding="lg"
+-            className="space-y-5 border-emerald-200/80 bg-card/95 text-center dark:border-emerald-900"
+-          >
+-            <div className="flex justify-center" aria-hidden>
+-              <CircleCheck
+-                className="size-16 text-emerald-600 dark:text-emerald-400"
+-                strokeWidth={1.25}
+-              />
+-            </div>
+-            <div className="space-y-1">
+-              <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+-                Termin zakazan
+-              </h1>
+-              <p className="text-sm text-muted-foreground">
+-                {success.summary}
+-              </p>
+-              <p className="text-xs text-muted-foreground">
+-                {success.notifyHint}
+-              </p>
+-            </div>
+-            <Button
+-              type="button"
+-              variant="brand"
+-              className="h-12 w-full rounded-xl"
+-              onClick={() => resetBookingFlow()}
+-            >
+-              Zakaži još jedan termin
+-            </Button>
+-          </SurfaceCard>
+-          <p className="text-center text-xs text-muted-foreground/70">
+-            Hvala što koristite {salon.name}.
+-          </p>
+-        </div>
++      <div id="main-content" style={bookingThemeStyle} className="min-h-dvh touch-manipulation bg-gradient-to-b from-emerald-50/90 to-background px-4 py-10 pb-[max(2.5rem,env(safe-area-inset-bottom,0px)+1rem)] pt-[max(2.5rem,env(safe-area-inset-top,0px)+0.5rem)] dark:from-emerald-950/40">
++        <BookingSuccess salonName={salon.name} data={success} onReset={resetBookingFlow} />
+       </div>
+     );
+   }
+ 
++  /* ── Main booking flow ── */
+   return (
+     <div
+       id="main-content"
+@@ -465,6 +203,7 @@ export default function PublicBookingPage() {
+       className="min-h-dvh touch-manipulation bg-gradient-to-b from-primary/10 via-background to-background px-4 py-10 pb-[max(2.5rem,env(safe-area-inset-bottom,0px)+1rem)] pt-[max(2.5rem,env(safe-area-inset-top,0px)+0.5rem)]"
+     >
+       <div className="mx-auto flex max-w-lg flex-col gap-6">
++        {/* Header */}
+         <header className="overflow-hidden rounded-3xl border border-border/80 bg-gradient-to-br from-primary/15 via-card to-background p-6 text-center shadow-[var(--smp-shadow-soft)] ring-1 ring-primary/10">
+           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+             Online rezervacija
+@@ -472,16 +211,9 @@ export default function PublicBookingPage() {
+           <div className="mt-4 flex flex-col items-center gap-3">
+             {salon.logo ? (
+               // eslint-disable-next-line @next/next/no-img-element
+-              <img
+-                src={salon.logo}
+-                alt=""
+-                className="h-20 w-20 rounded-3xl object-cover shadow-md ring-2 ring-primary/15"
+-              />
++              <img src={salon.logo} alt="" className="h-20 w-20 rounded-3xl object-cover shadow-md ring-2 ring-primary/15" />
+             ) : (
+-              <div
+-                className="flex h-20 w-20 items-center justify-center rounded-3xl bg-primary/15 font-heading text-2xl font-bold text-primary shadow-inner"
+-                aria-hidden
+-              >
++              <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-primary/15 font-heading text-2xl font-bold text-primary shadow-inner" aria-hidden>
+                 {salon.name.slice(0, 2).toUpperCase()}
+               </div>
+             )}
+@@ -491,28 +223,13 @@ export default function PublicBookingPage() {
+           </div>
+           {salon.address ? (
+             <p className="mt-4 flex items-start justify-center gap-2 text-sm text-muted-foreground">
+-              <MapPin
+-                className="mt-0.5 size-4 shrink-0 text-primary"
+-                aria-hidden
+-              />
++              <MapPin className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+               <span>
+                 {mapsSearchUrl(salon.address) ? (
+-                  <a
+-                    href={mapsSearchUrl(salon.address)!}
+-                    target="_blank"
+-                    rel="noopener noreferrer"
+-                    className="font-medium text-primary underline decoration-primary/40 underline-offset-2 hover:text-primary/90"
+-                  >
++                  <a href={mapsSearchUrl(salon.address)!} target="_blank" rel="noopener noreferrer" className="font-medium text-primary underline decoration-primary/40 underline-offset-2 hover:text-primary/90">
+                     {salon.address}
+                   </a>
+-                ) : (
+-                  salon.address
+-                )}
+-                {mapsSearchUrl(salon.address) ? (
+-                  <span className="mt-1 block text-xs text-muted-foreground">
+-                    Otvara Google mape
+-                  </span>
+-                ) : null}
++                ) : salon.address}
+               </span>
+             </p>
+           ) : null}
+@@ -520,452 +237,51 @@ export default function PublicBookingPage() {
+             <p className="mt-2 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+               <Phone className="size-4 shrink-0 text-primary" aria-hidden />
+               {telHref(salon.phone) ? (
+-                <a
+-                  href={telHref(salon.phone)!}
+-                  className="font-medium text-primary underline decoration-primary/40 underline-offset-2 hover:text-primary/90"
+-                >
++                <a href={telHref(salon.phone)!} className="font-medium text-primary underline decoration-primary/40 underline-offset-2 hover:text-primary/90">
+                   {salon.phone}
+                 </a>
+-              ) : (
+-                salon.phone
+-              )}
++              ) : salon.phone}
+             </p>
+           ) : null}
+         </header>
+ 
++        {/* Stepper */}
+         <div className="space-y-4">
+           <BookingProgressBar step={step} />
+           <BookingStepper step={step} />
+         </div>
+ 
++        {/* Steps */}
+         {step === 1 ? (
+-          <SurfaceCard
+-            padding="md"
+-            className="space-y-4 border-border/90 shadow-[var(--smp-shadow-soft)] ring-1 ring-primary/5"
+-          >
+-            <div className="flex items-center gap-2">
+-              <div className="flex size-9 items-center justify-center rounded-xl bg-primary/15 text-primary">
+-                <Sparkles className="size-4" aria-hidden />
+-              </div>
+-              <div>
+-                <h2 className="text-base font-semibold text-foreground">
+-                  Izaberi uslugu
+-                </h2>
+-                <p className="text-xs text-muted-foreground">
+-                  Jedan klik — odmah vidiš trajanje i cenu.
+-                </p>
+-              </div>
+-            </div>
+-            {services.length === 0 ? (
+-              <p className="text-sm text-muted-foreground">
+-                Ovaj salon još nema javnih usluga za rezervaciju.
+-              </p>
+-            ) : (
+-              <div className="grid gap-2.5">
+-                {services.map((s) => {
+-                  const selected = serviceId === s.id;
+-                  const priceNum = Number(
+-                    String(s.price).replace(/\s/g, "").replace(",", ".")
+-                  );
+-                  const priceLabel = Number.isFinite(priceNum)
+-                    ? `${priceNum.toLocaleString("sr-RS")} RSD`
+-                    : `${s.price} RSD`;
+-                  return (
+-                    <button
+-                      key={s.id}
+-                      type="button"
+-                      onClick={() => setServiceId(s.id)}
+-                      className={cn(
+-                        "group flex w-full items-start gap-3 rounded-2xl border-2 p-4 text-left transition-all duration-200",
+-                        selected
+-                          ? "border-primary bg-gradient-to-br from-primary/12 via-card to-card shadow-[0_12px_36px_-18px_rgb(var(--primary)/0.45)] ring-4 ring-primary/15"
+-                          : "border-border bg-card hover:border-primary/40 hover:bg-primary/[0.04] hover:shadow-md active:scale-[0.99]"
+-                      )}
+-                    >
+-                      <div
+-                        className={cn(
+-                          "flex size-11 shrink-0 items-center justify-center rounded-2xl transition-colors",
+-                          selected
+-                            ? "bg-primary text-primary-foreground shadow-[0_8px_20px_-8px_rgb(var(--primary)/0.55)]"
+-                            : "bg-primary/10 text-primary group-hover:bg-primary/15"
+-                        )}
+-                      >
+-                        <Sparkles className="size-5" aria-hidden />
+-                      </div>
+-                      <div className="min-w-0 flex-1">
+-                        <p className="font-semibold leading-snug text-foreground">
+-                          {s.name}
+-                        </p>
+-                        <p className="mt-1 text-xs text-muted-foreground">
+-                          <span className="font-medium text-foreground/80">
+-                            {Number(s.duration)} min
+-                          </span>
+-                          <span className="mx-1.5 text-border">·</span>
+-                          <span>{priceLabel}</span>
+-                        </p>
+-                      </div>
+-                      <div
+-                        className={cn(
+-                          "flex size-8 shrink-0 items-center justify-center rounded-full border-2 transition-all",
+-                          selected
+-                            ? "border-primary bg-primary text-primary-foreground"
+-                            : "border-transparent bg-muted/60 text-transparent group-hover:border-border group-hover:text-muted-foreground"
+-                        )}
+-                      >
+-                        <Check className="size-4" strokeWidth={2.75} />
+-                      </div>
+-                    </button>
+-                  );
+-                })}
+-              </div>
+-            )}
+-            <Button
+-              type="button"
+-              variant="brand"
+-              className="h-11 w-full rounded-xl"
+-              disabled={services.length === 0 || serviceId === ""}
+-              onClick={() => setStep(2)}
+-            >
+-              Dalje
+-            </Button>
+-          </SurfaceCard>
++          <StepSelectService services={services} serviceId={serviceId} onSelect={setServiceId} onNext={() => setStep(2)} />
+         ) : null}
+ 
+         {step === 2 ? (
+-          <SurfaceCard
+-            padding="md"
+-            className="space-y-4 border-border/90 shadow-[var(--smp-shadow-soft)] ring-1 ring-primary/5"
+-          >
+-            <div className="flex items-center gap-2">
+-              <div className="flex size-9 items-center justify-center rounded-xl bg-primary/15 text-primary">
+-                <CalendarDays className="size-4" aria-hidden />
+-              </div>
+-              <div>
+-                <h2 className="text-base font-semibold text-foreground">
+-                  Izaberi datum
+-                </h2>
+-                <p className="text-xs text-muted-foreground">
+-                  Brzi izbor ili tačan datum u kalendaru.
+-                </p>
+-              </div>
+-            </div>
+-            <div className="flex flex-wrap gap-2">
+-              {(
+-                [
+-                  { label: "Danas", d: 0 },
+-                  { label: "Sutra", d: 1 },
+-                  { label: "Za 2 dana", d: 2 },
+-                ] as const
+-              ).map(({ label, d }) => {
+-                const ymd = formatYyyyMmDd(addDays(todayLocal(), d));
+-                const picked = date === ymd;
+-                return (
+-                  <button
+-                    key={label}
+-                    type="button"
+-                    onClick={() => setDate(ymd)}
+-                    className={cn(
+-                      "rounded-2xl border-2 px-4 py-2.5 text-sm font-semibold transition-all duration-200",
+-                      picked
+-                        ? "border-primary bg-primary text-primary-foreground shadow-[0_10px_28px_-12px_rgb(var(--primary)/0.55)] ring-2 ring-primary/25"
+-                        : "border-border bg-muted/40 text-foreground hover:border-primary/40 hover:bg-primary/5 dark:bg-muted/25"
+-                    )}
+-                  >
+-                    {label}
+-                  </button>
+-                );
+-              })}
+-            </div>
+-            <Input
+-              type="date"
+-              min={todayYmdLocal()}
+-              value={date}
+-              onChange={(e) => setDate(e.target.value)}
+-              className="border-border bg-card"
+-            />
+-            <div className="flex gap-2">
+-              <Button
+-                type="button"
+-                variant="outline"
+-                className="h-11 flex-1 rounded-xl"
+-                onClick={() => setStep(1)}
+-              >
+-                Nazad
+-              </Button>
+-              <Button
+-                type="button"
+-                variant="brand"
+-                className="h-11 flex-1 rounded-xl"
+-                onClick={() => setStep(3)}
+-              >
+-                Dalje
+-              </Button>
+-            </div>
+-          </SurfaceCard>
++          <StepSelectDate date={date} onDateChange={setDate} onNext={() => setStep(3)} onBack={() => setStep(1)} />
+         ) : null}
+ 
+         {step === 3 ? (
+-          <SurfaceCard
+-            padding="md"
+-            className="space-y-4 border-border/90 shadow-[var(--smp-shadow-soft)] ring-1 ring-primary/5"
+-          >
+-            <div className="flex items-center gap-2">
+-              <div className="flex size-9 items-center justify-center rounded-xl bg-primary/15 text-primary">
+-                <Clock className="size-4" aria-hidden />
+-              </div>
+-              <div>
+-                <h2 className="text-base font-semibold text-foreground">
+-                  Slobodni termini
+-                </h2>
+-                <p className="text-xs text-muted-foreground">
+-                  Izaberi vreme{fromShifts ? " i osobu" : ""} — izabrani termin
+-                  je jasno označen.
+-                </p>
+-              </div>
+-            </div>
+-            {slotsLoading ? (
+-              <div className="flex flex-col items-center gap-3 py-8">
+-                <div
+-                  className="size-9 animate-pulse rounded-full bg-sky-200/90 dark:bg-sky-900/60"
+-                  aria-hidden
+-                />
+-                <p className="text-sm font-medium text-muted-foreground">
+-                  Učitavanje termina…
+-                </p>
+-              </div>
+-            ) : slotsError ? (
+-              <p className="text-sm text-red-700 dark:text-red-300">
+-                {slotsError}
+-              </p>
+-            ) : slots.length === 0 ? (
+-              <p className="text-sm text-muted-foreground">
+-                Nema slobodnih termina za ovaj dan. Izaberi drugi datum ili
+-                proveri radno vreme u podešavanjima salona.
+-              </p>
+-            ) : (
+-              <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+-                {slots.map((slot) => {
+-                  const isSelected =
+-                    selectedSlot?.start === slot.start &&
+-                    selectedSlot?.employee_id === slot.employee_id;
+-                  const workerLabel = slot.employee_name ?? "Tim salona";
+-                  return (
+-                    <button
+-                      key={`${slot.start}-${slot.employee_id ?? "x"}`}
+-                      type="button"
+-                      onClick={() => setSelectedSlot(slot)}
+-                      className={cn(
+-                        "group relative flex flex-col gap-2 rounded-2xl border-2 px-3 py-3 text-left transition-all duration-200",
+-                        isSelected
+-                          ? "z-10 border-primary bg-gradient-to-b from-primary to-primary/90 text-primary-foreground shadow-[0_14px_44px_-18px_rgb(var(--primary)/0.75)] ring-4 ring-primary/30 scale-[1.02]"
+-                          : "border-border bg-card text-foreground hover:border-primary/45 hover:bg-primary/[0.06] hover:shadow-md active:scale-[0.98] dark:bg-card"
+-                      )}
+-                    >
+-                      {isSelected ? (
+-                        <span className="absolute right-2 top-2 flex size-6 items-center justify-center rounded-full bg-primary-foreground/20 text-primary-foreground backdrop-blur-[2px]">
+-                          <Check className="size-3.5" strokeWidth={3} />
+-                        </span>
+-                      ) : null}
+-                      <span
+-                        className={cn(
+-                          "pr-7 text-lg font-bold tabular-nums leading-none tracking-tight",
+-                          isSelected ? "text-primary-foreground" : "text-foreground"
+-                        )}
+-                      >
+-                        {slot.label}
+-                      </span>
+-                      <div className="flex items-center gap-2">
+-                        <WorkerAvatar
+-                          name={workerLabel}
+-                          employeeId={slot.employee_id}
+-                          size="sm"
+-                          className={cn(
+-                            "ring-2",
+-                            isSelected
+-                              ? "ring-primary-foreground/35"
+-                              : "ring-background"
+-                          )}
+-                        />
+-                        <span
+-                          className={cn(
+-                            "line-clamp-2 min-w-0 flex-1 text-[11px] font-semibold leading-tight",
+-                            isSelected
+-                              ? "text-primary-foreground/95"
+-                              : "text-muted-foreground group-hover:text-foreground"
+-                          )}
+-                        >
+-                          {workerLabel}
+-                        </span>
+-                      </div>
+-                    </button>
+-                  );
+-                })}
+-              </div>
+-            )}
+-            <div className="flex gap-2">
+-              <Button
+-                type="button"
+-                variant="outline"
+-                className="h-11 flex-1 rounded-xl"
+-                onClick={() => setStep(2)}
+-              >
+-                Nazad
+-              </Button>
+-              <Button
+-                type="button"
+-                variant="brand"
+-                className="h-11 flex-1 rounded-xl"
+-                disabled={!selectedSlot || slotsLoading}
+-                onClick={() => setStep(4)}
+-              >
+-                Dalje
+-              </Button>
+-            </div>
+-          </SurfaceCard>
++          <StepSelectSlot slots={slots} slotsLoading={slotsLoading} slotsError={slotsError} fromShifts={fromShifts} selectedSlot={selectedSlot} onSelect={setSelectedSlot} onNext={() => setStep(4)} onBack={() => setStep(2)} />
+         ) : null}
+ 
+         {step === 4 ? (
+-          <SurfaceCard
+-            padding="md"
+-            className="space-y-4 border-border/90 shadow-[var(--smp-shadow-soft)] ring-1 ring-primary/5"
+-          >
+-            <div className="flex items-center gap-2">
+-              <div className="flex size-9 items-center justify-center rounded-xl bg-primary/15 text-primary">
+-                <UserRound className="size-4" aria-hidden />
+-              </div>
+-              <div>
+-                <h2 className="text-base font-semibold text-foreground">
+-                  Vaši podaci
+-                </h2>
+-                <p className="text-xs text-muted-foreground">
+-                  Proveri rezime ispod, unesi kontakt i potvrdi.
+-                </p>
+-              </div>
+-            </div>
+-            {selectedService && selectedSlot ? (
+-              <div className="flex gap-3 rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-muted/80 to-muted/40 p-4 text-xs shadow-inner ring-1 ring-primary/10">
+-                <WorkerAvatar
+-                  name={selectedSlot.employee_name ?? "Tim salona"}
+-                  employeeId={selectedSlot.employee_id}
+-                  className="ring-2 ring-background"
+-                />
+-                <div className="min-w-0 flex-1 space-y-1 text-muted-foreground">
+-                  <p className="text-sm font-semibold text-foreground">
+-                    {selectedService.name}
+-                  </p>
+-                  <p className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 font-medium">
+-                    <CalendarDays
+-                      className="size-3.5 shrink-0 text-primary"
+-                      aria-hidden
+-                    />
+-                    <span>{date}</span>
+-                    <span className="text-border">·</span>
+-                    <Clock
+-                      className="size-3.5 shrink-0 text-primary"
+-                      aria-hidden
+-                    />
+-                    <span>{selectedSlot.label}</span>
+-                  </p>
+-                  {selectedSlot.employee_name ? (
+-                    <p className="text-[11px]">
+-                      Sa {selectedSlot.employee_name}
+-                    </p>
+-                  ) : null}
+-                </div>
+-              </div>
+-            ) : null}
+-            <div className="space-y-3">
+-              <div className="space-y-1.5">
+-                <Label htmlFor="pb-name">Ime i prezime</Label>
+-                <Input
+-                  id="pb-name"
+-                  value={name}
+-                  onChange={(e) => setName(e.target.value)}
+-                  className="border-border bg-card"
+-                  autoComplete="name"
+-                />
+-              </div>
+-              <div className="space-y-1.5">
+-                <Label htmlFor="pb-phone">Telefon (za SMS potvrdu)</Label>
+-                <Input
+-                  id="pb-phone"
+-                  type="tel"
+-                  value={phone}
+-                  onChange={(e) => setPhone(e.target.value)}
+-                  className="border-border bg-card"
+-                  autoComplete="tel"
+-                  placeholder="+381…"
+-                />
+-              </div>
+-              <div className="space-y-1.5">
+-                <Label htmlFor="pb-email">
+-                  E-mail
+-                  {emailRequired ? (
+-                    <span className="font-normal text-red-600 dark:text-red-400">
+-                      {" "}
+-                      *
+-                    </span>
+-                  ) : (
+-                    <span className="font-normal text-muted-foreground">
+-                      {" "}
+-                      (opciono)
+-                    </span>
+-                  )}
+-                </Label>
+-                <Input
+-                  id="pb-email"
+-                  type="email"
+-                  value={email}
+-                  onChange={(e) => setEmail(e.target.value)}
+-                  className="border-border bg-card"
+-                  autoComplete="email"
+-                  placeholder="ime@primer.com"
+-                  required={emailRequired}
+-                />
+-                {!emailRequired ? (
+-                  <p className="text-xs text-muted-foreground">
+-                    Ako ga uneseš, salon ga može koristiti za e-mail potvrdu i
+-                    podsetnike (ako su uključeni).
+-                  </p>
+-                ) : null}
+-              </div>
+-            </div>
+-            {formError ? (
+-              <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-100">
+-                {formError}
+-              </p>
+-            ) : null}
+-            <div className="flex flex-col gap-2 sm:flex-row">
+-              <Button
+-                type="button"
+-                variant="outline"
+-                className="h-11 flex-1 rounded-xl"
+-                disabled={submitting}
+-                onClick={() => setStep(3)}
+-              >
+-                Nazad
+-              </Button>
+-              <Button
+-                type="button"
+-                variant="brand"
+-                className="h-11 flex-1 rounded-xl"
+-                disabled={
+-                  submitting ||
+-                  services.length === 0 ||
+-                  serviceId === "" ||
+-                  !selectedSlot
+-                }
+-                onClick={() => void onBook()}
+-              >
+-                {submitting ? "Šaljem…" : "Rezerviši termin"}
+-              </Button>
+-            </div>
+-          </SurfaceCard>
++          <StepClientForm
++            selectedService={selectedService}
++            selectedSlot={selectedSlot}
++            date={date}
++            name={name} phone={phone} email={email}
++            emailRequired={emailRequired}
++            formError={formError}
++            submitting={submitting}
++            onNameChange={setName} onPhoneChange={setPhone} onEmailChange={setEmail}
++            onSubmit={() => void onBook()}
++            onBack={() => setStep(3)}
++            disabled={services.length === 0 || serviceId === "" || !selectedSlot}
++          />
+         ) : null}
+ 
+         <p className="text-center text-xs text-muted-foreground/70">
+-          Zakazivanje u vremenskoj zoni salona ({salonTz}). Adresa otvara mape,
+-          telefon poziv.
++          Zakazivanje u vremenskoj zoni salona ({salonTz}). Adresa otvara mape, telefon poziv.
+         </p>
+       </div>
+     </div>
+diff --git a/frontend/src/components/features/booking/BookingSuccess.tsx b/frontend/src/components/features/booking/BookingSuccess.tsx
+new file mode 100644
+index 0000000..20b8b23
+--- /dev/null
++++ b/frontend/src/components/features/booking/BookingSuccess.tsx
+@@ -0,0 +1,48 @@
++"use client";
++
++import { CircleCheck } from "lucide-react";
++import { Button } from "@/components/ui/button";
++import type { BookingSuccess as BookingSuccessData } from "./booking-shared";
++
++type BookingSuccessProps = {
++  salonName: string;
++  data: BookingSuccessData;
++  onReset: () => void;
++};
++
++export function BookingSuccess({
++  salonName,
++  data,
++  onReset,
++}: BookingSuccessProps) {
++  return (
++    <div className="mx-auto flex max-w-lg flex-col items-center gap-6 text-center">
++      <div className="flex size-20 items-center justify-center rounded-3xl bg-emerald-100/80 shadow-inner dark:bg-emerald-900/40">
++        <CircleCheck
++          className="size-10 text-emerald-600 dark:text-emerald-300"
++          aria-hidden
++        />
++      </div>
++      <div>
++        <h2 className="text-2xl font-bold text-foreground">
++          Termin je rezervisan!
++        </h2>
++        <p className="mt-3 text-sm font-medium text-foreground/80">
++          {data.summary}
++        </p>
++        <p className="mt-2 text-sm text-muted-foreground">{data.notifyHint}</p>
++      </div>
++      <Button
++        type="button"
++        variant="brand"
++        className="h-11 w-full max-w-xs rounded-xl"
++        onClick={onReset}
++      >
++        Zakaži novi termin
++      </Button>
++      <p className="text-xs text-muted-foreground/70">
++        {salonName} — hvala na poverenju!
++      </p>
++    </div>
++  );
++}
+diff --git a/frontend/src/components/features/booking/StepClientForm.tsx b/frontend/src/components/features/booking/StepClientForm.tsx
+new file mode 100644
+index 0000000..6567fa7
+--- /dev/null
++++ b/frontend/src/components/features/booking/StepClientForm.tsx
+@@ -0,0 +1,190 @@
++"use client";
++
++import { CalendarDays, Clock, UserRound } from "lucide-react";
++import { Button } from "@/components/ui/button";
++import { Input } from "@/components/ui/input";
++import { Label } from "@/components/ui/label";
++import { SurfaceCard } from "@/components/ui/surface-card";
++import { WorkerAvatar } from "./booking-shared";
++import type { PublicSlot } from "@/lib/api/public-booking";
++
++type SelectedService = {
++  id: number;
++  name: string;
++  price: string | number;
++  duration: number;
++};
++
++type StepClientFormProps = {
++  selectedService: SelectedService | null;
++  selectedSlot: PublicSlot | null;
++  date: string;
++  name: string;
++  phone: string;
++  email: string;
++  emailRequired: boolean;
++  formError: string | null;
++  submitting: boolean;
++  onNameChange: (v: string) => void;
++  onPhoneChange: (v: string) => void;
++  onEmailChange: (v: string) => void;
++  onSubmit: () => void;
++  onBack: () => void;
++  disabled: boolean;
++};
++
++export function StepClientForm({
++  selectedService,
++  selectedSlot,
++  date,
++  name,
++  phone,
++  email,
++  emailRequired,
++  formError,
++  submitting,
++  onNameChange,
++  onPhoneChange,
++  onEmailChange,
++  onSubmit,
++  onBack,
++  disabled,
++}: StepClientFormProps) {
++  return (
++    <SurfaceCard
++      padding="md"
++      className="space-y-4 border-border/90 shadow-[var(--smp-shadow-soft)] ring-1 ring-primary/5"
++    >
++      <div className="flex items-center gap-2">
++        <div className="flex size-9 items-center justify-center rounded-xl bg-primary/15 text-primary">
++          <UserRound className="size-4" aria-hidden />
++        </div>
++        <div>
++          <h2 className="text-base font-semibold text-foreground">
++            Vaši podaci
++          </h2>
++          <p className="text-xs text-muted-foreground">
++            Proveri rezime ispod, unesi kontakt i potvrdi.
++          </p>
++        </div>
++      </div>
++
++      {/* Summary card */}
++      {selectedService && selectedSlot ? (
++        <div className="flex gap-3 rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-muted/80 to-muted/40 p-4 text-xs shadow-inner ring-1 ring-primary/10">
++          <WorkerAvatar
++            name={selectedSlot.employee_name ?? "Tim salona"}
++            employeeId={selectedSlot.employee_id}
++            className="ring-2 ring-background"
++          />
++          <div className="min-w-0 flex-1 space-y-1 text-muted-foreground">
++            <p className="text-sm font-semibold text-foreground">
++              {selectedService.name}
++            </p>
++            <p className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 font-medium">
++              <CalendarDays
++                className="size-3.5 shrink-0 text-primary"
++                aria-hidden
++              />
++              <span>{date}</span>
++              <span className="text-border">·</span>
++              <Clock
++                className="size-3.5 shrink-0 text-primary"
++                aria-hidden
++              />
++              <span>{selectedSlot.label}</span>
++            </p>
++            {selectedSlot.employee_name ? (
++              <p className="text-[11px]">Sa {selectedSlot.employee_name}</p>
++            ) : null}
++          </div>
++        </div>
++      ) : null}
++
++      {/* Form fields */}
++      <div className="space-y-3">
++        <div className="space-y-1.5">
++          <Label htmlFor="pb-name">Ime i prezime</Label>
++          <Input
++            id="pb-name"
++            value={name}
++            onChange={(e) => onNameChange(e.target.value)}
++            className="border-border bg-card"
++            autoComplete="name"
++          />
++        </div>
++        <div className="space-y-1.5">
++          <Label htmlFor="pb-phone">Telefon (za SMS potvrdu)</Label>
++          <Input
++            id="pb-phone"
++            type="tel"
++            value={phone}
++            onChange={(e) => onPhoneChange(e.target.value)}
++            className="border-border bg-card"
++            autoComplete="tel"
++            placeholder="+381…"
++          />
++        </div>
++        <div className="space-y-1.5">
++          <Label htmlFor="pb-email">
++            E-mail
++            {emailRequired ? (
++              <span className="font-normal text-red-600 dark:text-red-400">
++                {" "}
++                *
++              </span>
++            ) : (
++              <span className="font-normal text-muted-foreground">
++                {" "}
++                (opciono)
++              </span>
++            )}
++          </Label>
++          <Input
++            id="pb-email"
++            type="email"
++            value={email}
++            onChange={(e) => onEmailChange(e.target.value)}
++            className="border-border bg-card"
++            autoComplete="email"
++            placeholder="ime@primer.com"
++            required={emailRequired}
++          />
++          {!emailRequired ? (
++            <p className="text-xs text-muted-foreground">
++              Ako ga uneseš, salon ga može koristiti za e-mail potvrdu i
++              podsetnike (ako su uključeni).
++            </p>
++          ) : null}
++        </div>
++      </div>
++
++      {formError ? (
++        <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-100">
++          {formError}
++        </p>
++      ) : null}
++
++      <div className="flex flex-col gap-2 sm:flex-row">
++        <Button
++          type="button"
++          variant="outline"
++          className="h-11 flex-1 rounded-xl"
++          disabled={submitting}
++          onClick={onBack}
++        >
++          Nazad
++        </Button>
++        <Button
++          type="button"
++          variant="brand"
++          className="h-11 flex-1 rounded-xl"
++          disabled={disabled || submitting}
++          onClick={onSubmit}
++        >
++          {submitting ? "Šaljem…" : "Rezerviši termin"}
++        </Button>
++      </div>
++    </SurfaceCard>
++  );
++}
+diff --git a/frontend/src/components/features/booking/StepSelectDate.tsx b/frontend/src/components/features/booking/StepSelectDate.tsx
+new file mode 100644
+index 0000000..6256bfc
+--- /dev/null
++++ b/frontend/src/components/features/booking/StepSelectDate.tsx
+@@ -0,0 +1,99 @@
++"use client";
++
++import { CalendarDays } from "lucide-react";
++import { Button } from "@/components/ui/button";
++import { Input } from "@/components/ui/input";
++import { SurfaceCard } from "@/components/ui/surface-card";
++import { addDays, formatYyyyMmDd, todayLocal } from "@/lib/dateLocal";
++import { cn } from "@/lib/utils";
++import { todayYmdLocal } from "./booking-shared";
++
++type StepSelectDateProps = {
++  date: string;
++  onDateChange: (date: string) => void;
++  onNext: () => void;
++  onBack: () => void;
++};
++
++export function StepSelectDate({
++  date,
++  onDateChange,
++  onNext,
++  onBack,
++}: StepSelectDateProps) {
++  return (
++    <SurfaceCard
++      padding="md"
++      className="space-y-4 border-border/90 shadow-[var(--smp-shadow-soft)] ring-1 ring-primary/5"
++    >
++      <div className="flex items-center gap-2">
++        <div className="flex size-9 items-center justify-center rounded-xl bg-primary/15 text-primary">
++          <CalendarDays className="size-4" aria-hidden />
++        </div>
++        <div>
++          <h2 className="text-base font-semibold text-foreground">
++            Izaberi datum
++          </h2>
++          <p className="text-xs text-muted-foreground">
++            Brzi izbor ili tačan datum u kalendaru.
++          </p>
++        </div>
++      </div>
++
++      <div className="flex flex-wrap gap-2">
++        {(
++          [
++            { label: "Danas", d: 0 },
++            { label: "Sutra", d: 1 },
++            { label: "Za 2 dana", d: 2 },
++          ] as const
++        ).map(({ label, d }) => {
++          const ymd = formatYyyyMmDd(addDays(todayLocal(), d));
++          const picked = date === ymd;
++          return (
++            <button
++              key={label}
++              type="button"
++              onClick={() => onDateChange(ymd)}
++              className={cn(
++                "rounded-2xl border-2 px-4 py-2.5 text-sm font-semibold transition-all duration-200",
++                picked
++                  ? "border-primary bg-primary text-primary-foreground shadow-[0_10px_28px_-12px_rgb(var(--primary)/0.55)] ring-2 ring-primary/25"
++                  : "border-border bg-muted/40 text-foreground hover:border-primary/40 hover:bg-primary/5 dark:bg-muted/25"
++              )}
++            >
++              {label}
++            </button>
++          );
++        })}
++      </div>
++
++      <Input
++        type="date"
++        min={todayYmdLocal()}
++        value={date}
++        onChange={(e) => onDateChange(e.target.value)}
++        className="border-border bg-card"
++      />
++
++      <div className="flex gap-2">
++        <Button
++          type="button"
++          variant="outline"
++          className="h-11 flex-1 rounded-xl"
++          onClick={onBack}
++        >
++          Nazad
++        </Button>
++        <Button
++          type="button"
++          variant="brand"
++          className="h-11 flex-1 rounded-xl"
++          onClick={onNext}
++        >
++          Dalje
++        </Button>
++      </div>
++    </SurfaceCard>
++  );
++}
+diff --git a/frontend/src/components/features/booking/StepSelectService.tsx b/frontend/src/components/features/booking/StepSelectService.tsx
+new file mode 100644
+index 0000000..551c05d
+--- /dev/null
++++ b/frontend/src/components/features/booking/StepSelectService.tsx
+@@ -0,0 +1,122 @@
++"use client";
++
++import { Check, Sparkles } from "lucide-react";
++import { Button } from "@/components/ui/button";
++import { SurfaceCard } from "@/components/ui/surface-card";
++import { cn } from "@/lib/utils";
++
++type ServiceItem = {
++  id: number;
++  name: string;
++  price: string | number;
++  duration: number;
++};
++
++type StepSelectServiceProps = {
++  services: ServiceItem[];
++  serviceId: number | "";
++  onSelect: (id: number) => void;
++  onNext: () => void;
++};
++
++export function StepSelectService({
++  services,
++  serviceId,
++  onSelect,
++  onNext,
++}: StepSelectServiceProps) {
++  return (
++    <SurfaceCard
++      padding="md"
++      className="space-y-4 border-border/90 shadow-[var(--smp-shadow-soft)] ring-1 ring-primary/5"
++    >
++      <div className="flex items-center gap-2">
++        <div className="flex size-9 items-center justify-center rounded-xl bg-primary/15 text-primary">
++          <Sparkles className="size-4" aria-hidden />
++        </div>
++        <div>
++          <h2 className="text-base font-semibold text-foreground">
++            Izaberi uslugu
++          </h2>
++          <p className="text-xs text-muted-foreground">
++            Jedan klik — odmah vidiš trajanje i cenu.
++          </p>
++        </div>
++      </div>
++
++      {services.length === 0 ? (
++        <p className="text-sm text-muted-foreground">
++          Ovaj salon još nema javnih usluga za rezervaciju.
++        </p>
++      ) : (
++        <div className="grid gap-2.5">
++          {services.map((s) => {
++            const selected = serviceId === s.id;
++            const priceNum = Number(
++              String(s.price).replace(/\s/g, "").replace(",", ".")
++            );
++            const priceLabel = Number.isFinite(priceNum)
++              ? `${priceNum.toLocaleString("sr-RS")} RSD`
++              : `${s.price} RSD`;
++            return (
++              <button
++                key={s.id}
++                type="button"
++                onClick={() => onSelect(s.id)}
++                className={cn(
++                  "group flex w-full items-start gap-3 rounded-2xl border-2 p-4 text-left transition-all duration-200",
++                  selected
++                    ? "border-primary bg-gradient-to-br from-primary/12 via-card to-card shadow-[0_12px_36px_-18px_rgb(var(--primary)/0.45)] ring-4 ring-primary/15"
++                    : "border-border bg-card hover:border-primary/40 hover:bg-primary/[0.04] hover:shadow-md active:scale-[0.99]"
++                )}
++              >
++                <div
++                  className={cn(
++                    "flex size-11 shrink-0 items-center justify-center rounded-2xl transition-colors",
++                    selected
++                      ? "bg-primary text-primary-foreground shadow-[0_8px_20px_-8px_rgb(var(--primary)/0.55)]"
++                      : "bg-primary/10 text-primary group-hover:bg-primary/15"
++                  )}
++                >
++                  <Sparkles className="size-5" aria-hidden />
++                </div>
++                <div className="min-w-0 flex-1">
++                  <p className="font-semibold leading-snug text-foreground">
++                    {s.name}
++                  </p>
++                  <p className="mt-1 text-xs text-muted-foreground">
++                    <span className="font-medium text-foreground/80">
++                      {Number(s.duration)} min
++                    </span>
++                    <span className="mx-1.5 text-border">·</span>
++                    <span>{priceLabel}</span>
++                  </p>
++                </div>
++                <div
++                  className={cn(
++                    "flex size-8 shrink-0 items-center justify-center rounded-full border-2 transition-all",
++                    selected
++                      ? "border-primary bg-primary text-primary-foreground"
++                      : "border-transparent bg-muted/60 text-transparent group-hover:border-border group-hover:text-muted-foreground"
++                  )}
++                >
++                  <Check className="size-4" strokeWidth={2.75} />
++                </div>
++              </button>
++            );
++          })}
++        </div>
++      )}
++
++      <Button
++        type="button"
++        variant="brand"
++        className="h-11 w-full rounded-xl"
++        disabled={services.length === 0 || serviceId === ""}
++        onClick={onNext}
++      >
++        Dalje
++      </Button>
++    </SurfaceCard>
++  );
++}
+diff --git a/frontend/src/components/features/booking/StepSelectSlot.tsx b/frontend/src/components/features/booking/StepSelectSlot.tsx
+new file mode 100644
+index 0000000..f809206
+--- /dev/null
++++ b/frontend/src/components/features/booking/StepSelectSlot.tsx
+@@ -0,0 +1,150 @@
++"use client";
++
++import { Check, Clock } from "lucide-react";
++import { Button } from "@/components/ui/button";
++import { SurfaceCard } from "@/components/ui/surface-card";
++import { cn } from "@/lib/utils";
++import { WorkerAvatar } from "./booking-shared";
++import type { PublicSlot } from "@/lib/api/public-booking";
++
++type StepSelectSlotProps = {
++  slots: PublicSlot[];
++  slotsLoading: boolean;
++  slotsError: string | null;
++  fromShifts: boolean;
++  selectedSlot: PublicSlot | null;
++  onSelect: (slot: PublicSlot) => void;
++  onNext: () => void;
++  onBack: () => void;
++};
++
++export function StepSelectSlot({
++  slots,
++  slotsLoading,
++  slotsError,
++  fromShifts,
++  selectedSlot,
++  onSelect,
++  onNext,
++  onBack,
++}: StepSelectSlotProps) {
++  return (
++    <SurfaceCard
++      padding="md"
++      className="space-y-4 border-border/90 shadow-[var(--smp-shadow-soft)] ring-1 ring-primary/5"
++    >
++      <div className="flex items-center gap-2">
++        <div className="flex size-9 items-center justify-center rounded-xl bg-primary/15 text-primary">
++          <Clock className="size-4" aria-hidden />
++        </div>
++        <div>
++          <h2 className="text-base font-semibold text-foreground">
++            Slobodni termini
++          </h2>
++          <p className="text-xs text-muted-foreground">
++            Izaberi vreme{fromShifts ? " i osobu" : ""} — izabrani termin je
++            jasno označen.
++          </p>
++        </div>
++      </div>
++
++      {slotsLoading ? (
++        <div className="flex flex-col items-center gap-3 py-8">
++          <div
++            className="size-9 animate-pulse rounded-full bg-sky-200/90 dark:bg-sky-900/60"
++            aria-hidden
++          />
++          <p className="text-sm font-medium text-muted-foreground">
++            Učitavanje termina…
++          </p>
++        </div>
++      ) : slotsError ? (
++        <p className="text-sm text-red-700 dark:text-red-300">{slotsError}</p>
++      ) : slots.length === 0 ? (
++        <p className="text-sm text-muted-foreground">
++          Nema slobodnih termina za ovaj dan. Izaberi drugi datum ili proveri
++          radno vreme u podešavanjima salona.
++        </p>
++      ) : (
++        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
++          {slots.map((slot) => {
++            const isSelected =
++              selectedSlot?.start === slot.start &&
++              selectedSlot?.employee_id === slot.employee_id;
++            const workerLabel = slot.employee_name ?? "Tim salona";
++            return (
++              <button
++                key={`${slot.start}-${slot.employee_id ?? "x"}`}
++                type="button"
++                onClick={() => onSelect(slot)}
++                className={cn(
++                  "group relative flex flex-col gap-2 rounded-2xl border-2 px-3 py-3 text-left transition-all duration-200",
++                  isSelected
++                    ? "z-10 border-primary bg-gradient-to-b from-primary to-primary/90 text-primary-foreground shadow-[0_14px_44px_-18px_rgb(var(--primary)/0.75)] ring-4 ring-primary/30 scale-[1.02]"
++                    : "border-border bg-card text-foreground hover:border-primary/45 hover:bg-primary/[0.06] hover:shadow-md active:scale-[0.98] dark:bg-card"
++                )}
++              >
++                {isSelected ? (
++                  <span className="absolute right-2 top-2 flex size-6 items-center justify-center rounded-full bg-primary-foreground/20 text-primary-foreground backdrop-blur-[2px]">
++                    <Check className="size-3.5" strokeWidth={3} />
++                  </span>
++                ) : null}
++                <span
++                  className={cn(
++                    "pr-7 text-lg font-bold tabular-nums leading-none tracking-tight",
++                    isSelected ? "text-primary-foreground" : "text-foreground"
++                  )}
++                >
++                  {slot.label}
++                </span>
++                <div className="flex items-center gap-2">
++                  <WorkerAvatar
++                    name={workerLabel}
++                    employeeId={slot.employee_id}
++                    size="sm"
++                    className={cn(
++                      "ring-2",
++                      isSelected
++                        ? "ring-primary-foreground/35"
++                        : "ring-background"
++                    )}
++                  />
++                  <span
++                    className={cn(
++                      "line-clamp-2 min-w-0 flex-1 text-[11px] font-semibold leading-tight",
++                      isSelected
++                        ? "text-primary-foreground/95"
++                        : "text-muted-foreground group-hover:text-foreground"
++                    )}
++                  >
++                    {workerLabel}
++                  </span>
++                </div>
++              </button>
++            );
++          })}
++        </div>
++      )}
++
++      <div className="flex gap-2">
++        <Button
++          type="button"
++          variant="outline"
++          className="h-11 flex-1 rounded-xl"
++          onClick={onBack}
++        >
++          Nazad
++        </Button>
++        <Button
++          type="button"
++          variant="brand"
++          className="h-11 flex-1 rounded-xl"
++          disabled={!selectedSlot || slotsLoading}
++          onClick={onNext}
++        >
++          Dalje
++        </Button>
++      </div>
++    </SurfaceCard>
++  );
++}
+diff --git a/frontend/src/components/features/booking/booking-shared.tsx b/frontend/src/components/features/booking/booking-shared.tsx
+new file mode 100644
+index 0000000..acebceb
+--- /dev/null
++++ b/frontend/src/components/features/booking/booking-shared.tsx
+@@ -0,0 +1,206 @@
++import { Fragment } from "react";
++import {
++  CalendarDays,
++  Check,
++  Clock,
++  Sparkles,
++  UserRound,
++} from "lucide-react";
++import { cn } from "@/lib/utils";
++import type { PublicSalonPayload, PublicSlot } from "@/lib/api/public-booking";
++
++/* ── Types ── */
++
++export type BookingStep = 1 | 2 | 3 | 4;
++
++export type BookingState = {
++  serviceId: number | "";
++  date: string;
++  selectedSlot: PublicSlot | null;
++  name: string;
++  phone: string;
++  email: string;
++};
++
++export type BookingSuccess = {
++  summary: string;
++  notifyHint: string;
++};
++
++/* ── Constants ── */
++
++export const BOOKING_STEPS = [
++  { id: 1 as const, label: "Usluga", short: "Usluga", Icon: Sparkles },
++  { id: 2 as const, label: "Datum", short: "Datum", Icon: CalendarDays },
++  { id: 3 as const, label: "Termin", short: "Termin", Icon: Clock },
++  { id: 4 as const, label: "Podaci", short: "Podaci", Icon: UserRound },
++] as const;
++
++/* ── Utilities ── */
++
++export function hueFromString(s: string): number {
++  let h = 0;
++  for (let i = 0; i < s.length; i += 1) {
++    h = s.charCodeAt(i) + ((h << 5) - h);
++  }
++  return Math.abs(h % 360);
++}
++
++export function initialsFromName(name: string): string {
++  const parts = name.trim().split(/\s+/).filter(Boolean);
++  if (parts.length === 0) return "?";
++  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
++  return `${parts[0][0] ?? ""}${parts[1][0] ?? ""}`.toUpperCase();
++}
++
++export function todayYmdLocal(): string {
++  return new Date().toLocaleDateString("en-CA");
++}
++
++/* ── WorkerAvatar ── */
++
++export function WorkerAvatar({
++  name,
++  employeeId,
++  size = "md",
++  className,
++}: {
++  name: string | null | undefined;
++  employeeId?: number | null;
++  size?: "sm" | "md";
++  className?: string;
++}) {
++  const label = name?.trim() || "Tim";
++  const initials = initialsFromName(label);
++  const hue = hueFromString(`${employeeId ?? ""}:${label}`);
++  const sizeCls =
++    size === "sm" ? "size-7 text-[10px] ring-2" : "size-9 text-xs ring-2";
++
++  return (
++    <div
++      className={cn(
++        "flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br font-bold tabular-nums text-white shadow-inner ring-background",
++        sizeCls,
++        className
++      )}
++      style={{
++        background: `linear-gradient(145deg, hsl(${hue} 65% 52%) 0%, hsl(${(hue + 38) % 360} 55% 38%) 100%)`,
++      }}
++      aria-hidden
++      title={name || undefined}
++    >
++      <span className="drop-shadow-sm">{initials}</span>
++    </div>
++  );
++}
++
++/* ── BookingStepper ── */
++
++export function BookingStepper({ step }: { step: BookingStep }) {
++  return (
++    <nav
++      className="rounded-2xl border border-border/80 bg-card/90 px-2 py-4 shadow-[var(--smp-shadow-soft)] backdrop-blur-sm sm:px-4"
++      aria-label="Koraci rezervacije"
++    >
++      <ol className="flex w-full items-center">
++        {BOOKING_STEPS.map(({ id, label, short, Icon }, index) => {
++          const done = step > id;
++          const active = step === id;
++          const prevId = index > 0 ? BOOKING_STEPS[index - 1].id : null;
++          const segmentDone = prevId != null && step > prevId;
++
++          return (
++            <Fragment key={id}>
++              {index > 0 ? (
++                <li
++                  className="mx-1 flex h-11 min-w-[12px] flex-1 items-center sm:mx-2 sm:h-12"
++                  aria-hidden
++                >
++                  <div className="h-1 w-full overflow-hidden rounded-full bg-muted">
++                    <div
++                      className={cn(
++                        "h-full rounded-full transition-all duration-500 ease-out",
++                        segmentDone
++                          ? "w-full bg-primary shadow-[0_0_12px_-2px_rgb(var(--primary)/0.65)]"
++                          : "w-0 bg-primary"
++                      )}
++                    />
++                  </div>
++                </li>
++              ) : null}
++              <li className="flex w-[4.25rem] shrink-0 flex-col items-center sm:w-[5.25rem]">
++                <div
++                  className={cn(
++                    "relative flex size-11 items-center justify-center rounded-2xl border-2 transition-all duration-300 sm:size-12",
++                    done &&
++                      "border-primary bg-primary text-primary-foreground shadow-[0_10px_28px_-10px_rgb(var(--primary)/0.65)]",
++                    active &&
++                      !done &&
++                      "scale-105 border-primary bg-primary/15 text-primary shadow-[0_0_0_4px_rgb(var(--primary)/0.14)] ring-2 ring-primary/30",
++                    !active &&
++                      !done &&
++                      "border-border bg-muted/60 text-muted-foreground"
++                  )}
++                >
++                  {done ? (
++                    <Check className="size-5" strokeWidth={2.75} />
++                  ) : (
++                    <Icon className="size-5" strokeWidth={2} />
++                  )}
++                  {active ? (
++                    <span className="absolute -bottom-1.5 left-1/2 size-2 -translate-x-1/2 rounded-full bg-primary shadow-[0_0_0_3px_var(--background)]" />
++                  ) : null}
++                </div>
++                <span
++                  className={cn(
++                    "mt-2 hidden max-w-[5.25rem] truncate text-center text-[10px] font-bold uppercase leading-tight tracking-wide sm:block",
++                    active ? "text-primary" : "text-muted-foreground"
++                  )}
++                >
++                  {label}
++                </span>
++                <span
++                  className={cn(
++                    "mt-2 max-w-[4.25rem] truncate text-center text-[9px] font-bold uppercase leading-tight tracking-wide sm:hidden",
++                    active ? "text-primary" : "text-muted-foreground"
++                  )}
++                >
++                  {short}
++                </span>
++              </li>
++            </Fragment>
++          );
++        })}
++      </ol>
++    </nav>
++  );
++}
++
++/* ── BookingProgressBar ── */
++
++export function BookingProgressBar({ step }: { step: BookingStep }) {
++  const pct = (step / 4) * 100;
++  return (
++    <div className="space-y-2">
++      <div
++        className="h-2 overflow-hidden rounded-full bg-muted/80 ring-1 ring-border/60"
++        role="progressbar"
++        aria-valuenow={Math.round(pct)}
++        aria-valuemin={0}
++        aria-valuemax={100}
++        aria-label={`Napredak: korak ${step} od 4`}
++      >
++        <div
++          className="h-full rounded-full bg-gradient-to-r from-primary via-primary to-primary/80 shadow-[0_0_20px_-4px_rgb(var(--primary)/0.7)] transition-[width] duration-500 ease-out"
++          style={{ width: `${pct}%` }}
++        />
++      </div>
++      <div className="flex items-center justify-between text-[11px] font-medium text-muted-foreground">
++        <span>
++          Korak {step} / 4 — {BOOKING_STEPS[step - 1]?.label}
++        </span>
++        <span className="tabular-nums text-primary">{Math.round(pct)}%</span>
++      </div>
++    </div>
++  );
++}
