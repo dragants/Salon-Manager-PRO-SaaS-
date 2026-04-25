@@ -240,9 +240,49 @@ export function useSettingsForm() {
   }
 
   /* ── Dirty check ── */
-  const settingsDirty = useMemo(() => {
+  const dirtyByTab = useMemo(() => {
     if (!settings) return false;
-    const whSame = JSON.stringify(workingHoursToPayload(dayRows)) === JSON.stringify(settings.working_hours ?? {});
+    function normalizeHm(input: unknown): string {
+      const s = typeof input === "string" ? input.trim() : "";
+      const m = s.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+      if (!m) return s;
+      const hh = String(Number(m[1])).padStart(2, "0");
+      const mm = m[2];
+      return `${hh}:${mm}`;
+    }
+
+    function normalizeWorkingHoursPayload(raw: Record<string, unknown>) {
+      const out: Record<string, unknown> = {};
+      for (const [day, v] of Object.entries(raw)) {
+        if (!v || typeof v !== "object" || Array.isArray(v)) {
+          out[day] = v;
+          continue;
+        }
+        const o = v as Record<string, unknown>;
+        const enabled = o.enabled === false ? false : Boolean(o.enabled);
+        const next: Record<string, unknown> = { enabled };
+        if (enabled) {
+          if (o.open != null) next.open = normalizeHm(o.open);
+          if (o.close != null) next.close = normalizeHm(o.close);
+          if (o.break_start != null) next.break_start = normalizeHm(o.break_start);
+          if (o.break_end != null) next.break_end = normalizeHm(o.break_end);
+        }
+        out[day] = next;
+      }
+      return out;
+    }
+
+    // Normalize API shapes like { schedule: ... } / { days: ... } before compare.
+    const currentWh = normalizeWorkingHoursPayload(workingHoursToPayload(dayRows));
+    const savedWh = normalizeWorkingHoursPayload(
+      workingHoursToPayload(
+        parseWorkingHoursFromApi(
+          settings.working_hours as Record<string, unknown> | undefined
+        )
+      )
+    );
+
+    const whSame = JSON.stringify(currentWh) === JSON.stringify(savedWh);
     const cr = settings.calendar_rules ?? {};
     const calSame = minGap === (typeof cr.min_gap_minutes === "number" ? cr.min_gap_minutes : 30) && maxClients === (typeof cr.max_clients_per_hour === "number" ? cr.max_clients_per_hour : 4) && allowOverlap === Boolean(cr.allow_overlap) && bufferBetween === (typeof cr.buffer_between_minutes === "number" ? cr.buffer_between_minutes : 0);
     const fin = settings.finance ?? {};
@@ -251,8 +291,48 @@ export function useSettingsForm() {
     const remindersSame = dayBefore === Boolean(r.dayBefore ?? true) && twoHoursBefore === Boolean(r.twoHoursBefore ?? true) && dayBeforeHour === (typeof r.dayBeforeHour === "number" && r.dayBeforeHour >= 0 && r.dayBeforeHour <= 23 ? r.dayBeforeHour : 17) && customReminderHours === (typeof r.customReminderHours === "number" && r.customReminderHours > 0 ? r.customReminderHours : 0) && channelSms === (r.channelSms !== false) && channelWhatsApp === (r.channelWhatsApp !== false) && channelEmail === (r.channelEmail === true) && noShowFollowup === Boolean(r.noShowFollowup);
     const au = settings.automation ?? {};
     const automationSame = autoConfirm === Boolean(au.auto_confirm_booking) && reminderTemplate.trim() === (typeof au.reminder_template === "string" ? au.reminder_template : "").trim() && noShowOffer === Boolean(au.no_show_offer_new_slot);
-    return orgName.trim() !== (settings.name ?? "").trim() || displayName.trim() !== (typeof settings.branding?.display_name === "string" ? settings.branding.display_name : "").trim() || phone.trim() !== (settings.phone ?? "").trim() || address.trim() !== (settings.address ?? "").trim() || logoUrl.trim() !== (settings.logo ?? "").trim() || instagram.trim() !== (typeof settings.branding?.instagram === "string" ? settings.branding.instagram : "").trim() || themeColor.trim() !== (settings.theme_color ?? DEFAULT_THEME_COLOR_HEX).trim() || timezone.trim() !== (settings.timezone ?? "Europe/Belgrade").trim() || bookingSlug.trim() !== (typeof settings.booking_slug === "string" ? settings.booking_slug : "") || publicSiteUrl.trim() !== (typeof settings.public_site_url === "string" ? settings.public_site_url : "").trim() || !whSame || !calSame || !finSame || !remindersSame || !automationSame || workerCanDelete !== Boolean(settings.worker_permissions?.can_delete);
+    const salonDirty =
+      orgName.trim() !== (settings.name ?? "").trim() ||
+      displayName.trim() !== (typeof settings.branding?.display_name === "string" ? settings.branding.display_name : "").trim() ||
+      phone.trim() !== (settings.phone ?? "").trim() ||
+      address.trim() !== (settings.address ?? "").trim() ||
+      logoUrl.trim() !== (settings.logo ?? "").trim() ||
+      instagram.trim() !== (typeof settings.branding?.instagram === "string" ? settings.branding.instagram : "").trim() ||
+      themeColor.trim() !== (settings.theme_color ?? DEFAULT_THEME_COLOR_HEX).trim() ||
+      timezone.trim() !== (settings.timezone ?? "Europe/Belgrade").trim() ||
+      bookingSlug.trim() !== (typeof settings.booking_slug === "string" ? settings.booking_slug : "") ||
+      publicSiteUrl.trim() !== (typeof settings.public_site_url === "string" ? settings.public_site_url : "").trim();
+
+    const hoursDirty = !whSame;
+    const calendarDirty = !calSame;
+    const financeDirty = !finSame;
+    const notifyDirty = !remindersSame || !automationSame;
+    const securityDirty = workerCanDelete !== Boolean(settings.worker_permissions?.can_delete);
+
+    return {
+      salon: salonDirty,
+      hours: hoursDirty,
+      calendar: calendarDirty,
+      finance: financeDirty,
+      notify: notifyDirty,
+      security: securityDirty,
+    } satisfies Partial<Record<SettingsTabId, boolean>>;
   }, [settings, orgName, displayName, phone, address, logoUrl, instagram, themeColor, timezone, bookingSlug, publicSiteUrl, dayRows, minGap, maxClients, allowOverlap, bufferBetween, currency, vatEnabled, acceptCash, acceptCard, workerCanDelete, dayBefore, twoHoursBefore, dayBeforeHour, customReminderHours, channelSms, channelWhatsApp, channelEmail, noShowFollowup, autoConfirm, reminderTemplate, noShowOffer]);
+
+  const dirtyTabs = useMemo(() => {
+    if (!dirtyByTab || typeof dirtyByTab !== "object") return [] as SettingsTabId[];
+    return (Object.entries(dirtyByTab) as Array<[SettingsTabId, boolean]>)
+      .filter(([, v]) => Boolean(v))
+      .map(([k]) => k);
+  }, [dirtyByTab]);
+
+  const settingsDirty = dirtyTabs.length > 0;
+  const activeTabDirty = dirtyTabs.includes(tab);
+
+  const dirtyTabLabels = useMemo(() => {
+    const labelById = new Map(settingsTabs.map((x) => [x.id, x.label] as const));
+    return dirtyTabs.map((id) => ({ id, label: labelById.get(id) ?? id }));
+  }, [dirtyTabs, settingsTabs]);
 
   /* ── Save builders ── */
   const saveSalon = () => flashSave(async () => {
@@ -286,7 +366,7 @@ export function useSettingsForm() {
   return {
     // Meta
     user, isAdmin, settings, loading, settingsTabs, tab, setTab,
-    saving, message, error, settingsDirty, t,
+    saving, message, error, settingsDirty, activeTabDirty, dirtyTabs, dirtyTabLabels, t,
     // Salon
     orgName, setOrgName, displayName, setDisplayName, phone, setPhone,
     address, setAddress, logoUrl, setLogoUrl, instagram, setInstagram,

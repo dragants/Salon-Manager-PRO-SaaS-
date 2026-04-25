@@ -65,7 +65,20 @@ function SettingsPageContent() {
       {/* ── Dirty banner ── */}
       {s.isAdmin && s.settingsDirty ? (
         <div className="rounded-xl border border-amber-200/90 bg-amber-50/90 px-4 py-2.5 text-sm text-amber-950 dark:border-amber-900/50 dark:bg-amber-950/35 dark:text-amber-100">
-          Imaš <strong>nesačuvane izmene</strong> u podešavanjima — sačuvaj tab na kom si radio.
+          Imaš <strong>nesačuvane izmene</strong> u:{" "}
+          {s.dirtyTabLabels.map((x, idx) => (
+            <span key={x.id}>
+              <strong className={x.id === s.tab ? "underline" : undefined}>
+                {String(x.label)}
+              </strong>
+              {idx < s.dirtyTabLabels.length - 1 ? ", " : null}
+            </span>
+          ))}
+          {s.activeTabDirty ? (
+            <> — sačuvaj ovaj tab.</>
+          ) : (
+            <> — otvori tab i sačuvaj izmene.</>
+          )}
         </div>
       ) : null}
 
