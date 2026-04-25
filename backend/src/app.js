@@ -25,6 +25,7 @@ const serviceRoutes = require("./modules/services/services.routes");
 const paymentRoutes = require("./modules/payments/payments.routes");
 const organizationRoutes = require("./modules/organizations/organizations.routes");
 const userRoutes = require("./modules/users/users.routes");
+const featureFlagsRoutes = require("./modules/featureFlags/featureFlags.routes");
 const dashboardRoutes = require("./modules/dashboard/dashboard.routes");
 const analyticsRoutes = require("./modules/analytics/analytics.routes");
 const auditRoutes = require("./modules/audit/audit.routes");
@@ -138,12 +139,14 @@ app.get("/health", (req, res) => {
 app.use("/public", bookingRoutes);
 
 app.use("/auth", authRoutes);
+// Feature flags are tenant-scoped and safe-fail; attach after auth+tenant in routes if needed.
 app.use("/appointments", appointmentRoutes);
 app.use("/availability", availabilityRoutes);
 app.use("/shifts", shiftsRoutes);
 app.use("/clients", clientRoutes);
 app.use("/services", serviceRoutes);
 app.use("/payments", paymentRoutes);
+app.use("/feature-flags", featureFlagsRoutes);
 app.use("/organizations", organizationRoutes);
 app.use("/users", userRoutes);
 app.use("/dashboard", dashboardRoutes);
