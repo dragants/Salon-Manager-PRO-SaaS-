@@ -5,7 +5,8 @@ function getStripe() {
   if (stripe) {
     return stripe;
   }
-  const key = process.env.STRIPE_SECRET_KEY;
+  // Accept both `STRIPE_SECRET_KEY` (preferred) and legacy `STRIPE_SECRET`.
+  const key = process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET;
   if (!key) {
     const err = new Error("STRIPE_SECRET_KEY is not set");
     err.statusCode = 500;

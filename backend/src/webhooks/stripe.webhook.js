@@ -84,6 +84,22 @@ module.exports = async function stripeWebhook(req, res) {
   }
 
   try {
+    // Idempotency: ignore already-processed webhook event ids.
+    // Note: relies on migration `025_stripe_events_idempotency.sql`.
+    try {
+      const r = await pool.query(
+        `INSERT INTO stripe_events (id) VALUES ($1)
+         ON CONFLICT (id) DO NOTHING
+         RETURNING id`,
+        [event.id]
+      );
+      if (r.rowCount === 0) {
+        return res.json({ received: true });
+      }
+    } catch {
+      // If table is missing (migration not applied yet), continue without idempotency.
+    }
+
     if (event.type === "checkout.session.completed") {
       const s = event.data.object;
       const orgId = await resolveOrgIdByStripe({
@@ -130,6 +146,50 @@ module.exports = async function stripeWebhook(req, res) {
           current_period_end: periodEnd,
         });
         await setOrgPlanFromStripe(orgId, { status: "active", plan });
+      }
+    }
+
+    if (event.type === "invoice.payment_failed") {
+      const inv = event.data.object;
+      const customerId = inv.customer;
+      const subId = inv.subscription;
+      const orgId = await resolveOrgIdByStripe({
+        customerId,
+        subscriptionId: subId,
+        metadata: inv?.metadata,
+      });
+      if (orgId) {
+        await upsertStripeSubscriptionForOrg(orgId, {
+          stripe_customer_id: customerId,
+          stripe_subscription_id: subId,
+          plan: null,
+          status: "past_due",
+          current_period_end: null,
+        });
+        await setOrgPlanFromStripe(orgId, { status: "past_due", plan: null });
+      }
+    }
+
+    if (event.type === "customer.subscription.created") {
+      const sub = event.data.object;
+      const orgId = await resolveOrgIdByStripe({
+        customerId: sub.customer,
+        subscriptionId: sub.id,
+        metadata: sub?.metadata,
+      });
+      if (orgId) {
+        const priceId = sub.items?.data?.[0]?.price?.id || "";
+        const plan = mapPlanFromPriceId(String(priceId));
+        const status = sub.status || "inactive";
+        const cpe = tsToDate(sub.current_period_end);
+        await upsertStripeSubscriptionForOrg(orgId, {
+          stripe_customer_id: sub.customer,
+          stripe_subscription_id: sub.id,
+          plan,
+          status,
+          current_period_end: cpe,
+        });
+        await setOrgPlanFromStripe(orgId, { status, plan });
       }
     }
 
