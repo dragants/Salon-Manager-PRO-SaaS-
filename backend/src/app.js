@@ -9,6 +9,8 @@ const { redisStoreOrNull } = require("./middleware/rateLimitRedisStore");
 const { FRONTEND_URLS } = require("./config/env");
 const paddleWebhook = require("./webhooks/paddle.webhook");
 const stripeWebhook = require("./webhooks/stripe.webhook");
+const { initSentry } = require("./config/sentry");
+const logError = require("./utils/logError");
 
 /** Dodatni origini (zarezom), npr. drugi front ili staging — vidi CORS_ORIGINS u .env */
 const CORS_EXTRA_ORIGINS = (process.env.CORS_ORIGINS || "")
@@ -38,6 +40,11 @@ const { GLOBAL_MAX, GLOBAL_WINDOW_MS } = require("./config/rate-limits");
 const errorHandler = require("./middleware/error.middleware");
 
 const app = express();
+
+const sentry = initSentry();
+if (sentry) {
+  app.use(sentry.Handlers.requestHandler());
+}
 
 // API responses should not be cached; avoid 304s on auth-critical endpoints.
 app.set("etag", false);
@@ -105,6 +112,25 @@ app.use(
   morgan(process.env.NODE_ENV === "production" ? "combined" : "dev")
 );
 
+// Optional structured request logging (SaaS-friendly).
+if (process.env.LOG_JSON === "true") {
+  app.use((req, _res, next) => {
+    const tenantId =
+      req.user?.orgId ?? req.tenantId ?? req.tenant?.id ?? req.organizationId;
+    console.log(
+      JSON.stringify({
+        level: "info",
+        message: "request",
+        method: req.method,
+        path: req.path,
+        tenantId: tenantId ?? null,
+        timestamp: new Date().toISOString(),
+      })
+    );
+    next();
+  });
+}
+
 app.get("/health", (req, res) => {
   res.json({ ok: true });
 });
@@ -127,6 +153,16 @@ app.use("/billing", billingRoutes);
 app.use("/expenses", expensesRoutes);
 app.use("/supplies", suppliesRoutes);
 app.use("/loyalty", loyaltyRoutes);
+
+if (sentry) {
+  app.use(sentry.Handlers.errorHandler());
+}
+
+// Always log structured error (even when Sentry disabled).
+app.use((err, req, _res, next) => {
+  logError(err, req);
+  next(err);
+});
 
 app.use(errorHandler);
 

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { AppProviders } from "@/providers/app-providers";
+import { SentryInit } from "@/components/SentryInit";
 import "./globals.css";
 
 const inter = Inter({
@@ -68,6 +69,7 @@ export default function RootLayout({
           Preskoči na sadržaj
         </a>
         <AppProviders>
+          <SentryInit />
           <div className="flex min-h-dvh flex-1 flex-col">{children}</div>
         </AppProviders>
       </body>

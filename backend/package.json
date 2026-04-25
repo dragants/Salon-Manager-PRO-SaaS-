@@ -12,6 +12,7 @@
     "test": "node --test \"test/**/*.test.js\""
   },
   "dependencies": {
+    "@sentry/node": "^10.50.0",
     "axios": "^1.15.0",
     "bcrypt": "^5.1.1",
     "bull": "^4.16.5",
