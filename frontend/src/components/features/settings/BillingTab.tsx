@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/locale";
 
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -26,6 +27,7 @@ function statusLabel(s: string | null): string {
 }
 
 export function BillingTab() {
+  const t = useT();
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<BillingStatus | null>(null);
   const [loading, setLoading] = useState(true);

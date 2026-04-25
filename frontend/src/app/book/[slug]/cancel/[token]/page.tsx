@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/locale";
 
 import { useParams } from "next/navigation";
 import { useCallback, useState } from "react";
@@ -9,6 +10,7 @@ import { cancelPublicBooking } from "@/lib/api/public-booking";
 type CancelState = "idle" | "confirming" | "loading" | "success" | "error";
 
 export default function CancelBookingPage() {
+  const t = useT();
   const params = useParams();
   const slug = typeof params.slug === "string" ? params.slug : "";
   const token = typeof params.token === "string" ? params.token : "";

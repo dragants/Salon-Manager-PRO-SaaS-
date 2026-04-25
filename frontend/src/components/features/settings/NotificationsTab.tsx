@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { useT } from "@/lib/i18n/locale";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SettingsCard } from "./SettingsCard";
@@ -112,6 +113,7 @@ export function NotificationsTab({
   twilioConfigured,
   onSave,
 }: NotificationsTabProps) {
+  const t = useT();
   return (
     <div className="space-y-6">
       <SettingsCard
@@ -431,7 +433,7 @@ export function NotificationsTab({
           disabled={saving}
           onClick={onSave}
         >
-          {saving ? "Čuvam…" : "Sačuvaj notifikacije"}
+          {saving ? t.common.loading : t.common.save}
         </Button>
       </div>
     </div>

@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/locale";
 
 import { CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ export function StepSelectDate({
   onNext,
   onBack,
 }: StepSelectDateProps) {
+  const t = useT();
   return (
     <SurfaceCard
       padding="md"

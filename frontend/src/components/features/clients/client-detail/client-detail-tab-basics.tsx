@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/locale";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,6 +46,7 @@ export function ClientDetailTabBasics({
   deleting,
   onDelete,
 }: ClientDetailTabBasicsProps) {
+  const t = useT();
   return (
     <div className="grid gap-6 py-2 lg:grid-cols-10 lg:gap-8">
       <ClientInsightsAside detail={detail} />
@@ -92,7 +94,7 @@ export function ClientDetailTabBasics({
             disabled={cardSaving || !editName.trim()}
             onClick={() => void onSave()}
           >
-            {cardSaving ? "Čuvam…" : "Sačuvaj osnovno"}
+            {cardSaving ? t.common.loading : t.common.save}
           </Button>
         </div>
         <div className="border-t border-red-100 pt-4 dark:border-red-900/40">
@@ -111,7 +113,7 @@ export function ClientDetailTabBasics({
                     disabled={deleting}
                     onClick={() => void onDelete()}
                   >
-                    {deleting ? "Brišem…" : "Potvrdi brisanje"}
+                    {deleting ? t.common.loading : t.common.confirm}
                   </Button>
                   <Button
                     type="button"

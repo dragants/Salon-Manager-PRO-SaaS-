@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/locale";
 
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -65,6 +66,7 @@ const AnalyticsSeriesChart = dynamic(
 );
 
 export default function FinancesPage() {
+  const t = useT();
   const { user, loading: authLoading } = useAuth();
   const { settings, patchSettingsWithOptimism } = useOrganization();
   const tz = orgTimeZone(settings?.timezone);
@@ -243,7 +245,7 @@ export default function FinancesPage() {
   if (user.role === "worker") {
     return (
       <div className="space-y-6">
-        <SectionHeader title="Finansije" />
+        <SectionHeader title={t.finances.title} />
         <SurfaceCard padding="lg" className="text-center text-sm text-muted-foreground">
           <p>Ovaj odeljak je dostupan samo administratoru salona.</p>
           <Link href="/dashboard" className="mt-4 inline-block font-semibold text-sky-700 underline-offset-2 hover:underline dark:text-sky-400">
@@ -258,7 +260,7 @@ export default function FinancesPage() {
   return (
     <div className="flex flex-col gap-8">
       <SectionHeader
-        title="Finansije"
+        title={t.finances.title}
         description="Prihod, trend i transakcije po periodu. Kartice prikazuju današnji i mesečni zbir; grafikon i tabela prate izabrani filter."
       />
 

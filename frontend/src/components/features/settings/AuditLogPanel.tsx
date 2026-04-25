@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/locale";
 
 import { useCallback, useEffect, useState } from "react";
 import { getAuditLog } from "@/lib/api";
@@ -93,6 +94,7 @@ function downloadAuditCsv(rows: AuditLogRow[], filterTag: string) {
 }
 
 export function AuditLogPanel() {
+  const t = useT();
   const [rows, setRows] = useState<AuditLogRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);

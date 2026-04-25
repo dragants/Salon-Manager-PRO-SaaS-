@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "concurrently -n api,web -c cyan,magenta \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
     "dev:stack": "docker compose up -d && npm run dev",
+    "prestart": "node scripts/free-ports.cjs 3000 5000",
     "start": "concurrently -n api,web \"npm start --prefix backend\" \"npm start --prefix frontend\"",
     "lan:firewall": "powershell -ExecutionPolicy Bypass -NoProfile -File scripts/windows-allow-salon-lan.ps1",
     "desktop": "npm start --prefix desktop"

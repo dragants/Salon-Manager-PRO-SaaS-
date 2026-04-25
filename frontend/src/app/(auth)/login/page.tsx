@@ -22,6 +22,7 @@ export default function LoginPage() {
   const { refreshUser, user, loading: authLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [otp, setOtp] = useState("");
   const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
@@ -38,6 +39,8 @@ export default function LoginPage() {
       setInfo("Lozinka je uspešno resetovana. Prijavi se novom lozinkom.");
     } else if (reason === "session_revoked") {
       setInfo("Sesija više nije važeća. Prijavi se ponovo.");
+    } else if (reason === "2fa_enabled") {
+      setInfo("2FA je uključena. Prijavi se ponovo uz kod iz aplikacije.");
     }
   }, []);
 
@@ -56,11 +59,19 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
     try {
-      await api.post("/auth/login", {
+      const { data } = await api.post<{ ok: true; mfa_required?: boolean }>(
+        "/auth/login",
+        {
         email,
         password,
         remember: rememberMe,
-      });
+        otp: otp.trim() ? otp.trim() : undefined,
+        }
+      );
+      if (data?.mfa_required) {
+        router.replace("/2fa");
+        return;
+      }
       syncSessionCookie(true);
       await refreshUser();
       router.replace("/dashboard");
@@ -71,7 +82,13 @@ export default function LoginPage() {
           "Nema veze sa serverom. Proveri da li je backend uključen i NEXT_PUBLIC_API_URL."
         );
       } else {
-        setError(getApiErrorMessage(err, "Prijava nije uspela."));
+        const apiCode =
+          axios.isAxiosError(err) ? (err.response?.data as any)?.code : undefined;
+        if (apiCode === "MFA_INVALID") {
+          setError("Neispravan 2FA kod. Pokušaj ponovo.");
+        } else {
+          setError(getApiErrorMessage(err, "Prijava nije uspela."));
+        }
       }
     } finally {
       setLoading(false);
@@ -164,6 +181,17 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="otp">2FA kod (ako je uključen)</Label>
+                <Input
+                  id="otp"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  placeholder="123456"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
                 />
               </div>
               <label className="flex cursor-pointer items-center gap-2 text-[length:var(--smp-text-body)] text-muted-foreground">

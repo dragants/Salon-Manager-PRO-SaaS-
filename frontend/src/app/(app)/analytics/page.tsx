@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/locale";
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -24,6 +25,7 @@ import { useAuth } from "@/providers/auth-provider";
 import type { AnalyticsResponse } from "@/types/analytics";
 
 export default function AnalyticsPage() {
+  const t = useT();
   const { user, loading: authLoading } = useAuth();
   const [data, setData] = useState<AnalyticsResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -47,7 +49,7 @@ export default function AnalyticsPage() {
       })
       .catch((e) => {
         if (!cancelled) {
-          setError(getApiErrorMessage(e, "Analitika nije učitana."));
+          setError(getApiErrorMessage(e, t.common.error));
           setData(null);
         }
       })

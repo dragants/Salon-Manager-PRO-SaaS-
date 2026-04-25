@@ -39,18 +39,29 @@ function mfaBypass(req) {
   if (path === "/health") {
     return true;
   }
-  // Allow only MFA setup flows when session is MFA-pending
-  if (path.startsWith("/auth/2fa")) {
-    return true;
+  // Always allow MFA flows and minimal bootstrap
+  if (path.startsWith("/auth/2fa")) return true;
+  if (path === "/auth/logout") return true;
+  if (path.startsWith("/users/me") && req.method.toUpperCase() === "GET") return true;
+
+  // Step-up model: only block "sensitive" actions when session is mfa=false.
+  const method = req.method.toUpperCase();
+  const isWrite = method !== "GET" && method !== "HEAD" && method !== "OPTIONS";
+
+  // Billing / account security always sensitive
+  if (path.startsWith("/billing")) return false;
+  if (path.startsWith("/audit")) return false;
+
+  // Team management sensitive (writes)
+  if (path.startsWith("/users") && isWrite) return false;
+
+  // Deletes are sensitive in general
+  if (isWrite && (path.startsWith("/clients") || path.startsWith("/appointments"))) {
+    if (method === "DELETE") return false;
   }
-  if (path === "/auth/logout") {
-    return true;
-  }
-  // Minimal bootstrap endpoints
-  if (path.startsWith("/users/me") && req.method.toUpperCase() === "GET") {
-    return true;
-  }
-  return false;
+
+  // Everything else: allow without step-up.
+  return true;
 }
 
 function extractBearerOrCookie(req) {
@@ -128,9 +139,10 @@ module.exports = async function authMiddleware(req, res, next) {
     }
     req.tenantId = req.user?.tenantId ?? null;
 
-    if (req.user?.mfa === false && !mfaBypass(req)) {
+    const mfaDisabled = process.env.MFA_DISABLED === "true";
+    if (!mfaDisabled && req.user?.mfa === false && !mfaBypass(req)) {
       return res.status(403).json({
-        error: "2FA je obavezna za ovaj nalog. Dovrši podešavanje.",
+        error: "Potrebna je 2FA potvrda za ovu radnju.",
         code: "MFA_REQUIRED",
       });
     }

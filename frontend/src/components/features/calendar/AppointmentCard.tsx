@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/locale";
 
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -14,37 +15,6 @@ import { appointmentStaffLabel } from "./calendar-utils";
 
 /* ── Segmented status control ── */
 
-const STATUS_OPTIONS: {
-  value: AppointmentStatus;
-  label: string;
-  activeClass: string;
-}[] = [
-  {
-    value: "scheduled",
-    label: "Zakazano",
-    activeClass:
-      "bg-primary text-primary-foreground shadow-sm",
-  },
-  {
-    value: "completed",
-    label: "Završeno",
-    activeClass:
-      "bg-emerald-600 text-white shadow-sm dark:bg-emerald-500",
-  },
-  {
-    value: "no_show",
-    label: "Nije došao",
-    activeClass:
-      "bg-red-600 text-white shadow-sm dark:bg-red-500",
-  },
-  {
-    value: "cancelled",
-    label: "Otkazano",
-    activeClass:
-      "bg-slate-500 text-white shadow-sm dark:bg-slate-400",
-  },
-];
-
 function StatusSegment({
   current,
   onChange,
@@ -52,6 +22,33 @@ function StatusSegment({
   current: AppointmentStatus;
   onChange: (status: AppointmentStatus) => void;
 }) {
+  const t = useT();
+  const STATUS_OPTIONS: {
+    value: AppointmentStatus;
+    label: string;
+    activeClass: string;
+  }[] = [
+    {
+      value: "scheduled",
+      label: t.common.status.scheduled,
+      activeClass: "bg-primary text-primary-foreground shadow-sm",
+    },
+    {
+      value: "completed",
+      label: t.common.status.completed,
+      activeClass: "bg-emerald-600 text-white shadow-sm dark:bg-emerald-500",
+    },
+    {
+      value: "no_show",
+      label: t.common.status.no_show,
+      activeClass: "bg-red-600 text-white shadow-sm dark:bg-red-500",
+    },
+    {
+      value: "cancelled",
+      label: t.common.status.cancelled,
+      activeClass: "bg-slate-500 text-white shadow-sm dark:bg-slate-400",
+    },
+  ];
   return (
     <div className="inline-flex items-center gap-px rounded-xl border border-border bg-muted/60 p-0.5">
       {STATUS_OPTIONS.map(({ value, label, activeClass }) => {
@@ -104,7 +101,14 @@ export default function AppointmentCard({
   teamOptions,
   onPatchStaff,
 }: Props) {
+  const t = useT();
   const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const statusOptions: { value: AppointmentStatus; label: string }[] = [
+    { value: "scheduled", label: t.common.status.scheduled },
+    { value: "completed", label: t.common.status.completed },
+    { value: "no_show", label: t.common.status.no_show },
+    { value: "cancelled", label: t.common.status.cancelled },
+  ];
   return (
     <div
       id={`cal-appt-${row.id}`}
@@ -184,7 +188,7 @@ export default function AppointmentCard({
                 onPatchStatus(row.id, e.target.value as AppointmentStatus)
               }
             >
-              {STATUS_OPTIONS.map((o) => (
+              {statusOptions.map((o) => (
                 <option key={o.value} value={o.value}>
                   {o.label}
                 </option>

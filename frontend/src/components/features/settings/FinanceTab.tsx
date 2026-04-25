@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { useT } from "@/lib/i18n/locale";
 import { Label } from "@/components/ui/label";
 import { SettingsCard } from "./SettingsCard";
 
@@ -27,10 +28,11 @@ export function FinanceTab({
   setAcceptCard,
   onSave,
 }: FinanceTabProps) {
+  const t = useT();
   return (
     <div className="space-y-6">
       <SettingsCard
-        title="Finansije"
+        title={t.finances.title}
         description="Valuta i način naplate. Dnevni izveštaj blagajne dolazi uz modul finansija."
       >
         <div className="grid max-w-md gap-4">
@@ -85,7 +87,7 @@ export function FinanceTab({
           disabled={saving}
           onClick={onSave}
         >
-          {saving ? "Čuvam…" : "Sačuvaj finansije"}
+          {saving ? t.common.loading : t.common.save}
         </Button>
       </div>
     </div>

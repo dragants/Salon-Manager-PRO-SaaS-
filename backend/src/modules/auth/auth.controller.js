@@ -1,6 +1,8 @@
 const authService = require("./auth.service");
 const twofaService = require("./auth.2fa.service");
 const jwt = require("jsonwebtoken");
+const pool = require("../../config/db");
+const { generate } = require("../../utils/jwt");
 const { JWT_SECRET } = require("../../config/env");
 const { resetLoginFailures } = require("../../middleware/loginProtection");
 const {
@@ -79,7 +81,65 @@ async function enable2fa(req, res) {
     userId: req.user.userId,
     otp: req.body.otp,
   });
+
+  /**
+   * Kada je korisnik bio u "MFA pending" sesiji (jwt mfa=false), omogućavanje 2FA
+   * treba da ga odmah prebaci u punu sesiju (mfa=true) — bez odjave/prijave.
+   */
+  try {
+    const r = await pool.query(
+      `SELECT id,
+              organization_id,
+              role,
+              COALESCE(token_version, 0)::int AS token_version
+       FROM users WHERE id = $1`,
+      [req.user.userId]
+    );
+    const u = r.rows[0];
+    if (u) {
+      const token = generate({
+        userId: u.id,
+        orgId: u.organization_id,
+        tenantId: u.organization_id,
+        role: u.role,
+        tv: u.token_version,
+        mfa: true,
+      });
+      // posle enable2fa uvek postavi "remember" cookie (7d) kao praktičan default
+      setAccessTokenCookie(res, token, true);
+    }
+  } catch {
+    // ignore; fallback je da klijent uradi re-login
+  }
+
   res.json(out);
+}
+
+async function verify2fa(req, res) {
+  const out = await twofaService.verify({
+    userId: req.user.userId,
+    otp: req.body.otp,
+  });
+  // upgrade session to mfa=true
+  const r = await pool.query(
+    `SELECT id,
+            organization_id,
+            role,
+            COALESCE(token_version, 0)::int AS token_version
+     FROM users WHERE id = $1`,
+    [req.user.userId]
+  );
+  const u = r.rows[0];
+  const token = generate({
+    userId: u.id,
+    orgId: u.organization_id,
+    tenantId: u.organization_id,
+    role: u.role,
+    tv: u.token_version,
+    mfa: true,
+  });
+  setAccessTokenCookie(res, token, true);
+  res.json({ ok: true, ...out });
 }
 
 module.exports = {
@@ -90,4 +150,5 @@ module.exports = {
   resetPassword,
   begin2faSetup,
   enable2fa,
+  verify2fa,
 };

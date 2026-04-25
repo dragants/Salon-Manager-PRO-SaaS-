@@ -32,4 +32,5 @@ module.exports = {
   forgotPasswordSchema,
   resetPasswordSchema,
   enable2faSchema,
+  verify2faSchema: enable2faSchema,
 };

@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/locale";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Copy, Save } from "lucide-react";
@@ -63,6 +64,7 @@ export function TeamScheduleTab({
   isAdmin,
   onTeamChanged,
 }: TeamScheduleTabProps) {
+  const t = useT();
   const [drafts, setDrafts] = useState<Record<number, DayScheduleRow[]>>({});
   const [savingId, setSavingId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -204,7 +206,7 @@ export function TeamScheduleTab({
                       onClick={() => void saveMember(m)}
                     >
                       <Save className="mr-1.5 size-4" aria-hidden />
-                      {busy ? "Čuvam…" : "Sačuvaj raspored"}
+                      {busy ? t.common.loading : t.common.save}
                     </Button>
                   </div>
                 ) : null}

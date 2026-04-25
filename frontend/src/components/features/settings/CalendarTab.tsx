@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { useT } from "@/lib/i18n/locale";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SettingsCard } from "./SettingsCard";
@@ -28,6 +29,7 @@ export function CalendarTab({
   setAllowOverlap,
   onSave,
 }: CalendarTabProps) {
+  const t = useT();
   return (
     <div className="space-y-6">
       <SettingsCard
@@ -97,7 +99,7 @@ export function CalendarTab({
           disabled={saving}
           onClick={onSave}
         >
-          {saving ? "Čuvam…" : "Sačuvaj pravila"}
+          {saving ? t.common.loading : t.common.save}
         </Button>
       </div>
     </div>

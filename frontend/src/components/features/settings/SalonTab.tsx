@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/locale";
 
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -67,6 +68,7 @@ export function SalonTab({
   setPublicSiteUrl,
   onSave,
 }: SalonTabProps) {
+  const t = useT();
   const router = useRouter();
 
   return (
@@ -247,7 +249,7 @@ export function SalonTab({
       </SettingsCard>
 
       <SettingsCard
-        title="Vremenska zona"
+        title={t.settings.timezone}
         description="IANA zona za zakazivanje i podsetnike."
       >
         <div className="max-w-md space-y-2">
@@ -274,7 +276,7 @@ export function SalonTab({
           disabled={saving || !orgName.trim()}
           onClick={onSave}
         >
-          {saving ? "Čuvam…" : "Sačuvaj izmene"}
+          {saving ? t.common.loading : t.common.save}
         </Button>
       </div>
     </div>

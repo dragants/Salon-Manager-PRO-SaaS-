@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/locale";
 
 import {
   Area,
@@ -35,6 +36,7 @@ export function AnalyticsSeriesChart({
   variant = "default",
   className,
 }: Props) {
+  const t = useT();
   const lux = variant === "luxury";
   const chartHeight = lux ? 260 : 320;
   const gradId = lux ? "revenueAreaLuxury" : "revenueAreaGradient";
@@ -154,7 +156,7 @@ export function AnalyticsSeriesChart({
           <Bar
             yAxisId="a"
             dataKey="appointments"
-            name="Termini"
+            name={t.calendar.title}
             fill={barFill}
             fillOpacity={lux ? 0.95 : 0.92}
             radius={[5, 5, 0, 0]}

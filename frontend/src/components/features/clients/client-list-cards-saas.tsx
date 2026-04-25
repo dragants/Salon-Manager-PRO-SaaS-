@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/locale";
 
 import type { Client } from "@/types/client";
 import "./client-list-cards-saas.css";
@@ -42,12 +43,13 @@ export function ClientListCardsSaaS({
   clients,
   onOpenCard,
 }: ClientListCardsSaaSProps) {
+  const t = useT();
   if (clients.length === 0) {
     return null;
   }
 
   return (
-    <section className="client-cards-v2" aria-label="Klijenti — kartice">
+    <section className="client-cards-v2" aria-label={t.clients.title}>
       <div className="ccv-grid" role="list">
         {clients.map((c) => {
           const s = resolveRowStatus(c);

@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/locale";
 
 import { Check, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,7 @@ export function StepSelectSlot({
   onNext,
   onBack,
 }: StepSelectSlotProps) {
+  const t = useT();
   return (
     <SurfaceCard
       padding="md"
@@ -71,7 +73,7 @@ export function StepSelectSlot({
             const isSelected =
               selectedSlot?.start === slot.start &&
               selectedSlot?.employee_id === slot.employee_id;
-            const workerLabel = slot.employee_name ?? "Tim salona";
+            const workerLabel = slot.employee_name ?? t.calendar.salonTeam;
             return (
               <button
                 key={`${slot.start}-${slot.employee_id ?? "x"}`}

@@ -1,4 +1,5 @@
-/**
+npm start
+
  * Bazni URL backend API-ja (port 5000).
  * - `NEXT_PUBLIC_API_URL` — fiksni URL (npr. produkcija).
  * - U browseru bez env-a: isti host kao Next (npr. http://192.168.1.5:3000 → API na :5000).

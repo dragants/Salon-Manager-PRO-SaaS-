@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/locale";
 
 import { appointmentStaffLabel } from "@/components/features/calendar/calendar-utils";
 import { Button } from "@/components/ui/button";
@@ -42,6 +43,7 @@ export function ClientDetailTabChart({
   onSubmit,
   onDownloadFile,
 }: ClientDetailTabChartProps) {
+  const t = useT();
   return (
     <div className="space-y-6 py-2">
       <form
@@ -117,7 +119,7 @@ export function ClientDetailTabChart({
           />
         </div>
         <Button type="submit" disabled={kSaving}>
-          {kSaving ? "Čuvam…" : "Dodaj u karton"}
+          {kSaving ? t.common.loading : t.common.add}
         </Button>
       </form>
 

@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/locale";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -94,6 +95,7 @@ function applyCalendarFilters(
 }
 
 export function SalonCalendar({ embedMode = false }: { embedMode?: boolean }) {
+  const t = useT();
   const searchParams = useSearchParams();
   const { user } = useAuth();
   const { settings } = useOrganization();
@@ -192,7 +194,7 @@ export function SalonCalendar({ embedMode = false }: { embedMode?: boolean }) {
           setAppointments(list);
         }
       } catch (e) {
-        setListError(getApiErrorMessage(e, "Termini nisu učitani."));
+        setListError(getApiErrorMessage(e, t.common.error));
         setRows([]);
         setAppointments([]);
       } finally {
@@ -394,7 +396,7 @@ export function SalonCalendar({ embedMode = false }: { embedMode?: boolean }) {
     try {
       await patchAppointment(id, { status });
       await loadAppointments();
-      toast.success("Status ažuriran");
+      toast.success(t.calendar.statusUpdated);
     } catch (e) {
       setListError(getApiErrorMessage(e, "Status nije sačuvan."));
     }
@@ -405,7 +407,7 @@ export function SalonCalendar({ embedMode = false }: { embedMode?: boolean }) {
     try {
       await patchAppointment(id, { staff_user_id: staffUserId });
       await loadAppointments();
-      toast.success("Radnik ažuriran");
+      toast.success(t.calendar.staffUpdated);
     } catch (e) {
       setListError(getApiErrorMessage(e, "Dodela radnika nije sačuvana."));
     }
@@ -416,7 +418,7 @@ export function SalonCalendar({ embedMode = false }: { embedMode?: boolean }) {
     try {
       await deleteAppointment(id);
       await loadAppointments();
-      toast.success("Termin obrisan");
+      toast.success(t.calendar.appointmentDeleted);
     } catch (e) {
       setListError(getApiErrorMessage(e, "Termin nije obrisan."));
     }
@@ -448,7 +450,7 @@ export function SalonCalendar({ embedMode = false }: { embedMode?: boolean }) {
       try {
         await patchAppointment(id, { date: newDateIso });
         await loadAppointments();
-        toast.success("Termin pomeren");
+        toast.success(t.calendar.appointmentMoved);
       } catch (e) {
         setListError(
           getApiErrorMessage(e, "Pomeranje termina nije sačuvano.")
@@ -493,7 +495,7 @@ export function SalonCalendar({ embedMode = false }: { embedMode?: boolean }) {
         onNext={() => (view === "week" ? shiftWeek(1) : shiftDay(1))}
         onAddClick={() => setDialogOpen(true)}
         minimal={embedMode}
-        title="Nedeljni kalendar"
+        title={t.calendar.weeklyCalendar}
         headerClassName={
           embedMode ? "shrink-0 border-b border-border pb-3" : undefined
         }

@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/locale";
 
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
@@ -28,6 +29,7 @@ import { StepClientForm } from "@/components/features/booking/StepClientForm";
 import { BookingSuccess } from "@/components/features/booking/BookingSuccess";
 
 export default function PublicBookingPage() {
+  const t = useT();
   const params = useParams();
   const slug = typeof params.slug === "string" ? params.slug : "";
 
@@ -71,7 +73,7 @@ export default function PublicBookingPage() {
 
   /* ── Load salon ── */
   useEffect(() => {
-    if (!slug) { setLoadError("Nedostaje link salona."); return; }
+    if (!slug) { setLoadError(t.booking.missingLink); return; }
     let cancelled = false;
     setLoadError(null);
     void (async () => {
@@ -100,7 +102,7 @@ export default function PublicBookingPage() {
     } catch (e) {
       setSlots([]);
       setFromShifts(false);
-      setSlotsError(e instanceof Error ? e.message : "Termini nisu učitani.");
+      setSlotsError(e instanceof Error ? e.message : t.common.error);
     } finally {
       setSlotsLoading(false);
     }
@@ -157,7 +159,7 @@ export default function PublicBookingPage() {
       setName(""); setPhone(""); setEmail("");
       void loadSlots();
     } catch (e) {
-      setFormError(e instanceof Error ? e.message : "Rezervacija nije uspela.");
+      setFormError(e instanceof Error ? e.message : t.booking.bookingFailed);
     } finally {
       setSubmitting(false);
     }

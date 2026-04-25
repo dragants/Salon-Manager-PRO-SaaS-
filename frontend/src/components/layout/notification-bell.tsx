@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/locale";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -15,6 +16,7 @@ import {
 } from "@/lib/notifications-store";
 
 export function NotificationBell() {
+  const t = useT();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<AppNotification[]>([]);
@@ -54,7 +56,7 @@ export function NotificationBell() {
           <button
             type="button"
             className="fixed inset-0 z-40 cursor-default bg-black/35 supports-backdrop-filter:backdrop-blur-sm"
-            aria-label="Zatvori notifikacije"
+            aria-label={t.notifications.closeNotifications}
             onClick={() => setOpen(false)}
           />
           <div className="absolute right-0 z-50 mt-2">
@@ -74,7 +76,7 @@ export function NotificationBell() {
               }}
               footer={{
                 href: "/settings?tab=notify",
-                label: "Podešavanja obaveštenja →",
+                label: t.settings.notifications,
                 onNavigate: () => setOpen(false),
               }}
               emptyMessage="Još nema obaveštenja. Dodaćemo podsetnike za termine čim podesiš kanale u Podešavanjima."

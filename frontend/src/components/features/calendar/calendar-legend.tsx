@@ -1,14 +1,5 @@
 import { cn } from "@/lib/utils";
-
-const items = [
-  {
-    label: "Z",
-    desc: "Zakazano",
-    className: "bg-primary text-primary-foreground",
-  },
-  { label: "V", desc: "Završeno", className: "bg-emerald-500 text-white" },
-  { label: "×", desc: "Nije došao", className: "bg-red-500 text-white" },
-];
+import { useT } from "@/lib/i18n/locale";
 
 export function CalendarLegend({
   className,
@@ -18,6 +9,24 @@ export function CalendarLegend({
   /** Kad kalendar senči vreme van radnog vremena salona. */
   showClosedHoursBand?: boolean;
 }) {
+  const t = useT();
+  const items = [
+    {
+      label: "Z",
+      desc: t.common.status.scheduled,
+      className: "bg-primary text-primary-foreground",
+    },
+    {
+      label: "V",
+      desc: t.common.status.completed,
+      className: "bg-emerald-500 text-white",
+    },
+    {
+      label: "×",
+      desc: t.common.status.no_show,
+      className: "bg-red-500 text-white",
+    },
+  ];
   return (
     <div
       className={cn(

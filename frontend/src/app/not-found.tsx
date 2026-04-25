@@ -1,9 +1,13 @@
+"use client";
+
 import Link from "next/link";
+import { useT } from "@/lib/i18n/locale";
 import { ArrowLeft, Home, Sparkles } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export default function NotFound() {
+  const t = useT();
   return (
     <div
       id="main-content"

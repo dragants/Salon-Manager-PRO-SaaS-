@@ -33,9 +33,11 @@ import { appTableHeadClass, appTableRowClass } from "@/lib/app-ui";
 import { cn } from "@/lib/utils";
 import { useTableHeadShadow } from "@/hooks/useTableHeadShadow";
 import { useTableViewportWindow } from "@/hooks/useTableViewportWindow";
+import { useT } from "@/lib/i18n/locale";
 import type { Service } from "@/types/service";
 
 function ServicesPageContent() {
+  const t = useT();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
@@ -93,7 +95,7 @@ function ServicesPageContent() {
       const { data } = await getServices();
       setRows(Array.isArray(data) ? data : []);
     } catch (e) {
-      setError(getApiErrorMessage(e, "Usluge nisu učitane."));
+      setError(getApiErrorMessage(e, t.common.error));
       setRows([]);
     } finally {
       if (!opts?.silent) {
@@ -231,7 +233,7 @@ function ServicesPageContent() {
       });
       toast.success("Usluga je sačuvana.");
       notifyApp({
-        title: "Nova usluga",
+        title: t.services.newService,
         body: `${name.trim()} · ${formatRsd(p)}`,
         href: "/services",
       });
@@ -251,7 +253,7 @@ function ServicesPageContent() {
   return (
     <div className="flex flex-col gap-8">
       <SectionHeader
-        title="Usluge"
+        title={t.services.title}
         description="Naziv, cena u RSD, trajanje i buffer (pauza posle termina) za kalendar."
         action={
           canManage ? (
@@ -434,7 +436,7 @@ function ServicesPageContent() {
                             className="rounded-xl text-emerald-700 hover:bg-emerald-100 dark:text-emerald-400 dark:hover:bg-emerald-950/50"
                             disabled={editSaving}
                             onClick={() => void saveEdit()}
-                            aria-label="Sačuvaj uslugu"
+                            aria-label={t.common.save}
                           >
                             <Check className="size-4" />
                           </Button>
@@ -445,7 +447,7 @@ function ServicesPageContent() {
                             className="rounded-xl"
                             disabled={editSaving}
                             onClick={cancelEdit}
-                            aria-label="Otkaži"
+                            aria-label={t.common.cancel}
                           >
                             <X className="size-4" />
                           </Button>
@@ -478,7 +480,7 @@ function ServicesPageContent() {
                               variant="ghost"
                               className="rounded-xl"
                               onClick={() => startEdit(s)}
-                              aria-label="Izmeni uslugu"
+                              aria-label={t.common.edit}
                             >
                               <Pencil className="size-4" />
                             </Button>
@@ -489,7 +491,7 @@ function ServicesPageContent() {
                               className="rounded-xl text-red-700 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-950/50"
                               disabled={deletingId === s.id}
                               onClick={() => void removeService(s)}
-                              aria-label="Obriši uslugu"
+                              aria-label={t.common.delete}
                             >
                               <Trash2 className="size-4" />
                             </Button>
@@ -591,7 +593,7 @@ function ServicesPageContent() {
                   Otkaži
                 </Button>
                 <Button type="submit" disabled={saving}>
-                  {saving ? "Čuvam…" : "Sačuvaj"}
+                  {saving ? t.common.loading : t.common.save}
                 </Button>
               </DialogFooter>
             </form>
@@ -603,13 +605,14 @@ function ServicesPageContent() {
 }
 
 export default function ServicesPage() {
+  const t = useT();
   return (
     <Suspense
       fallback={
         <div className="flex flex-col gap-8">
           <SectionHeader
-            title="Usluge"
-            description="Učitavanje usluga…"
+            title={t.services.title}
+            description={t.common.loading}
           />
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (

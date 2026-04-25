@@ -19,7 +19,12 @@ function makeBackupCodes(n = 10) {
 
 async function beginSetup({ userId }) {
   const r = await pool.query(
-    `SELECT id, email, role, COALESCE(mfa_enforced, false) AS mfa_enforced
+    `SELECT id,
+            email,
+            role,
+            COALESCE(mfa_enforced, false) AS mfa_enforced,
+            COALESCE(twofa_enabled, false) AS twofa_enabled,
+            twofa_secret
      FROM users WHERE id = $1`,
     [userId]
   );
@@ -29,17 +34,32 @@ async function beginSetup({ userId }) {
     throw err;
   }
   const user = r.rows[0];
-  const secret = authenticator.generateSecret();
+  if (user.twofa_enabled) {
+    const err = new Error("2FA already enabled");
+    err.statusCode = 409;
+    throw err;
+  }
+
+  /**
+   * Bitno: ne regenerisati secret na svaki refresh, jer onda Authenticator kodovi
+   * nikad ne prolaze (korisnik slučajno skenira stari QR).
+   */
+  const secret =
+    user.twofa_secret && String(user.twofa_secret).trim()
+      ? String(user.twofa_secret).trim()
+      : authenticator.generateSecret();
   const otpauth_url = authenticator.keyuri(String(user.email), ISSUER, secret);
   const qr = await QRCode.toDataURL(otpauth_url);
 
-  await pool.query(
-    `UPDATE users
-     SET twofa_secret = $1,
-         twofa_enabled = FALSE
-     WHERE id = $2`,
-    [secret, userId]
-  );
+  if (!user.twofa_secret || !String(user.twofa_secret).trim()) {
+    await pool.query(
+      `UPDATE users
+       SET twofa_secret = $1,
+           twofa_enabled = FALSE
+       WHERE id = $2`,
+      [secret, userId]
+    );
+  }
 
   return {
     otpauth_url,
@@ -66,6 +86,8 @@ async function enable({ userId, otp }) {
     err.statusCode = 409;
     throw err;
   }
+  // Dozvoli malu toleranciju za razliku u vremenu uređaja (±1 interval).
+  authenticator.options = { ...authenticator.options, window: 1 };
   const ok = code ? authenticator.check(code, secret) : false;
   if (!ok) {
     const err = new Error("Invalid 2FA code");
@@ -87,5 +109,39 @@ async function enable({ userId, otp }) {
   return { ok: true, backup_codes: backupCodes };
 }
 
-module.exports = { beginSetup, enable };
+async function verify({ userId, otp }) {
+  const r = await pool.query(
+    `SELECT id, COALESCE(twofa_enabled, false) AS twofa_enabled, twofa_secret
+     FROM users WHERE id = $1`,
+    [userId]
+  );
+  if (r.rows.length === 0) {
+    const err = new Error("User not found");
+    err.statusCode = 404;
+    throw err;
+  }
+  const user = r.rows[0];
+  if (!user.twofa_enabled) {
+    const err = new Error("2FA not enabled");
+    err.statusCode = 409;
+    throw err;
+  }
+  const secret = user.twofa_secret ? String(user.twofa_secret) : "";
+  const code = otp != null ? String(otp).trim() : "";
+  if (!secret) {
+    const err = new Error("2FA secret missing");
+    err.statusCode = 409;
+    throw err;
+  }
+  authenticator.options = { ...authenticator.options, window: 1 };
+  const ok = code ? authenticator.check(code, secret) : false;
+  if (!ok) {
+    const err = new Error("Invalid 2FA code");
+    err.statusCode = 400;
+    throw err;
+  }
+  return { ok: true };
+}
+
+module.exports = { beginSetup, enable, verify };
 

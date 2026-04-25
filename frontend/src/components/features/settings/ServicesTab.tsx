@@ -1,12 +1,14 @@
 import Link from "next/link";
+import { useT } from "@/lib/i18n/locale";
 import { ExternalLink } from "lucide-react";
 import { SettingsCard } from "./SettingsCard";
 
 export function ServicesTab() {
+  const t = useT();
   return (
     <div className="space-y-6">
       <SettingsCard
-        title="Usluge"
+        title={t.services.title}
         description="Naziv, cena, trajanje i buffer uređujete na posebnoj strani — brza lista i jasan tok."
       >
         <Link

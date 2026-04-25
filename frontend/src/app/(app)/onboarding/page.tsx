@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/locale";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -27,6 +28,7 @@ const ONBOARDING_PENDING_KEY = "salon_onboarding_pending";
 const ONBOARDING_DONE_KEY = "salon_onboarding_done";
 
 export default function OnboardingPage() {
+  const t = useT();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const { settings, refreshSettings } = useOrganization();
@@ -184,7 +186,7 @@ export default function OnboardingPage() {
         await refreshSettings();
         setStep(3);
       } catch {
-        toast.error("Usluge nisu sačuvane. Proveri cenu i pokušaj ponovo.");
+        toast.error(t.common.toasts.error);
       } finally {
         setBusy(false);
       }
@@ -493,7 +495,7 @@ export default function OnboardingPage() {
               onClick={() => void onNext()}
               disabled={busy}
             >
-              {busy ? "Čuvam…" : step === 0 ? "Počni" : "Dalje"}
+              {busy ? t.common.loading : t.common.next}
               {!busy ? <ChevronRight className="size-4" aria-hidden /> : null}
             </Button>
           ) : (

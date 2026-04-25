@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/locale";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -54,6 +55,7 @@ export function ClientSearch({
   showFinancial,
   className,
 }: ClientSearchProps) {
+  const t = useT();
   return (
     <div className={cn("space-y-4", className)}>
       <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
@@ -67,7 +69,7 @@ export function ClientSearch({
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Ime, telefon, e-mail, beleška…"
             className="max-w-xl rounded-xl border-border bg-card text-base"
-            aria-label="Pretraga klijenata"
+            aria-label={t.clients.searchPlaceholder}
           />
         </div>
         <p className="shrink-0 text-sm font-medium text-muted-foreground lg:pb-2">

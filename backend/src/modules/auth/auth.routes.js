@@ -9,6 +9,7 @@ const {
   forgotPasswordSchema,
   resetPasswordSchema,
   enable2faSchema,
+  verify2faSchema,
 } = require("./auth.validation");
 const auth = require("../../middleware/auth.middleware");
 const validate = require("../../middleware/validate.middleware");
@@ -85,6 +86,12 @@ router.post(
   auth,
   validate(enable2faSchema),
   asyncHandler(controller.enable2fa)
+);
+router.post(
+  "/2fa/verify",
+  auth,
+  validate(verify2faSchema),
+  asyncHandler(controller.verify2fa)
 );
 
 module.exports = router;

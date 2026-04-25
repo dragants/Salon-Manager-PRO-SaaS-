@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/locale";
 
 import {
   useCallback,
@@ -144,6 +145,7 @@ function formatAuditLine(row: AuditLogRow): string {
 }
 
 export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
+  const t = useT();
   const router = useRouter();
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
@@ -338,10 +340,10 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       out.push({ id: "nav", title: "Navigacija", items: navItems });
     }
     if (clientItems.length > 0) {
-      out.push({ id: "clients", title: "Klijenti", items: clientItems });
+      out.push({ id: "clients", title: t.clients.title, items: clientItems });
     }
     if (serviceItems.length > 0) {
-      out.push({ id: "services", title: "Usluge", items: serviceItems });
+      out.push({ id: "services", title: t.services.title, items: serviceItems });
     }
     return out;
   }, [

@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { useT } from "@/lib/i18n/locale";
 import {
   WorkingHoursEditor,
   type DayScheduleRow,
@@ -18,6 +19,7 @@ export function WorkingHoursTab({
   setDayRows,
   onSave,
 }: WorkingHoursTabProps) {
+  const t = useT();
   return (
     <div className="space-y-6">
       <SettingsCard
@@ -33,7 +35,7 @@ export function WorkingHoursTab({
           disabled={saving}
           onClick={onSave}
         >
-          {saving ? "Čuvam…" : "Sačuvaj radno vreme"}
+          {saving ? t.common.loading : t.common.save}
         </Button>
       </div>
     </div>

@@ -37,7 +37,7 @@ export function SettingsTabBar({
               )}
             >
               <Icon className="size-3.5 shrink-0 sm:size-4" aria-hidden />
-              <span className="whitespace-nowrap">{label}</span>
+              <span className="whitespace-nowrap">{String(label)}</span>
             </TabsTrigger>
           ))}
         </TabsList>

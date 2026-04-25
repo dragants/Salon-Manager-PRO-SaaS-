@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { useT } from "@/lib/i18n/locale";
 import { AuditLogPanel } from "./AuditLogPanel";
 import { SettingsCard } from "./SettingsCard";
 
@@ -18,6 +19,7 @@ export function SecurityTab({
   onSaveWorkerPermissions,
   permissionsDirty = false,
 }: SecurityTabProps) {
+  const t = useT();
   return (
     <div className="space-y-6">
       <SettingsCard
@@ -54,7 +56,7 @@ export function SecurityTab({
             disabled={saving}
             onClick={onSaveWorkerPermissions}
           >
-            {saving ? "Čuvam…" : "Sačuvaj dozvole"}
+            {saving ? t.common.loading : t.common.save}
           </Button>
         </div>
       </SettingsCard>

@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/locale";
 
 import { useEffect } from "react";
 import { AlertTriangle, Home, RefreshCw, Sparkles } from "lucide-react";
@@ -13,9 +14,15 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const t = useT();
   useEffect(() => {
     console.error("[app-error]", error);
   }, [error]);
+
+  const message =
+    typeof (error as unknown as { message?: unknown })?.message === "string"
+      ? (error as unknown as { message: string }).message
+      : "";
 
   return (
     <div
@@ -37,9 +44,15 @@ export default function Error({
           vratite na Dashboard.
         </p>
 
+        {message ? (
+          <p className="mt-3 rounded-lg border border-border bg-card px-3 py-2 text-left font-mono text-xs text-muted-foreground">
+            {message}
+          </p>
+        ) : null}
+
         {error.digest ? (
           <p className="mt-3 rounded-lg bg-muted px-3 py-1.5 font-mono text-xs text-muted-foreground">
-            Kôd: {error.digest}
+            {t.errors.code}: {error.digest}
           </p>
         ) : null}
 

@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/locale";
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -65,6 +66,7 @@ export default function AddAppointmentModal({
   defaultStartLocal,
   onCreated,
 }: Props) {
+  const t = useT();
   const { setOpen: setAppModal } = useModal();
   const { settings } = useOrganization();
   const [clients, setClients] = useState<ClientOpt[]>([]);
@@ -138,7 +140,7 @@ export default function AddAppointmentModal({
         );
       } catch {
         if (!cancelled) {
-          setFormError("Klijenti ili usluge nisu učitani.");
+          setFormError(t.common.loading);
         }
       }
     })();
@@ -725,7 +727,7 @@ export default function AddAppointmentModal({
               className="bg-primary hover:bg-primary/90"
               disabled={saving}
             >
-              {saving ? "Čuvam…" : "Sačuvaj"}
+              {saving ? t.common.loading : t.common.save}
             </Button>
           </DialogFooter>
         </form>

@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/locale";
 
 import { cn } from "@/lib/utils";
 
@@ -9,9 +10,10 @@ type Props = {
 
 /** Skeleton dok se učitavaju termini — u skladu sa nedeljnim mrežom / listom dana. */
 export function CalendarLoadingSkeleton({ view, className }: Props) {
+  const t = useT();
   if (view === "day") {
     return (
-      <div className={cn("space-y-3", className)} aria-busy="true" aria-label="Učitavanje">
+      <div className={cn("space-y-3", className)} aria-busy="true" aria-label={t.common.loading}>
         {Array.from({ length: 5 }).map((_, i) => (
           <div
             key={i}
@@ -29,7 +31,7 @@ export function CalendarLoadingSkeleton({ view, className }: Props) {
         className
       )}
       aria-busy="true"
-      aria-label="Učitavanje kalendara"
+      aria-label={t.calendar.loadingCalendar}
     >
       <div className="mb-2 h-4 w-48 animate-pulse rounded bg-muted" />
       <div className="flex gap-2">

@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/locale";
 
 import { useState } from "react";
 import {
@@ -56,6 +57,7 @@ export function TeamTab({
   services,
   onTeamChanged,
 }: TeamTabProps) {
+  const t = useT();
   const [displayNameNew, setDisplayNameNew] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -189,7 +191,7 @@ export function TeamTab({
 
       {isAdmin ? (
         <SettingsCard
-          title="Dodaj člana tima"
+          title={t.common.add}
           description="Ime za prikaz (opciono), email i privremena lozinka. Osoba se prijavljuje na istoj prijavnoj strani."
         >
           <form onSubmit={onAddMember} className="space-y-4 max-w-md">
@@ -252,7 +254,7 @@ export function TeamTab({
               className="bg-primary text-primary-foreground hover:bg-primary/90"
               disabled={saving}
             >
-              {saving ? "Čuvam…" : "Dodaj u tim"}
+              {saving ? t.common.loading : t.common.add}
             </Button>
           </form>
         </SettingsCard>
@@ -375,7 +377,7 @@ export function TeamTab({
                   className="bg-primary text-primary-foreground hover:bg-primary/90"
                   disabled={editSaving}
                 >
-                  {editSaving ? "Čuvam…" : "Sačuvaj"}
+                  {editSaving ? t.common.loading : t.common.save}
                 </Button>
                 <Button
                   type="button"

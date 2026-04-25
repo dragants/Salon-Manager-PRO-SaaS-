@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/locale";
 
 import { Suspense, useState } from "react";
 import Link from "next/link";
@@ -13,6 +14,7 @@ import { resetPasswordWithToken } from "@/lib/api";
 import { getApiErrorMessage } from "@/lib/api/errors";
 
 function ResetPasswordForm() {
+  const t = useT();
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token")?.trim() ?? "";
@@ -134,7 +136,7 @@ function ResetPasswordForm() {
             className="h-11 w-full rounded-xl shadow-md"
             disabled={loading}
           >
-            {loading ? "Čuvam…" : "Sačuvaj lozinku"}
+            {loading ? t.common.loading : t.common.save}
           </Button>
 
           <p className="text-center text-sm text-muted-foreground">
@@ -151,12 +153,13 @@ function ResetPasswordForm() {
 }
 
 export default function ResetPasswordPage() {
+  const t = useT();
   return (
     <div className="flex min-h-dvh items-center justify-center bg-gradient-to-b from-sky-50/50 to-background px-4 py-12 dark:from-slate-900 sm:px-6">
       <Suspense
         fallback={
           <p className="text-sm text-muted-foreground">
-            Učitavanje…
+            {t.common.loading}
           </p>
         }
       >

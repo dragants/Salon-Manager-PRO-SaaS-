@@ -1,4 +1,4 @@
-const RedisStore = require("rate-limit-redis");
+const { RedisStore } = require("rate-limit-redis");
 const { getRedis } = require("../config/redis");
 
 function redisStoreOrNull(prefix) {

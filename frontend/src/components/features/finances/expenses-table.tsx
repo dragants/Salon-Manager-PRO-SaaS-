@@ -1,5 +1,7 @@
 "use client";
 
+import { useT } from "@/lib/i18n/locale";
+
 import { useRef } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -29,6 +31,7 @@ export function ExpensesTable({
   onAddClick,
   onReload,
 }: ExpensesTableProps) {
+  const t = useT();
   const scrollRef = useRef<HTMLDivElement>(null);
   const headShadow = useTableHeadShadow(scrollRef);
   const tv = useTableViewportWindow(scrollRef, rows.length, 52, {
@@ -121,7 +124,7 @@ export function ExpensesTable({
                         size="icon-sm"
                         variant="ghost"
                         className="rounded-xl text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40"
-                        aria-label="Obriši trošak"
+                        aria-label={t.common.delete}
                         onClick={() => {
                           void (async () => {
                             try {

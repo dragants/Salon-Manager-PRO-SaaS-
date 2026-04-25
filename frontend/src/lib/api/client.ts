@@ -48,6 +48,12 @@ api.interceptors.response.use(
     }
     if (err.response?.status === 403) {
       const code = err.response.data?.code;
+      if (code === "MFA_REQUIRED") {
+        const path = `${window.location.pathname}${window.location.search}`;
+        if (!path.startsWith("/mfa")) {
+          window.location.assign("/mfa");
+        }
+      }
       if (code === "SUBSCRIPTION_REQUIRED") {
         const path = `${window.location.pathname}${window.location.search}`;
         if (!path.startsWith("/subscribe")) {

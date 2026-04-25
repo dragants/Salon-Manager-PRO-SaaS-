@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/locale";
 
 import { CalendarDays, Clock, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -50,6 +51,7 @@ export function StepClientForm({
   onBack,
   disabled,
 }: StepClientFormProps) {
+  const t = useT();
   return (
     <SurfaceCard
       padding="md"
@@ -73,7 +75,7 @@ export function StepClientForm({
       {selectedService && selectedSlot ? (
         <div className="flex gap-3 rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-muted/80 to-muted/40 p-4 text-xs shadow-inner ring-1 ring-primary/10">
           <WorkerAvatar
-            name={selectedSlot.employee_name ?? "Tim salona"}
+            name={selectedSlot.employee_name ?? t.calendar.salonTeam}
             employeeId={selectedSlot.employee_id}
             className="ring-2 ring-background"
           />

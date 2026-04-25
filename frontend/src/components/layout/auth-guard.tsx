@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/locale";
 
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
@@ -8,6 +9,7 @@ import { useAuth } from "@/providers/auth-provider";
 const LOADING_HINT_MS = 8000;
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
+  const t = useT();
   const router = useRouter();
   const { user, loading } = useAuth();
   const [showSlowHint, setShowSlowHint] = useState(false);
@@ -33,7 +35,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   }, [loading, user, router]);
 
   if (loading || !user) {
-    const label = loading ? "Učitavanje…" : "Preusmeravanje na prijavu…";
+    const label = loading ? t.common.loading : "Preusmeravanje na prijavu…";
     return (
       <div className="flex min-h-full flex-1 flex-col items-center justify-center gap-3 bg-background p-8 text-center text-sm text-zinc-800">
         <Loader2

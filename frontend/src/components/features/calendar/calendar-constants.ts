@@ -7,6 +7,18 @@ export const STATUS_LABEL: Record<AppointmentStatus, string> = {
   cancelled: "Otkazano",
 };
 
+type StatusBundle = { common: { status: Record<AppointmentStatus, string> } };
+
+/** Lokalizovan ili podrazumevani (sr) label statusa termina. */
+export function statusLabel(
+  status: AppointmentStatus,
+  t?: StatusBundle
+): string {
+  const fromT = t?.common?.status?.[status];
+  if (fromT) return fromT;
+  return STATUS_LABEL[status];
+}
+
 /** Status badge — primary za zakazano; zeleno / crveno za ostale. */
 export function statusBadgeClass(status: AppointmentStatus) {
   switch (status) {

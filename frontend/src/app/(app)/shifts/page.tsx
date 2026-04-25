@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/locale";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ClipboardCopy, Save } from "lucide-react";
@@ -35,6 +36,7 @@ function teamToEmployees(team: OrgTeamMember[]) {
 }
 
 export default function ShiftsPage() {
+  const t = useT();
   const { user, loading: authLoading } = useAuth();
   const { settings } = useOrganization();
   const orgTz = settings?.timezone?.trim();
@@ -78,7 +80,7 @@ export default function ShiftsPage() {
         }
 
         if (shiftsRes.status === "rejected") {
-          const msg = getApiErrorMessage(shiftsRes.reason, "Smene nisu učitane.");
+          const msg = getApiErrorMessage(shiftsRes.reason, t.common.error);
           setTeam(teamData);
           setShifts([]);
           setFromWeeklySuggestion(false);
@@ -180,7 +182,7 @@ export default function ShiftsPage() {
       const rows = Array.isArray(data?.shifts) ? data.shifts : [];
       setShifts(rows.map((r) => workShiftToPlanner(r, date)));
       setFromWeeklySuggestion(false);
-      toast.success("Smene sačuvane — kalendar sada može koristiti dostupnost.");
+      toast.success(t.common.toasts.saved);
     } catch (e) {
       toast.error(getApiErrorMessage(e, "Čuvanje smena nije uspelo."));
     } finally {
@@ -234,7 +236,7 @@ export default function ShiftsPage() {
           disabled={saving || loadingShifts}
         >
           <Save className="size-4" aria-hidden />
-          {saving ? "Čuvam…" : "Sačuvaj smene"}
+          {saving ? t.common.loading : t.common.save}
         </Button>
         <Button
           type="button"

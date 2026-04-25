@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/locale";
 
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,9 +29,11 @@ export default function CalendarHeader({
   onNext,
   onAddClick,
   minimal = false,
-  title = "Nedeljni kalendar",
+  title,
   headerClassName,
 }: Props) {
+  const t = useT();
+  const resolvedTitle = title ?? t.calendar.weeklyCalendar;
   if (minimal) {
     return (
       <div
@@ -40,7 +43,7 @@ export default function CalendarHeader({
         )}
       >
         <h2 className="text-sm font-semibold tracking-tight text-foreground">
-          {title}
+          {resolvedTitle}
         </h2>
         <div className="flex flex-wrap items-center justify-end gap-2">
           <div className="flex rounded-[var(--smp-radius-md)] border border-border bg-muted/50 p-0.5">

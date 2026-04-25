@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/locale";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -28,8 +29,10 @@ type Props = {
 export function SettingsForm({
   defaultValues,
   onSubmit = async () => {},
-  submitLabel = "Sačuvaj",
+  submitLabel,
 }: Props) {
+  const t = useT();
+  const submitText = submitLabel ?? t.common.save;
   const {
     register,
     handleSubmit,
@@ -74,7 +77,7 @@ export function SettingsForm({
       </div>
 
       <Button type="submit" variant="brand" disabled={isSubmitting}>
-        {isSubmitting ? "Čuvam…" : submitLabel}
+        {isSubmitting ? t.common.loading : submitText}
       </Button>
     </form>
   );

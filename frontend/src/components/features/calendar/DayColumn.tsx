@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/locale";
 
 import { useState } from "react";
 import { useDraggable } from "@dnd-kit/core";
@@ -62,12 +63,13 @@ function WeekGridDraggableBlock({
   onPatchStaff?: (id: number, staffUserId: number | null) => void | Promise<void>;
   onOpenDetail?: (row: AppointmentRow) => void;
 }) {
+  const tr = useT();
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: row.id,
   });
 
-  const t = new Date(row.date).toLocaleTimeString("sr-Latn-RS", {
+  const timeLabel = new Date(row.date).toLocaleTimeString("sr-Latn-RS", {
     hour: "2-digit",
     minute: "2-digit",
     timeZone,
@@ -87,7 +89,7 @@ function WeekGridDraggableBlock({
       style={{ top, height }}
     >
       <p className="truncate text-[10px] font-semibold tabular-nums opacity-95">
-        {t}
+        {timeLabel}
       </p>
       <p className="truncate text-[10px] font-medium leading-tight opacity-95">
         {row.client_name ?? `#${row.client_id}`}
@@ -113,7 +115,7 @@ function WeekGridDraggableBlock({
         <select
           className="mt-0.5 w-full max-w-full truncate rounded border border-border bg-[var(--smp-input-bg)] px-0.5 py-0 text-[8px] text-foreground"
           value={row.staff_user_id ?? ""}
-          title="Radnik"
+          title={tr.calendar.staff}
           onPointerDown={(e) => e.stopPropagation()}
           onChange={(e) => {
             const v = e.target.value;
@@ -128,14 +130,14 @@ function WeekGridDraggableBlock({
           ))}
         </select>
       ) : appointmentStaffLabel(row) ? (
-        <p className="truncate text-[8px] opacity-75" title="Radnik">
+        <p className="truncate text-[8px] opacity-75" title={tr.calendar.staff}>
           {appointmentStaffLabel(row)}
         </p>
       ) : null}
       <div className="mt-0.5 flex flex-wrap gap-0.5">
         <button
           type="button"
-          title="Zakazano (još uvek aktivan termin)"
+          title={tr.common.status.scheduled}
           className={cn(
             "touch-manipulation rounded px-1 py-0 text-[9px] font-medium max-sm:min-h-9 max-sm:min-w-9 max-sm:px-1.5 max-sm:text-xs",
             row.status === "scheduled"
@@ -152,7 +154,7 @@ function WeekGridDraggableBlock({
         </button>
         <button
           type="button"
-          title="Završeno (usluga odradena)"
+          title={tr.common.status.completed}
           className={cn(
             "touch-manipulation rounded px-1 py-0 text-[9px] font-medium max-sm:min-h-9 max-sm:min-w-9 max-sm:px-1.5 max-sm:text-xs",
             row.status === "completed"
@@ -169,7 +171,7 @@ function WeekGridDraggableBlock({
         </button>
         <button
           type="button"
-          title="Nije došao (no-show)"
+          title={tr.common.status.no_show}
           className={cn(
             "touch-manipulation rounded px-1 py-0 text-[9px] font-medium max-sm:min-h-9 max-sm:min-w-9 max-sm:px-1.5 max-sm:text-xs",
             row.status === "no_show"
@@ -220,7 +222,7 @@ function WeekGridDraggableBlock({
             <button
               type="button"
               className="rounded bg-card px-1 py-0 text-[9px] font-medium text-red-200 ring-1 ring-red-500/40"
-              title="Obriši termin"
+              title={tr.common.delete}
               onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => {
                 e.stopPropagation();

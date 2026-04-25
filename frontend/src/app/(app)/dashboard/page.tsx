@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/locale";
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -19,6 +20,7 @@ import { appointmentStaffLabel } from "@/components/features/calendar/calendar-u
 import { Button, buttonVariants } from "@/components/ui/button";
 import { AnalyticsChartSkeleton } from "@/components/features/dashboard/analytics-chart-skeleton";
 import { DashboardHeroStats } from "@/components/features/dashboard/dashboard-hero-stats";
+import { STATUS_LABEL } from "@/components/features/calendar/calendar-constants";
 import {
   getAnalytics,
   getAppointments,
@@ -77,11 +79,11 @@ function todayHeadingInTz(timeZone: string): string {
   }).format(new Date());
 }
 
-function greetingSr(): string {
+function greeting(t: { morning: string; afternoon: string; evening: string }): string {
   const h = new Date().getHours();
-  if (h < 12) return "Dobro jutro";
-  if (h < 18) return "Dobar dan";
-  return "Dobro veče";
+  if (h < 12) return t.morning;
+  if (h < 18) return t.afternoon;
+  return t.evening;
 }
 
 function displayNameFromEmail(email: string | undefined): string {
@@ -125,9 +127,7 @@ function formatApptTimeRange(
 }
 
 function statusLabel(status: AppointmentRow["status"]): string {
-  if (status === "completed") return "Završeno";
-  if (status === "no_show") return "Nije se pojavio";
-  return "Zakazano";
+  return STATUS_LABEL[status] ?? "Status";
 }
 
 function statusStyles(status: AppointmentRow["status"]): string {
@@ -162,6 +162,7 @@ function DashboardSkeleton() {
 }
 
 export default function DashboardPage() {
+  const t = useT();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const {
@@ -215,7 +216,7 @@ export default function DashboardPage() {
   const analytics = analyticsQuery.data ?? null;
   const analyticsLoading = analyticsQuery.isPending;
   const analyticsError = analyticsQuery.isError
-    ? getApiErrorMessage(analyticsQuery.error, "Analitika nije učitana.")
+    ? getApiErrorMessage(analyticsQuery.error, t.common.error)
     : null;
 
   const todayList = todayQuery.data ?? null;
@@ -347,7 +348,7 @@ export default function DashboardPage() {
               {settings.name}
             </p>
             <h1 className="font-heading text-[2.15rem] font-bold leading-[1.12] tracking-tight text-foreground sm:text-[2.35rem]">
-              {greetingSr()},
+              {greeting(t.dashboard.greeting)},
               <br />
               {greetName} <span aria-hidden>👋</span>
             </h1>
@@ -500,7 +501,7 @@ export default function DashboardPage() {
                       type="button"
                       className="dash-btn rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground hover:opacity-90"
                       onClick={() => {
-                        toast.info("Kalendar — zakaži prvi termin");
+                        toast.info(t.calendar.newAppointment);
                         router.push(calendarDayUrl);
                       }}
                     >

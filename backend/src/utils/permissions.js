@@ -8,6 +8,7 @@ const roles = {
     "manage_employees",
     "manage_clients",
     "manage_services",
+    "view_services",
     "manage_appointments",
     "manage_payments",
     "view_reports",
@@ -21,7 +22,16 @@ const roles = {
 function hasPermission(role, permission) {
   if (!role) return false;
   if (roles[role]?.includes("manage_all")) return true;
-  return Boolean(roles[role]?.includes(permission));
+  const perms = roles[role] ?? [];
+  if (perms.includes(permission)) return true;
+
+  // Generic implication: manage_X implies view_X
+  if (permission.startsWith("view_")) {
+    const impliedManage = permission.replace(/^view_/, "manage_");
+    if (perms.includes(impliedManage)) return true;
+  }
+
+  return false;
 }
 
 module.exports = { roles, hasPermission };

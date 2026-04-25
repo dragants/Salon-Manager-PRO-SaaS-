@@ -36,8 +36,12 @@ if (isProduction) {
 module.exports = {
   NODE_ENV,
   PORT: process.env.PORT || 5000,
-  /** 0.0.0.0 = slušaj na svim interfejsima (LAN, Wi‑Fi, Ethernet). */
-  HOST: process.env.HOST || "0.0.0.0",
+  /**
+   * Podrazumevano slušaj i IPv4 i IPv6.
+   * Na Windowsu `localhost` često ode na `::1`; ako slušamo samo 0.0.0.0,
+   * browser može da dobije `ERR_CONNECTION_REFUSED` na API.
+   */
+  HOST: process.env.HOST || "::",
   JWT_SECRET,
   /** Za CORS `origin` i provera `Origin` zaglavlja. */
   FRONTEND_URLS,

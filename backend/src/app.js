@@ -39,6 +39,9 @@ const errorHandler = require("./middleware/error.middleware");
 
 const app = express();
 
+// API responses should not be cached; avoid 304s on auth-critical endpoints.
+app.set("etag", false);
+
 app.use(helmet());
 
 const LAN_ORIGIN_RE =

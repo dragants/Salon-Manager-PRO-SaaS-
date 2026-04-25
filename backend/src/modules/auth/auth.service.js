@@ -77,22 +77,28 @@ async function login({ email, password, remember: _remember, otp }) {
   }
 
   const role = user.role;
-  const isPrivileged = role === "owner" || role === "admin";
-  const enforceMfa = Boolean(user.mfa_enforced) || isPrivileged;
+  const mfaDisabled = process.env.MFA_DISABLED === "true";
+  const wants2fa = !mfaDisabled && Boolean(user.twofa_enabled);
 
-  // MFA handling:
-  // - If enforced and not enabled: issue a limited token with mfa=false so user can complete setup.
-  // - If enabled: require valid OTP to issue full token (mfa=true).
-  if (enforceMfa && user.twofa_enabled) {
+  // Step-up model:
+  // - If 2FA is enabled on the account and OTP is provided+valid -> issue strong session (mfa=true).
+  // - If 2FA is enabled but OTP is missing -> allow login with limited session (mfa=false).
+  let strongMfa = true;
+  if (wants2fa) {
     const code = otp != null ? String(otp).trim() : "";
-    const secret = user.twofa_secret ? String(user.twofa_secret) : "";
-    const okOtp =
-      code && secret ? authenticator.check(code, secret) : false;
-    if (!okOtp) {
-      const err = new Error("Invalid 2FA code");
-      err.statusCode = 401;
-      err.code = "MFA_INVALID";
-      throw err;
+    if (code) {
+      const secret = user.twofa_secret ? String(user.twofa_secret) : "";
+      authenticator.options = { ...authenticator.options, window: 1 };
+      const okOtp = code && secret ? authenticator.check(code, secret) : false;
+      if (!okOtp) {
+        const err = new Error("Invalid 2FA code");
+        err.statusCode = 401;
+        err.code = "MFA_INVALID";
+        throw err;
+      }
+      strongMfa = true;
+    } else {
+      strongMfa = false;
     }
   }
 
@@ -102,7 +108,7 @@ async function login({ email, password, remember: _remember, otp }) {
     tenantId: user.organization_id,
     role,
     tv: user.token_version,
-    mfa: !enforceMfa ? true : Boolean(user.twofa_enabled),
+    mfa: strongMfa,
   });
 }
 

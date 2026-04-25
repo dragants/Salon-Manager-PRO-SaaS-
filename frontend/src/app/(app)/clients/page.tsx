@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/locale";
 
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -42,6 +43,7 @@ import type { AnalyticsResponse } from "@/types/analytics";
 import "./clients-page.css";
 
 function ClientsPageContent() {
+  const t = useT();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { setOpen: setAppModal } = useModal();
@@ -83,14 +85,14 @@ function ClientsPageContent() {
       const { data } = await getClients();
       setRows(Array.isArray(data) ? data : []);
     } catch (e) {
-      setError(getApiErrorMessage(e, "Klijenti nisu učitani."));
+      setError(getApiErrorMessage(e, t.common.error));
       setRows([]);
     } finally {
       if (!opts?.silent) {
         setLoading(false);
       }
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     void load();
@@ -160,7 +162,7 @@ function ClientsPageContent() {
       });
       toast.success("Klijent je sačuvan.");
       notifyApp({
-        title: "Novi klijent",
+        title: t.clients.newClient,
         body: `${name.trim()} je dodat u listu.`,
         href: "/clients",
       });
@@ -190,7 +192,7 @@ function ClientsPageContent() {
   return (
     <div className="flex flex-col gap-8">
       <SectionHeader
-        title="Klijenti"
+        title={t.clients.title}
         description={
           <>
             Kartice umesto tabele — ime i akcija su uvek u prvom planu.{" "}
@@ -355,7 +357,7 @@ function ClientsPageContent() {
                 Otkaži
               </Button>
               <Button type="submit" disabled={saving}>
-                {saving ? "Čuvam…" : "Sačuvaj"}
+                {saving ? t.common.loading : t.common.save}
               </Button>
             </DialogFooter>
           </form>
@@ -380,13 +382,14 @@ function ClientsPageContent() {
 }
 
 export default function ClientsPage() {
+  const t = useT();
   return (
     <Suspense
       fallback={
         <div className="flex flex-col gap-8">
           <SectionHeader
-            title="Klijenti"
-            description="Učitavanje liste klijenata…"
+            title={t.clients.title}
+            description={t.clients.loadingClients}
           />
           <SurfaceCard padding="md">
             <Skeleton className="mb-5 h-11 w-full max-w-md rounded-xl" />

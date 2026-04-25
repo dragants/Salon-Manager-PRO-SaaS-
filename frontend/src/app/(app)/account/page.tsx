@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/locale";
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -14,6 +15,7 @@ import { clearToken } from "@/lib/auth/token";
 import { useAuth } from "@/providers/auth-provider";
 
 export default function AccountPage() {
+  const t = useT();
   const router = useRouter();
   const { user, refreshUser } = useAuth();
   const [current, setCurrent] = useState("");
@@ -60,7 +62,7 @@ export default function AccountPage() {
   return (
     <div className="mx-auto w-full max-w-md space-y-8">
       <SectionHeader
-        title="Moj nalog"
+        title={t.account.title}
         description={
           <>
             <span className="block text-muted-foreground">
@@ -118,7 +120,7 @@ export default function AccountPage() {
             />
           </div>
           <Button type="submit" variant="brand" disabled={saving}>
-            {saving ? "Čuvam…" : "Sačuvaj novu lozinku"}
+            {saving ? t.common.loading : t.common.save}
           </Button>
         </form>
       </SurfaceCard>
