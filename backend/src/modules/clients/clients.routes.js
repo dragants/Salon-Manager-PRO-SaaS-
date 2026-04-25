@@ -51,7 +51,7 @@ router.post(
   asyncHandler(controller.createChartEntry)
 );
 
-router.get("/:id", auth, tenant, permit("manage_clients"), asyncHandler(controller.getOne));
+router.get("/:id", auth, tenant, permit("manage_clients"), validate(idParamSchema, "params"), asyncHandler(controller.getOne));
 
 router.post(
   "/",
@@ -67,6 +67,7 @@ router.patch(
   auth,
   tenant,
   permit("manage_clients"),
+  validate(idParamSchema, "params"),
   validate(updateClientSchema),
   asyncHandler(controller.update)
 );
@@ -77,6 +78,7 @@ router.delete(
   tenant,
   permit("manage_clients"),
   requireDeletePermission,
+  validate(idParamSchema, "params"),
   asyncHandler(controller.remove)
 );
 
