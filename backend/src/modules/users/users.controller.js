@@ -18,6 +18,8 @@ async function getMe(req, res) {
     organization_id: data.organization_id,
     role: data.role,
     display_name: data.display_name ?? null,
+    twofa_enabled: Boolean(data.twofa_enabled),
+    mfa_enforced: Boolean(data.mfa_enforced),
   });
 }
 

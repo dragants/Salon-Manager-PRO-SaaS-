@@ -58,7 +58,9 @@ async function getById(userId) {
   let res;
   try {
     res = await pool.query(
-      `SELECT id, email, role, organization_id, display_name, created_at
+      `SELECT id, email, role, organization_id, display_name, created_at,
+              COALESCE(twofa_enabled, false) AS twofa_enabled,
+              COALESCE(mfa_enforced, false) AS mfa_enforced
        FROM users WHERE id = $1`,
       [userId]
     );
@@ -67,7 +69,7 @@ async function getById(userId) {
       throw e;
     }
     res = await pool.query(
-      `SELECT id, email, role, organization_id, created_at
+      `SELECT id, email, role, organization_id, display_name, created_at
        FROM users WHERE id = $1`,
       [userId]
     );
@@ -80,6 +82,12 @@ async function getById(userId) {
   const row = res.rows[0];
   if (row.display_name === undefined) {
     row.display_name = null;
+  }
+  if (row.twofa_enabled === undefined) {
+    row.twofa_enabled = false;
+  }
+  if (row.mfa_enforced === undefined) {
+    row.mfa_enforced = false;
   }
   return row;
 }

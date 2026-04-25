@@ -5,6 +5,10 @@ export type MeUser = {
   /** `admin` = vlasnik / upravnik; `worker` = zaposleni bez pune administracije */
   role: string;
   display_name?: string | null;
+  /** Sa servera (`/users/me`); podrazumevano false ako polje nedostaje. */
+  twofa_enabled?: boolean;
+  /** Organizacija može da natera 2FA za administratore. */
+  mfa_enforced?: boolean;
 };
 
 export type WorkerProfile = {

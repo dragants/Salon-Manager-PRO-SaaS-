@@ -1,5 +1,8 @@
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/lib/i18n/locale";
+import { useAuth } from "@/providers/auth-provider";
 import { AuditLogPanel } from "./AuditLogPanel";
 import { SettingsCard } from "./SettingsCard";
 
@@ -20,6 +23,15 @@ export function SecurityTab({
   permissionsDirty = false,
 }: SecurityTabProps) {
   const t = useT();
+  const router = useRouter();
+  const { user, refreshUser } = useAuth();
+
+  useEffect(() => {
+    void refreshUser();
+  }, [refreshUser]);
+
+  const twofaOn = Boolean(user?.twofa_enabled);
+
   return (
     <div className="space-y-6">
       <SettingsCard
@@ -65,17 +77,42 @@ export function SecurityTab({
         title="Sigurnost naloga"
         description="Kontrola pristupa i sesija."
       >
-        <ul className="list-inside list-disc space-y-2 text-sm leading-relaxed text-muted-foreground">
-          <li>
+        <div className="space-y-4 text-sm leading-relaxed text-muted-foreground">
+          <p>
             Promena lozinke: bočna traka → <strong>Moj nalog</strong> (važi za
             sve članove tima). Posle promene moraš se ponovo prijaviti na svim
             uređajima.
-          </li>
-          <li>Dvofaktorska autentikacija (2FA) — kasnije.</li>
-          <li>
-            Trenutno se odjavljujete preko dugmeta „Odjava“ u bočnoj traci.
-          </li>
-        </ul>
+          </p>
+          <div className="rounded-lg border border-border/90 bg-card p-4 text-foreground">
+            <p className="font-medium text-foreground">
+              Dvofaktorska autentikacija (2FA)
+            </p>
+            {twofaOn ? (
+              <p className="mt-2 text-muted-foreground">
+                2FA je <strong className="text-foreground">uključena</strong>.
+                Pri prijavi unosiš šestocifreni kod iz Authenticator aplikacije.
+              </p>
+            ) : (
+              <>
+                <p className="mt-2 text-muted-foreground">
+                  Dodatni sloj zaštite naloga. Otvara se posebna stranica sa QR
+                  kodom (moraš biti prijavljen).
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="mt-3 border-border"
+                  onClick={() => router.push("/2fa")}
+                >
+                  Uključi 2FA (QR kod)
+                </Button>
+              </>
+            )}
+          </div>
+          <p>
+            Odjava: dugme „Odjava“ u bočnoj traci.
+          </p>
+        </div>
       </SettingsCard>
 
       <AuditLogPanel />

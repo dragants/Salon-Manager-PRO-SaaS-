@@ -6,6 +6,32 @@
  *   isti host kao u adresnoj traci (inače zahtevi idu na „localhost” na drugom uređaju i vise).
  * - Na Next serveru (SSR): 127.0.0.1.
  */
+
+/** localhost i 127.0.0.1 su različiti za SameSite kolačić — API host mora da prati stranicu. */
+function alignLoopbackApiHost(pageHostname: string, apiUrl: string): string {
+  try {
+    const u = new URL(apiUrl);
+    const envHost = u.hostname;
+    const pageLoop =
+      pageHostname === "localhost" || pageHostname === "127.0.0.1";
+    const envLoop = envHost === "localhost" || envHost === "127.0.0.1";
+    if (!pageLoop || !envLoop || envHost === pageHostname) {
+      return apiUrl.replace(/\/$/, "");
+    }
+    u.hostname = pageHostname;
+    const out = u.toString().replace(/\/$/, "");
+    if (process.env.NODE_ENV === "development") {
+      console.info(
+        "[api] Usklađujem API host sa stranicom (localhost ↔ 127.0.0.1):",
+        out
+      );
+    }
+    return out;
+  } catch {
+    return apiUrl.replace(/\/$/, "");
+  }
+}
+
 export function getApiBaseUrl(): string {
   const fromEnv = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
 
@@ -36,6 +62,9 @@ export function getApiBaseUrl(): string {
   }
 
   if (fromEnv) {
+    if (typeof window !== "undefined") {
+      return alignLoopbackApiHost(window.location.hostname, fromEnv);
+    }
     return fromEnv;
   }
   if (typeof window !== "undefined") {

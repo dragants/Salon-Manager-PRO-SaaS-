@@ -2,6 +2,10 @@ const crypto = require("crypto");
 const pool = require("../../config/db");
 const { authenticator } = require("otplib");
 const QRCode = require("qrcode");
+const {
+  normalizeTotpSecret,
+  normalizeTotpCodeInput,
+} = require("../../utils/totpNormalize");
 
 const ISSUER = "Salon Manager PRO";
 
@@ -44,14 +48,12 @@ async function beginSetup({ userId }) {
    * Bitno: ne regenerisati secret na svaki refresh, jer onda Authenticator kodovi
    * nikad ne prolaze (korisnik slučajno skenira stari QR).
    */
-  const secret =
-    user.twofa_secret && String(user.twofa_secret).trim()
-      ? String(user.twofa_secret).trim()
-      : authenticator.generateSecret();
+  const existing = normalizeTotpSecret(user.twofa_secret);
+  const secret = existing ? existing : authenticator.generateSecret();
   const otpauth_url = authenticator.keyuri(String(user.email), ISSUER, secret);
   const qr = await QRCode.toDataURL(otpauth_url);
 
-  if (!user.twofa_secret || !String(user.twofa_secret).trim()) {
+  if (!normalizeTotpSecret(user.twofa_secret)) {
     await pool.query(
       `UPDATE users
        SET twofa_secret = $1,
@@ -79,19 +81,19 @@ async function enable({ userId, otp }) {
     err.statusCode = 404;
     throw err;
   }
-  const secret = r.rows[0].twofa_secret ? String(r.rows[0].twofa_secret) : "";
-  const code = otp != null ? String(otp).trim() : "";
+  const secret = normalizeTotpSecret(r.rows[0].twofa_secret);
+  const code = normalizeTotpCodeInput(otp);
   if (!secret) {
     const err = new Error("2FA setup not started");
     err.statusCode = 409;
     throw err;
   }
-  // Dozvoli malu toleranciju za razliku u vremenu uređaja (±1 interval).
-  authenticator.options = { ...authenticator.options, window: 1 };
+  authenticator.options = { ...authenticator.options, window: 3 };
   const ok = code ? authenticator.check(code, secret) : false;
   if (!ok) {
-    const err = new Error("Invalid 2FA code");
+    const err = new Error("Neispravan 2FA kod.");
     err.statusCode = 400;
+    err.apiCode = "MFA_INVALID";
     throw err;
   }
 
@@ -126,18 +128,19 @@ async function verify({ userId, otp }) {
     err.statusCode = 409;
     throw err;
   }
-  const secret = user.twofa_secret ? String(user.twofa_secret) : "";
-  const code = otp != null ? String(otp).trim() : "";
+  const secret = normalizeTotpSecret(user.twofa_secret);
+  const code = normalizeTotpCodeInput(otp);
   if (!secret) {
     const err = new Error("2FA secret missing");
     err.statusCode = 409;
     throw err;
   }
-  authenticator.options = { ...authenticator.options, window: 1 };
+  authenticator.options = { ...authenticator.options, window: 3 };
   const ok = code ? authenticator.check(code, secret) : false;
   if (!ok) {
-    const err = new Error("Invalid 2FA code");
+    const err = new Error("Neispravan 2FA kod.");
     err.statusCode = 400;
+    err.apiCode = "MFA_INVALID";
     throw err;
   }
   return { ok: true };

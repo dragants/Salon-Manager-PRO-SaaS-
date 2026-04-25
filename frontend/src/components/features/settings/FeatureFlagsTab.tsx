@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { SettingsCard } from "./SettingsCard";
 import { getApiErrorMessage } from "@/lib/api/errors";
 import {
@@ -13,12 +15,34 @@ import {
 
 type Row = FeatureFlagCatalogItem & { enabled: boolean };
 
+function normalizeNewFlagKey(raw: string): string | null {
+  const s = raw
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "_")
+    .replace(/[^a-z0-9_]/g, "");
+  if (!s || s.length > 64) return null;
+  if (!/^[a-z]/.test(s)) return null;
+  return s;
+}
+
 export function FeatureFlagsTab() {
   const [loading, setLoading] = useState(true);
   const [savingKey, setSavingKey] = useState<string | null>(null);
+  const [adding, setAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [catalog, setCatalog] = useState<FeatureFlagCatalogItem[]>([]);
   const [flags, setFlags] = useState<Record<string, boolean>>({});
+  const [newKey, setNewKey] = useState("");
+
+  const reload = useCallback(async () => {
+    const [cat, mine] = await Promise.all([
+      getFeatureFlagsCatalog(),
+      getMyFeatureFlags(),
+    ]);
+    setCatalog(cat);
+    setFlags(mine.flags);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -26,13 +50,8 @@ export function FeatureFlagsTab() {
     setError(null);
     void (async () => {
       try {
-        const [cat, mine] = await Promise.all([
-          getFeatureFlagsCatalog(),
-          getMyFeatureFlags(),
-        ]);
+        await reload();
         if (cancelled) return;
-        setCatalog(cat);
-        setFlags(mine.flags);
       } catch (e) {
         if (!cancelled) setError(getApiErrorMessage(e, "Greška pri učitavanju."));
       } finally {
@@ -42,7 +61,7 @@ export function FeatureFlagsTab() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [reload]);
 
   const rows = useMemo<Row[]>(() => {
     const fromCatalog = catalog.map((c) => ({
@@ -81,6 +100,28 @@ export function FeatureFlagsTab() {
     }
   }
 
+  async function addNewFlag(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    const key = normalizeNewFlagKey(newKey);
+    if (!key) {
+      setError(
+        "Ključ: 1–64 znaka, počinje malim slovom, samo a–z, cifre i donja crta."
+      );
+      return;
+    }
+    setAdding(true);
+    try {
+      await patchMyFeatureFlags({ [key]: false });
+      setNewKey("");
+      await reload();
+    } catch (err) {
+      setError(getApiErrorMessage(err, "Ne mogu da dodam flag."));
+    } finally {
+      setAdding(false);
+    }
+  }
+
   return (
     <div className="space-y-6">
       <SettingsCard
@@ -93,11 +134,44 @@ export function FeatureFlagsTab() {
           </p>
         ) : null}
 
+        <form
+          onSubmit={(ev) => void addNewFlag(ev)}
+          className="flex flex-col gap-3 rounded-xl border border-border/90 bg-muted/30 p-4 sm:flex-row sm:flex-wrap sm:items-end"
+        >
+          <div className="min-w-0 flex-1 space-y-2">
+            <Label htmlFor="new-flag-key">Novi flag (ključ)</Label>
+            <Input
+              id="new-flag-key"
+              placeholder="npr. experimental_booking"
+              value={newKey}
+              onChange={(ev) => setNewKey(ev.target.value)}
+              autoComplete="off"
+              spellCheck={false}
+              className="font-mono text-sm"
+            />
+            <p className="text-xs text-muted-foreground">
+              Dodaje se u katalog kao <strong className="text-foreground">OFF</strong> za
+              ovaj salon; posle ga pališ/gasiš ispod. Isto radi i{" "}
+              <code className="rounded bg-muted px-1 py-0.5 text-[11px]">
+                PATCH /feature-flags/me
+              </code>{" "}
+              sa <code className="rounded bg-muted px-1 py-0.5 text-[11px]">flags</code>.
+            </p>
+          </div>
+          <Button type="submit" variant="secondary" disabled={adding || loading}>
+            {adding ? "Dodajem…" : "Dodaj flag"}
+          </Button>
+        </form>
+
         {loading ? (
           <p className="text-sm text-muted-foreground">Učitavanje…</p>
         ) : rows.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            Nema flagova. Prvi put se pojave kad ih upišeš kroz API.
+            Još nema ključeva u katalogu — dodaj prvi gore (ili{" "}
+            <code className="rounded bg-muted px-1 py-0.5 text-[11px]">
+              PATCH /feature-flags/me
+            </code>
+            ).
           </p>
         ) : (
           <div className="space-y-2">

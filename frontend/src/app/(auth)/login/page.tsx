@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SurfaceCard } from "@/components/ui/surface-card";
 import { api } from "@/lib/api/client";
-import { getApiErrorMessage } from "@/lib/api/errors";
+import { getApiErrorCode, getApiErrorMessage } from "@/lib/api/errors";
 import { syncSessionCookie } from "@/lib/auth/session-cookie";
 import { useAuth } from "@/providers/auth-provider";
 
@@ -82,8 +82,9 @@ export default function LoginPage() {
           "Nema veze sa serverom. Proveri da li je backend uključen i NEXT_PUBLIC_API_URL."
         );
       } else {
-        const apiCode =
-          axios.isAxiosError(err) ? (err.response?.data as any)?.code : undefined;
+        const apiCode = axios.isAxiosError(err)
+          ? getApiErrorCode(err)
+          : undefined;
         if (apiCode === "MFA_INVALID") {
           setError("Neispravan 2FA kod. Pokušaj ponovo.");
         } else {
@@ -193,6 +194,11 @@ export default function LoginPage() {
                   value={otp}
                   onChange={(e) => setOtp(e.target.value)}
                 />
+                <p className="text-xs text-muted-foreground">
+                  Kod se menja na ~30 s. Ako uvek piše „neispravan“ iako broj
+                  prati aplikaciju, u telefonu je verovatno drugi secret — resetuj
+                  2FA u bazi ili ponovo uključi 2FA (novi QR).
+                </p>
               </div>
               <label className="flex cursor-pointer items-center gap-2 text-[length:var(--smp-text-body)] text-muted-foreground">
                 <input

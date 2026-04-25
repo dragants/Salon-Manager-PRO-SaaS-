@@ -2,6 +2,10 @@ const crypto = require("crypto");
 const pool = require("../../config/db");
 const env = require("../../config/env");
 const { generate } = require("../../utils/jwt");
+const {
+  normalizeTotpSecret,
+  normalizeTotpCodeInput,
+} = require("../../utils/totpNormalize");
 const { hashPassword, comparePassword } = require("../../utils/hash");
 const { sendPasswordResetEmail } = require("../../services/auth-mail.service");
 const { authenticator } = require("otplib");
@@ -51,7 +55,7 @@ async function login({ email, password, remember: _remember, otp }) {
               COALESCE(twofa_enabled, false) AS twofa_enabled,
               twofa_secret,
               COALESCE(mfa_enforced, false) AS mfa_enforced
-       FROM users WHERE email = $1`,
+       FROM users WHERE lower(trim(email)) = lower(trim($1::text))`,
       [email]
     );
   } catch (e) {
@@ -60,7 +64,7 @@ async function login({ email, password, remember: _remember, otp }) {
     }
     result = await pool.query(
       `SELECT id, password, organization_id, role
-       FROM users WHERE email = $1`,
+       FROM users WHERE lower(trim(email)) = lower(trim($1::text))`,
       [email]
     );
   }
@@ -85,15 +89,16 @@ async function login({ email, password, remember: _remember, otp }) {
   // - If 2FA is enabled but OTP is missing -> allow login with limited session (mfa=false).
   let strongMfa = true;
   if (wants2fa) {
-    const code = otp != null ? String(otp).trim() : "";
+    const code = normalizeTotpCodeInput(otp);
     if (code) {
-      const secret = user.twofa_secret ? String(user.twofa_secret) : "";
-      authenticator.options = { ...authenticator.options, window: 1 };
+      const secret = normalizeTotpSecret(user.twofa_secret);
+      // window: ±3 intervala (~±90s) zbog klizanja sata
+      authenticator.options = { ...authenticator.options, window: 3 };
       const okOtp = code && secret ? authenticator.check(code, secret) : false;
       if (!okOtp) {
-        const err = new Error("Invalid 2FA code");
+        const err = new Error("Neispravan 2FA kod.");
         err.statusCode = 401;
-        err.code = "MFA_INVALID";
+        err.apiCode = "MFA_INVALID";
         throw err;
       }
       strongMfa = true;

@@ -7,6 +7,8 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "cross-env NODE_ENV=development nodemon src/server.js",
+    "db:query": "node scripts/db-query.cjs",
+    "login:unlock": "node scripts/unlock-login-attempts.cjs",
     "migrate:sql": "node scripts/run-sql-migration.cjs",
     "migrate:018-021": "node scripts/run-migrations-018-021.cjs",
     "test": "node --test \"test/**/*.test.js\""

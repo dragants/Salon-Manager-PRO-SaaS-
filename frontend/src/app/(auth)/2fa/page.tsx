@@ -45,6 +45,12 @@ export default function TwoFaSetupPage() {
         if (!cancelled) setSetup(data);
       } catch (e) {
         if (cancelled) return;
+        if (axios.isAxiosError(e) && e.response?.status === 401) {
+          setError(
+            "Nema važeće sesije za API (npr. otvorio si sajt kao localhost, a API kao 127.0.0.1 ili obrnuto — kolačić se ne šalje). Prijavi se ponovo koristeći isti host u adresnoj traci kao u podešavanju API-ja (NEXT_PUBLIC_API_URL)."
+          );
+          return;
+        }
         if (axios.isAxiosError(e) && e.response?.status === 409) {
           setError(
             "2FA je već uključena za ovaj nalog. Idi na prijavu i unesi 2FA kod iz Authenticator aplikacije."
