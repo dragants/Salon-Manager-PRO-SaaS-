@@ -19,4 +19,10 @@ async function create(req, res) {
   res.status(201).json(data);
 }
 
-module.exports = { getAll, create };
+async function refund(req, res) {
+  // Placeholder: validation + authorization happens in route middleware.
+  // Implement actual refund flow when payment provider integration is wired.
+  res.json({ success: true });
+}
+
+module.exports = { getAll, create, refund };

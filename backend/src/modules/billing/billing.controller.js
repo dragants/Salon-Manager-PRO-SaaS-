@@ -72,4 +72,10 @@ async function portal(req, res) {
   res.json({ url });
 }
 
-module.exports = { status, checkout, stripeCheckout, stripePortal, portal };
+async function subscribe(req, res) {
+  // For now, this endpoint only validates and echoes the sanitized payload.
+  // Subscription side-effects are implemented in checkout/portal flows.
+  res.json({ success: true, data: req.body });
+}
+
+module.exports = { status, checkout, stripeCheckout, stripePortal, portal, subscribe };

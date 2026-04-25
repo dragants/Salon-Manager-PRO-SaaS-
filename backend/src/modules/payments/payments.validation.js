@@ -1,8 +1,2 @@
-const Joi = require("joi");
-
-const createPaymentSchema = Joi.object({
-  amount: Joi.number().required(),
-  date: Joi.date().iso(),
-});
-
-module.exports = { createPaymentSchema };
+/** @deprecated Importuj iz `validators/payments` — ostavljeno radi kompatibilnosti. */
+module.exports = require("../../validators/payments");
