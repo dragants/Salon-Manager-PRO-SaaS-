@@ -214,6 +214,46 @@ export function getBillingStatus() {
   return api.get<BillingStatus>("/billing/status");
 }
 
+export type FeatureFlagCatalogItem = {
+  key: string;
+  description: string | null;
+  default_enabled: boolean;
+};
+
+export async function getFeatureFlagsCatalog(): Promise<FeatureFlagCatalogItem[]> {
+  const { data } = await api.get<{ data: FeatureFlagCatalogItem[] }>(
+    "/feature-flags/catalog"
+  );
+  return Array.isArray(data?.data) ? data.data : [];
+}
+
+export async function getMyFeatureFlags(): Promise<{
+  tenantId: number;
+  flags: Record<string, boolean>;
+}> {
+  const { data } = await api.get<{ tenantId: number; flags: Record<string, boolean> }>(
+    "/feature-flags/me"
+  );
+  return {
+    tenantId: Number(data?.tenantId),
+    flags: (data?.flags && typeof data.flags === "object" ? data.flags : {}) as Record<string, boolean>,
+  };
+}
+
+export async function patchMyFeatureFlags(flags: Record<string, boolean>): Promise<{
+  tenantId: number;
+  flags: Record<string, boolean>;
+}> {
+  const { data } = await api.patch<{ tenantId: number; flags: Record<string, boolean> }>(
+    "/feature-flags/me",
+    { flags }
+  );
+  return {
+    tenantId: Number(data?.tenantId),
+    flags: (data?.flags && typeof data.flags === "object" ? data.flags : {}) as Record<string, boolean>,
+  };
+}
+
 export async function startBillingCheckout(): Promise<{ url: string }> {
   const { data } = await api.post<{ url: string }>("/billing/checkout");
   return data;

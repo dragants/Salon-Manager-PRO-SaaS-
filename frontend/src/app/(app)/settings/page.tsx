@@ -13,6 +13,7 @@ import { SurfaceCard } from "@/components/ui/surface-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SettingsTabBar } from "@/components/features/settings/SettingsTabBar";
 import { BillingTab } from "@/components/features/settings/BillingTab";
+import { FeatureFlagsTab } from "@/components/features/settings/FeatureFlagsTab";
 import { TeamTab } from "@/components/features/settings/TeamTab";
 import { TeamScheduleTab } from "@/components/features/settings/team-schedule";
 import { WorkingHoursTab } from "@/components/features/settings/WorkingHoursTab";
@@ -188,6 +189,8 @@ function SettingsPageContent() {
             permissionsDirty={s.workerCanDelete !== Boolean(s.settings.worker_permissions?.can_delete)}
             onSaveWorkerPermissions={s.saveSecurity} />
         ) : null}
+
+        {s.isAdmin && s.tab === "flags" ? <FeatureFlagsTab /> : null}
       </SurfaceCard>
     </div>
   );

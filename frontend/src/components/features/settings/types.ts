@@ -7,6 +7,7 @@ import {
   CreditCard,
   Gift,
   Shield,
+  SlidersHorizontal,
   Users,
   Wallet,
 } from "lucide-react";
@@ -24,7 +25,8 @@ export type SettingsTabId =
   | "finance"
   | "loyalty"
   | "billing"
-  | "security";
+  | "security"
+  | "flags";
 
 export type SettingsTabConfig = {
   id: SettingsTabId;
@@ -50,4 +52,5 @@ export const SETTINGS_TABS: SettingsTabConfig[] = [
   { id: "loyalty", label: "Loyalty", icon: Gift },
   { id: "billing", label: "Pretplata", icon: CreditCard },
   { id: "security", label: "Sigurnost", icon: Shield },
+  { id: "flags", label: "Feature flags", icon: SlidersHorizontal },
 ];
